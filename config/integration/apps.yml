@@ -284,3 +284,103 @@ leadsquared:
       'conversation_activity_score',
       'transcript_activity_score',
     ]
+
+glpi:
+  id: glpi
+  feature_flag: crm_integration
+  logo: glpi.png
+  i18n_key: glpi
+  action: /glpi
+  hook_type: account
+  allow_multiple_hooks: false
+  settings_json_schema:
+    {
+      'type': 'object',
+      'properties':
+        {
+          'api_url': { 'type': 'string' },
+          'app_token': { 'type': 'string' },
+          'user_token': { 'type': 'string' },
+          'entity_id': { 'type': 'string' },
+          'sync_type': { 'type': 'string', 'enum': ['user', 'contact'] },
+          'ticket_type': { 'type': 'string' },
+          'category_id': { 'type': 'string' },
+          'default_user_id': { 'type': 'string' },
+        },
+      'required': ['api_url', 'app_token', 'user_token'],
+      'additionalProperties': false,
+    }
+  settings_form_schema:
+    [
+      {
+        'label': 'API URL',
+        'type': 'text',
+        'name': 'api_url',
+        'validation': 'required',
+        'placeholder': 'https://glpi.example.com/apirest.php',
+        'help': 'Your GLPI API endpoint URL',
+      },
+      {
+        'label': 'App Token',
+        'type': 'text',
+        'name': 'app_token',
+        'validation': 'required',
+        'help': 'GLPI application token (generated in Setup > General > API)',
+      },
+      {
+        'label': 'User Token',
+        'type': 'text',
+        'name': 'user_token',
+        'validation': 'required',
+        'help': 'GLPI user token (found in user preferences)',
+      },
+      {
+        'label': 'Entity ID',
+        'type': 'text',
+        'name': 'entity_id',
+        'default': '0',
+        'help': 'GLPI entity ID (default is 0 for root entity)',
+      },
+      {
+        'label': 'Sync Type',
+        'type': 'select',
+        'name': 'sync_type',
+        'default': 'user',
+        'options': [
+          { 'label': 'User (Requester)', 'value': 'user' },
+          { 'label': 'Contact (External)', 'value': 'contact' },
+        ],
+        'help': 'Sync contacts as GLPI Users (internal) or Contacts (external)',
+      },
+      {
+        'label': 'Ticket Type',
+        'type': 'select',
+        'name': 'ticket_type',
+        'default': '1',
+        'options': [
+          { 'label': 'Incident', 'value': '1' },
+          { 'label': 'Request', 'value': '2' },
+        ],
+        'help': 'Default ticket type for new tickets',
+      },
+      {
+        'label': 'Category ID',
+        'type': 'text',
+        'name': 'category_id',
+        'help': 'Optional: GLPI category ID for tickets',
+      },
+      {
+        'label': 'Default User ID',
+        'type': 'text',
+        'name': 'default_user_id',
+        'help': 'Optional: GLPI user ID for creating followups (default: 0)',
+      },
+    ]
+  visible_properties:
+    [
+      'api_url',
+      'entity_id',
+      'sync_type',
+      'ticket_type',
+      'category_id',
+    ]
