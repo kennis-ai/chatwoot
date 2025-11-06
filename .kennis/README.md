@@ -1,4 +1,39 @@
-# GLPI Integration Implementation
+# Kennis Development Documentation
+
+This directory contains technical documentation, implementation plans, and status reports for the Kennis fork of Chatwoot.
+
+---
+
+## 📋 Quick Links
+
+### GitHub Actions & CI/CD Status
+🎉 **All workflows passing!** [View Action Plan](./github-actions-action-plan.md)
+
+### Integration Projects
+- 🔧 [GLPI Integration](#glpi-integration-implementation)
+- 🔑 [Keycloak Integration](#keycloak-integration)
+- 💼 [Krayin CRM Integration](#krayin-crm-integration)
+
+---
+
+## 🚦 GitHub Actions Status
+
+**Current Status**: ✅ ALL PASSING (as of 2025-11-06)
+
+| Document | Purpose |
+|----------|---------|
+| [📋 Action Plan](./github-actions-action-plan.md) | **START HERE** - Quick reference & next steps |
+| [📊 Status Report](./github-actions-status-2025-11-06.md) | Detailed analysis & recommendations |
+| [🔧 Fix Plan](./github-actions-fix-plan.md) | Historical: omniauth dependency fix |
+
+**Quick Check**:
+```bash
+gh run list --limit 10
+```
+
+---
+
+## 🔧 GLPI Integration Implementation
 
 This directory contains the complete implementation plan and branch strategy for the GLPI CRM integration.
 
@@ -205,6 +240,119 @@ git checkout feature/glpi-phase1-api-clients
 
 ---
 
-**Version**: 1.0  
-**Created**: 2025-01-05  
-**Status**: Ready for Implementation
+## 🔑 Keycloak Integration
+
+Single Sign-On (SSO) integration with Keycloak for enterprise authentication.
+
+### 📋 Documents
+
+1. **keycloak-setup-guide.md**
+   - Complete setup and configuration
+   - Environment variable configuration
+   - Troubleshooting guide
+
+### 🚀 Quick Start
+
+```bash
+# View setup guide
+cat .kennis/keycloak-setup-guide.md
+
+# Example environment configuration
+cat .kennis/keycloak-env-example.txt
+```
+
+---
+
+## 💼 Krayin CRM Integration
+
+CRM integration with Krayin for contact and lead management.
+
+### 📋 Documents
+
+1. **krayin-implementation-plan.md** - Complete implementation plan
+2. **krayin-architecture.md** - Technical architecture
+3. **krayin-development-guide.md** - Developer guide
+4. **krayin-testing-guide.md** - Testing strategies
+5. **krayin-custom-attributes.md** - Custom attribute mapping
+6. **krayin-version-info.md** - Version information
+
+### 📊 Phase Status
+
+| Phase | Status | Document |
+|-------|--------|----------|
+| Phase 1 | ✅ Complete | [phase1-completion-summary.md](./phase1-completion-summary.md) |
+| Phase 2 | ✅ Complete | [phase2-completion-summary.md](./phase2-completion-summary.md) |
+| Phase 3 | ✅ Complete | [phase3-completion-summary.md](./phase3-completion-summary.md) |
+| Phase 4 | ✅ Complete | [phase4-completion-summary.md](./phase4-completion-summary.md) |
+| Phase 5 | ✅ Complete | [phase5-completion-summary.md](./phase5-completion-summary.md) |
+| Phase 6 | ✅ Complete | [phase6-completion-summary.md](./phase6-completion-summary.md) |
+
+### 🚀 Quick Start
+
+```bash
+# View implementation plan
+cat .kennis/krayin-implementation-plan.md
+
+# View architecture
+cat .kennis/krayin-architecture.md
+
+# Development guide
+cat .kennis/krayin-development-guide.md
+```
+
+---
+
+## 📚 General Resources
+
+### CRM Integration Overview
+
+**Overview Document**: [crm-integration-implementation-plan.md](./crm-integration-implementation-plan.md)
+
+This document provides a comprehensive overview of all CRM integrations, including:
+- Architecture patterns
+- Integration strategies
+- Common components
+- Best practices
+
+---
+
+## 🔧 Development Conventions
+
+### File Naming
+- `*-plan.md` - Implementation or fix plans
+- `*-status*.md` - Status reports and analyses
+- `*-action-plan.md` - Quick reference with next steps
+- `*-guide.md` - Setup, developer, or user guides
+- `*-summary.md` - Phase or completion summaries
+
+### Status Indicators
+- ✅ Working / Completed
+- ⚠️ Warning / Non-critical issue
+- ❌ Error / Requires action
+- 🔇 Disabled / Not in use
+- 📋 Planned / TODO
+- ⏭️ Queued / Next
+
+### Priority Levels
+- **Critical**: Immediate action required
+- **High**: Action needed within 1 week
+- **Medium**: Action needed within 1 month
+- **Low**: Optional improvement
+
+---
+
+## 📖 Contributing
+
+When adding new documentation:
+1. Use descriptive filenames
+2. Include date in filename if time-sensitive
+3. Update this README index
+4. Use consistent markdown formatting
+5. Add status indicators (✅ ⚠️ ❌)
+
+---
+
+**Version**: 2.0
+**Created**: 2025-01-05
+**Updated**: 2025-11-06
+**Status**: Active Development
