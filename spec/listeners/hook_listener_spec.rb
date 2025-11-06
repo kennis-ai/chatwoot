@@ -127,5 +127,65 @@ describe HookListener do
         listener.contact_updated(contact_event)
       end
     end
+
+    context 'with krayin hook' do
+      let(:hook) { create(:integrations_hook, :krayin, account: account, inbox: inbox) }
+
+      before do
+        account.enable_features(:crm_integration)
+      end
+
+      it 'enqueues the job for contact.created' do
+        contact_created_event = Events::Base.new('contact.created', Time.zone.now, contact: conversation.contact)
+        
+        expect(HookJob)
+          .to receive(:perform_later)
+          .with(hook, 'contact.created', { contact: conversation.contact })
+
+        listener.contact_created(contact_created_event)
+      end
+
+      it 'enqueues the job for contact.updated' do
+        expect(HookJob)
+          .to receive(:perform_later)
+          .with(hook, 'contact.updated', { contact: conversation.contact })
+
+        listener.contact_updated(contact_event)
+      end
+
+      it 'enqueues the job for conversation.created' do
+        expect(HookJob)
+          .to receive(:perform_later)
+          .with(hook, 'conversation.created', { conversation: conversation })
+
+        listener.conversation_created(conversation_event)
+      end
+
+      it 'enqueues the job for conversation.updated' do
+        conversation_updated_event = Events::Base.new('conversation.updated', Time.zone.now, conversation: conversation)
+        
+        expect(HookJob)
+          .to receive(:perform_later)
+          .with(hook, 'conversation.updated', { conversation: conversation })
+
+        listener.conversation_updated(conversation_updated_event)
+      end
+
+      it 'enqueues the job for message.created' do
+        expect(HookJob)
+          .to receive(:perform_later)
+          .with(hook, event_name, message: message)
+
+        listener.message_created(event)
+      end
+
+      it 'does not enqueue when feature is not enabled' do
+        account.disable_features(:crm_integration)
+        
+        expect(HookJob).not_to receive(:perform_later)
+
+        listener.contact_created(contact_event)
+      end
+    end
   end
 end

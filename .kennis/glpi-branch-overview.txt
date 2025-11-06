@@ -1,0 +1,140 @@
+GLPI Integration - Branch Structure
+====================================
+
+main (production)
+ │
+ ├─── feature/glpi-phase1-api-clients
+ │    │
+ │    ├─ app/services/crm/glpi/api/base_client.rb
+ │    ├─ app/services/crm/glpi/api/user_client.rb
+ │    ├─ app/services/crm/glpi/api/contact_client.rb
+ │    ├─ app/services/crm/glpi/api/ticket_client.rb
+ │    ├─ app/services/crm/glpi/api/followup_client.rb
+ │    └─ spec/services/crm/glpi/api/*_spec.rb
+ │    
+ │    Status: ✅ Ready for implementation
+ │    Duration: Week 1 (Days 1-5)
+ │    Dependencies: None
+ │
+ ├─── feature/glpi-phase2-mappers
+ │    │
+ │    ├─ app/services/crm/glpi/mappers/contact_mapper.rb
+ │    ├─ app/services/crm/glpi/mappers/conversation_mapper.rb
+ │    ├─ app/services/crm/glpi/mappers/message_mapper.rb
+ │    └─ spec/services/crm/glpi/mappers/*_spec.rb
+ │    
+ │    Status: ⏭️ Waiting for Phase 1
+ │    Duration: Week 2 (Days 1-2)
+ │    Dependencies: Phase 1 API clients
+ │
+ ├─── feature/glpi-phase3-services
+ │    │
+ │    ├─ app/services/crm/glpi/setup_service.rb
+ │    ├─ app/services/crm/glpi/user_finder_service.rb
+ │    ├─ app/services/crm/glpi/contact_finder_service.rb
+ │    ├─ app/services/crm/glpi/processor_service.rb
+ │    └─ spec/services/crm/glpi/*_service_spec.rb
+ │    
+ │    Status: ⏭️ Waiting for Phase 1 & 2
+ │    Duration: Week 2-3 (Days 3-5)
+ │    Dependencies: Phase 1 API clients + Phase 2 Mappers
+ │
+ ├─── feature/glpi-phase4-integration
+ │    │
+ │    ├─ config/integration/apps.yml (update)
+ │    ├─ config/locales/en.yml (update)
+ │    ├─ app/models/integrations/hook.rb (update)
+ │    ├─ app/listeners/hook_listener.rb (update)
+ │    ├─ app/jobs/hook_job.rb (update)
+ │    ├─ app/jobs/crm/setup_job.rb (update)
+ │    └─ public/integrations/glpi.png (new)
+ │    
+ │    Status: ⏭️ Waiting for Phase 3
+ │    Duration: Week 3 (Days 1-2)
+ │    Dependencies: Phase 3 Services
+ │
+ ├─── feature/glpi-phase5-testing
+ │    │
+ │    ├─ Integration tests
+ │    ├─ Performance tests
+ │    ├─ Edge case tests
+ │    └─ Bug fixes
+ │    
+ │    Status: ⏭️ Waiting for Phase 4
+ │    Duration: Week 3 (Days 3-4)
+ │    Dependencies: Phase 4 Integration complete
+ │
+ └─── feature/glpi-phase6-documentation
+      │
+      ├─ docs/glpi-integration.md
+      ├─ docs/development/crm-integrations/glpi.md
+      └─ YARD comments on all methods
+      
+      Status: ⏭️ Waiting for Phase 5
+      Duration: Week 3 (Day 5)
+      Dependencies: Phase 5 Testing complete
+
+
+Merge Flow
+==========
+
+Phase 1 → main
+    ↓
+Phase 2 → main (after merging latest from main)
+    ↓
+Phase 3 → main (after merging latest from main)
+    ↓
+Phase 4 → main (after merging latest from main)
+    ↓
+Phase 5 → main (after merging latest from main)
+    ↓
+Phase 6 → main (after merging latest from main)
+
+
+Timeline
+========
+
+Week 1: Phase 1 (API Clients)
+│  Mon-Tue: BaseClient, UserClient, ContactClient
+│  Wed-Thu: TicketClient, FollowupClient, Tests
+│  Fri: Code review, refinements, PR
+
+Week 2: Phases 2-3 (Mappers & Services)
+│  Mon-Tue: Mappers + Tests, PR
+│  Wed-Thu: Services (Setup, Finders)
+│  Fri: ProcessorService + Tests, PR
+
+Week 3: Phases 4-6 (Integration, Testing, Docs)
+│  Mon-Tue: Configuration updates, PR
+│  Wed-Thu: Testing with local GLPI, bug fixes
+│  Fri: Documentation, final PR
+
+
+Quick Commands
+==============
+
+Start Phase 1:
+$ git checkout feature/glpi-phase1-api-clients
+
+View all branches:
+$ git branch | grep glpi
+
+Check status:
+$ git status
+
+Run tests:
+$ bundle exec rspec spec/services/crm/glpi/
+
+Create PR:
+$ gh pr create --base main --head feature/glpi-phase1-api-clients
+
+
+Resources
+=========
+
+📄 Implementation Plan: .kennis/glpi-integration-implementation-plan.md
+📄 Branch Strategy: .kennis/glpi-branch-strategy.md
+📄 Quick Start: .kennis/glpi-quick-start.md
+🔗 GLPI API Docs: https://glpi-project.org/documentation/
+🔗 Reference: app/services/crm/leadsquared/
+

@@ -384,3 +384,106 @@ glpi:
       'ticket_type',
       'category_id',
     ]
+
+krayin:
+  id: krayin
+  feature_flag: crm_integration
+  logo: krayin.png
+  i18n_key: krayin
+  action: /krayin
+  hook_type: account
+  allow_multiple_hooks: false
+  settings_json_schema:
+    {
+      'type': 'object',
+      'properties':
+        {
+          'api_url': { 'type': 'string' },
+          'api_token': { 'type': 'string' },
+          'lead_source_id': { 'type': 'integer' },
+          'lead_type_id': { 'type': 'integer' },
+          'lead_pipeline_id': { 'type': 'integer' },
+          'lead_pipeline_stage_id': { 'type': 'integer' },
+          'default_pipeline_id': { 'type': 'integer' },
+          'default_stage_id': { 'type': 'integer' },
+          'default_source_id': { 'type': 'integer' },
+          'default_lead_type_id': { 'type': 'integer' },
+          'sync_conversations': { 'type': 'boolean' },
+          'sync_messages': { 'type': 'boolean' },
+          'sync_to_organization': { 'type': 'boolean' },
+          'stage_progression_enabled': { 'type': 'boolean' },
+          'stage_on_conversation_created': { 'type': 'integer' },
+          'stage_on_first_response': { 'type': 'integer' },
+          'stage_on_conversation_resolved': { 'type': 'integer' },
+        },
+      'required': ['api_url', 'api_token'],
+      'additionalProperties': false,
+    }
+  settings_form_schema:
+    [
+      {
+        'label': 'API URL',
+        'type': 'text',
+        'name': 'api_url',
+        'validation': 'required',
+        'placeholder': 'https://crm.example.com/api/admin',
+        'help': 'Your Krayin CRM API URL (including /api/admin)',
+      },
+      {
+        'label': 'API Token',
+        'type': 'text',
+        'name': 'api_token',
+        'validation': 'required',
+        'placeholder': 'Enter your Bearer token',
+        'help': 'Laravel Sanctum API token for authentication',
+      },
+      {
+        'label': 'Sync Conversations as Activities',
+        'type': 'checkbox',
+        'name': 'sync_conversations',
+        'help': 'Create activities in Krayin when conversations are created',
+      },
+      {
+        'label': 'Sync Messages as Activities',
+        'type': 'checkbox',
+        'name': 'sync_messages',
+        'help': 'Create activities in Krayin for each message',
+      },
+      {
+        'label': 'Sync to Organizations',
+        'type': 'checkbox',
+        'name': 'sync_to_organization',
+        'help': 'Create and link contacts to organizations based on company information',
+      },
+      {
+        'label': 'Enable Lead Stage Progression',
+        'type': 'checkbox',
+        'name': 'stage_progression_enabled',
+        'help': 'Automatically update lead stages based on conversation status',
+      },
+      {
+        'label': 'Stage on Conversation Created',
+        'type': 'number',
+        'name': 'stage_on_conversation_created',
+        'help': 'Lead stage ID to set when a conversation is created',
+      },
+      {
+        'label': 'Stage on First Response',
+        'type': 'number',
+        'name': 'stage_on_first_response',
+        'help': 'Lead stage ID to set when agent sends first response',
+      },
+      {
+        'label': 'Stage on Conversation Resolved',
+        'type': 'number',
+        'name': 'stage_on_conversation_resolved',
+        'help': 'Lead stage ID to set when conversation is resolved',
+      },
+    ]
+  visible_properties:
+    [
+      'api_url',
+      'sync_conversations',
+      'sync_messages',
+      'sync_to_organization',
+    ]

@@ -71,6 +71,9 @@ Rails.application.routes.draw do
             resources :documents, only: [:index, :show, :create, :destroy]
           end
           resource :saml_settings, only: [:show, :create, :update, :destroy]
+          resource :keycloak_settings, only: [:show, :create, :update, :destroy] do
+            post :test, on: :member
+          end
           resources :agent_bots, only: [:index, :create, :show, :update, :destroy] do
             delete :avatar, on: :member
             post :reset_access_token, on: :member
