@@ -21,18 +21,33 @@ The GLPI integration automatically synchronizes your Chatwoot conversations with
 
 The integration follows Chatwoot's standard CRM integration pattern:
 
-```
-Chatwoot Event → HookListener → HookJob → GLPI ProcessorService
-                                              ↓
-                                    [Mappers + API Clients]
-                                              ↓
-                                         GLPI REST API
+```mermaid
+graph TB
+    A[Chatwoot Event] --> B[HookListener]
+    B --> C[HookJob]
+    C --> D[GLPI ProcessorService]
+    D --> E[Mappers]
+    E --> F[API Clients]
+    F --> G[GLPI REST API]
+
+    style A fill:#e1f5ff
+    style D fill:#fff4e6
+    style G fill:#e8f5e9
 ```
 
+**Flow**:
+1. **Chatwoot Event** - Contact created, conversation started, message sent, etc.
+2. **HookListener** - Captures events and queues them
+3. **HookJob** - Background job processes the event
+4. **ProcessorService** - Main orchestration logic
+5. **Mappers** - Transform Chatwoot data to GLPI format
+6. **API Clients** - HTTP communication with GLPI
+7. **GLPI REST API** - Creates/updates records in GLPI
+
 **Components**:
-- **API Clients**: HTTP communication with GLPI REST API
+- **API Clients**: HTTP communication with GLPI REST API (session management, CRUD operations)
 - **Mappers**: Data transformation between Chatwoot and GLPI formats
-- **Services**: Business logic for synchronization
+- **Services**: Business logic for synchronization (user finder, contact finder, processor)
 - **Listeners/Jobs**: Event handling and background processing
 
 ## 🚀 Quick Start
