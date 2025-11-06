@@ -11,6 +11,12 @@
 - [[GLPI Implementation Plan]]
 - [[GLPI Troubleshooting]]
 
+### Krayin CRM Integration
+- [[Krayin CRM Integration]]
+- [[Krayin Setup Guide]]
+- [[Krayin Troubleshooting]]
+- [[Krayin FAQ]]
+
 ## 🔐 Authentication
 
 ### Keycloak OIDC
