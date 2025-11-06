@@ -17,7 +17,7 @@ if [ ! -d "$WIKI_DIR" ]; then
   echo "📥 Wiki repository not found. Cloning..."
   cd "$(dirname "$WIKI_DIR")"
 
-  if git clone https://github.com/kennis-ai/chatwoot.wiki.git 2>/dev/null; then
+  if git clone git@github.com:kennis-ai/chatwoot.wiki.git 2>/dev/null; then
     echo "✅ Wiki cloned successfully"
   else
     echo "❌ Failed to clone wiki. It may not exist yet."
