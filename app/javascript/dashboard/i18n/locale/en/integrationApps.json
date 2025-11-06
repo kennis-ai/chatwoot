@@ -56,7 +56,9 @@
       "BUTTON_TEXT": "Disconnect"
     },
     "SIDEBAR_DESCRIPTION": {
-      "DIALOGFLOW": "Dialogflow is a natural language processing platform for building conversational interfaces. Integrating it with {installationName} lets bots handle queries first and transfer them to agents when needed. It helps qualify leads and reduce agent workload by answering FAQs. To add Dialogflow, create a Service Account in Google Console and share the credentials. Refer to the docs for details"
+      "DIALOGFLOW": "Dialogflow is a natural language processing platform for building conversational interfaces. Integrating it with {installationName} lets bots handle queries first and transfer them to agents when needed. It helps qualify leads and reduce agent workload by answering FAQs. To add Dialogflow, create a Service Account in Google Console and share the credentials. Refer to the docs for details",
+      "GLPI": "GLPI is an open-source IT Service Management (ITSM) platform. Integrating GLPI with {installationName} automatically syncs contacts as users or contacts, creates tickets from conversations, and keeps followup messages synchronized. Perfect for IT helpdesk workflows and service management. Configure your GLPI API credentials to get started.",
+      "KRAYIN": "Krayin is an open-source CRM platform. Integrating Krayin with {installationName} automatically syncs contacts as persons and leads, creates organizations from company data, tracks conversations and messages as activities, and enables automatic lead stage progression. Perfect for sales pipeline management and customer relationship tracking. Configure your Krayin API credentials to get started."
     }
   }
 }

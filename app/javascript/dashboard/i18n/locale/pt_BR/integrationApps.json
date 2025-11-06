@@ -56,7 +56,9 @@
       "BUTTON_TEXT": "Desconectado"
     },
     "SIDEBAR_DESCRIPTION": {
-      "DIALOGFLOW": "Dialogflow é uma plataforma de processamento de linguagem natural para a construção de interfaces conversais. Integrá-lo com {installationName} permite que os bots lidem primeiro com consultas e transfiram para os agentes quando necessário. Ele ajuda a qualificar leads e reduzir a carga de trabalho dos agentes respondendo às FAQ. Para adicionar um fluxo de diálogo (Dialogflow), crie uma Conta de Serviço no Google Console e compartilhe as credenciais. Consulte sua documentação para obter detalhes"
+      "DIALOGFLOW": "Dialogflow é uma plataforma de processamento de linguagem natural para a construção de interfaces conversais. Integrá-lo com {installationName} permite que os bots lidem primeiro com consultas e transfiram para os agentes quando necessário. Ele ajuda a qualificar leads e reduzir a carga de trabalho dos agentes respondendo às FAQ. Para adicionar um fluxo de diálogo (Dialogflow), crie uma Conta de Serviço no Google Console e compartilhe as credenciais. Consulte sua documentação para obter detalhes",
+      "GLPI": "GLPI é uma plataforma de código aberto para Gerenciamento de Serviços de TI (ITSM). A integração do GLPI com {installationName} sincroniza automaticamente contatos como usuários ou contatos, cria tickets a partir de conversas e mantém mensagens de acompanhamento sincronizadas. Perfeito para fluxos de trabalho de helpdesk de TI e gerenciamento de serviços. Configure suas credenciais da API GLPI para começar.",
+      "KRAYIN": "Krayin é uma plataforma CRM de código aberto. A integração do Krayin com {installationName} sincroniza automaticamente contatos como pessoas e leads, cria organizações a partir de dados da empresa, rastreia conversas e mensagens como atividades, e permite a progressão automática de estágios de leads. Perfeito para gerenciamento de pipeline de vendas e rastreamento de relacionamento com clientes. Configure suas credenciais da API Krayin para começar."
     }
   }
 }
