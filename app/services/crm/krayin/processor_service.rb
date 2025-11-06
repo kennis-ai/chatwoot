@@ -44,6 +44,12 @@ class Crm::Krayin::ProcessorService
     # Initialize API clients
     person_client = Crm::Krayin::Api::PersonClient.new(api_url, api_token)
     lead_client = Crm::Krayin::Api::LeadClient.new(api_url, api_token)
+    
+    # Sync organization if enabled and contact has company
+    organization_id = nil
+    if sync_organizations? && Crm::Krayin::Mappers::ContactMapper.new(contact).has_organization?
+      organization_id = create_or_update_organization(contact)
+    end
 
     # Find or create person
     person = Crm::Krayin::PersonFinderService.new(
@@ -55,6 +61,11 @@ class Crm::Krayin::ProcessorService
 
     # Store person external ID
     store_external_id(contact, 'person', person['id'])
+    
+    # Link person to organization if both exist
+    if organization_id.present? && person['id'].present?
+      link_person_to_organization(person['id'], organization_id, person_client)
+    end
 
     # Find or create lead
     lead = Crm::Krayin::LeadFinderService.new(
@@ -162,9 +173,17 @@ class Crm::Krayin::ProcessorService
 
   def store_external_id(record, type, external_id)
     # Store external ID in contact_inboxes source_id field
-    # Format: "krayin:type:id" (e.g., "krayin:person:123", "krayin:lead:456")
+    # Enhanced format supports multiple IDs: "krayin:person:123|krayin:lead:456|krayin:organization:789"
     contact_inbox = record.contact_inboxes.find_or_initialize_by(inbox: @inbox)
-    contact_inbox.source_id = "krayin:#{type}:#{external_id}"
+    
+    # Parse existing IDs
+    existing_ids = parse_external_ids(contact_inbox.source_id)
+    
+    # Update or add the new ID
+    existing_ids[type] = external_id
+    
+    # Rebuild source_id string
+    contact_inbox.source_id = build_source_id_string(existing_ids)
     contact_inbox.save!
   end
 
@@ -178,11 +197,82 @@ class Crm::Krayin::ProcessorService
   def extract_external_id(source_id, type)
     return nil if source_id.blank?
 
-    # Parse format "krayin:type:id"
-    parts = source_id.split(':')
-    return nil unless parts[0] == 'krayin' && parts[1] == type
+    # Parse enhanced format: "krayin:person:123|krayin:lead:456|krayin:organization:789"
+    ids = parse_external_ids(source_id)
+    ids[type]
+  end
 
-    parts[2]
+  def parse_external_ids(source_id)
+    return {} if source_id.blank?
+
+    ids = {}
+    # Split by pipe to get individual ID entries
+    source_id.split('|').each do |entry|
+      parts = entry.split(':')
+      next unless parts.length == 3 && parts[0] == 'krayin'
+      
+      ids[parts[1]] = parts[2]
+    end
+    ids
+  end
+
+  def build_source_id_string(ids_hash)
+    # Build format: "krayin:person:123|krayin:lead:456|krayin:organization:789"
+    ids_hash.map { |type, id| "krayin:#{type}:#{id}" }.join('|')
+  end
+
+  def create_or_update_organization(contact)
+    org_client = Crm::Krayin::Api::OrganizationClient.new(api_url, api_token)
+    mapper = Crm::Krayin::Mappers::ContactMapper.new(contact)
+    
+    org_data = mapper.map_to_organization
+    return nil if org_data.blank?
+
+    # Check if organization already exists
+    existing_org_id = get_external_id(contact, 'organization')
+    
+    if existing_org_id.present?
+      # Update existing organization
+      org_client.update_organization(org_data, existing_org_id)
+      Rails.logger.info "Krayin ProcessorService - Updated organization #{existing_org_id}"
+      existing_org_id
+    else
+      # Search for existing organization by name
+      existing_orgs = org_client.search_organization(org_data[:name])
+      
+      if existing_orgs.present? && existing_orgs.any?
+        org_id = existing_orgs.first['id']
+        store_external_id(contact, 'organization', org_id)
+        Rails.logger.info "Krayin ProcessorService - Found existing organization #{org_id}"
+        org_id
+      else
+        # Create new organization
+        org_id = org_client.create_organization(org_data)
+        store_external_id(contact, 'organization', org_id)
+        Rails.logger.info "Krayin ProcessorService - Created organization #{org_id}"
+        org_id
+      end
+    end
+  rescue Crm::Krayin::Api::BaseClient::ApiError => e
+    Rails.logger.error "Krayin ProcessorService - Failed to sync organization: #{e.message}"
+    nil
+  rescue StandardError => e
+    Rails.logger.error "Krayin ProcessorService - Unexpected error syncing organization: #{e.message}"
+    nil
+  end
+
+  def link_person_to_organization(person_id, organization_id, person_client)
+    # Update person with organization_id
+    person_client.update_person({ organization_id: organization_id }, person_id)
+    Rails.logger.info "Krayin ProcessorService - Linked person #{person_id} to organization #{organization_id}"
+  rescue Crm::Krayin::Api::BaseClient::ApiError => e
+    Rails.logger.error "Krayin ProcessorService - Failed to link person to organization: #{e.message}"
+  rescue StandardError => e
+    Rails.logger.error "Krayin ProcessorService - Unexpected error linking person to organization: #{e.message}"
+  end
+
+  def sync_organizations?
+    @hook.settings['sync_to_organization'] == true
   end
 
   def api_url

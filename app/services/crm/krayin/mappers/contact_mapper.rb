@@ -7,6 +7,10 @@ class Crm::Krayin::Mappers::ContactMapper
     new(contact).map_to_lead(person_id, settings)
   end
 
+  def self.map_to_organization(contact)
+    new(contact).map_to_organization
+  end
+
   def initialize(contact)
     @contact = contact
   end
@@ -31,6 +35,20 @@ class Crm::Krayin::Mappers::ContactMapper
       lead_pipeline_id: settings['lead_pipeline_id'] || settings['default_pipeline_id'],
       lead_pipeline_stage_id: settings['lead_pipeline_stage_id'] || settings['default_stage_id']
     }.compact
+  end
+
+  def map_to_organization
+    company_name = extract_company_name
+    return nil if company_name.blank?
+
+    {
+      name: company_name,
+      address: extract_company_address
+    }.compact
+  end
+
+  def has_organization?
+    extract_company_name.present?
   end
 
   private
@@ -106,5 +124,31 @@ class Crm::Krayin::Mappers::ContactMapper
 
   def brand_name
     ::GlobalConfig.get('BRAND_NAME')['BRAND_NAME'] || 'Chatwoot'
+  end
+
+  def extract_company_name
+    # Check multiple possible company name fields
+    contact.additional_attributes&.dig('company_name') ||
+      contact.additional_attributes&.dig('company') ||
+      contact.additional_attributes&.dig('organization')
+  end
+
+  def extract_company_address
+    # Try to build a structured address from available fields
+    address_parts = []
+    
+    if contact.additional_attributes.present?
+      address_parts << contact.additional_attributes['company_address'] if contact.additional_attributes['company_address'].present?
+      address_parts << contact.additional_attributes['company_city'] if contact.additional_attributes['company_city'].present?
+      address_parts << contact.additional_attributes['company_state'] if contact.additional_attributes['company_state'].present?
+      address_parts << contact.additional_attributes['company_country'] if contact.additional_attributes['company_country'].present?
+      address_parts << contact.additional_attributes['company_zipcode'] if contact.additional_attributes['company_zipcode'].present?
+    end
+
+    return nil if address_parts.empty?
+    
+    {
+      address: address_parts.join(', ')
+    }
   end
 end

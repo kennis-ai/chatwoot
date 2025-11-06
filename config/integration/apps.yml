@@ -309,6 +309,7 @@ krayin:
           'default_lead_type_id': { 'type': 'integer' },
           'sync_conversations': { 'type': 'boolean' },
           'sync_messages': { 'type': 'boolean' },
+          'sync_to_organization': { 'type': 'boolean' },
         },
       'required': ['api_url', 'api_token'],
       'additionalProperties': false,
@@ -343,10 +344,17 @@ krayin:
         'name': 'sync_messages',
         'help': 'Create activities in Krayin for each message',
       },
+      {
+        'label': 'Sync to Organizations',
+        'type': 'checkbox',
+        'name': 'sync_to_organization',
+        'help': 'Create and link contacts to organizations based on company information',
+      },
     ]
   visible_properties:
     [
       'api_url',
       'sync_conversations',
       'sync_messages',
+      'sync_to_organization',
     ]
