@@ -1,0 +1,63 @@
+# Keycloak OpenID Connect Configuration
+# Copy these variables to your .env file or environment configuration
+
+# ============================================
+# REQUIRED: Enable Keycloak Authentication
+# ============================================
+KEYCLOAK_ENABLED=true
+
+# ============================================
+# REQUIRED: Keycloak Issuer URL
+# ============================================
+# Format: https://{keycloak-domain}/realms/{realm-name}
+# Example: https://keycloak.example.com/realms/chatwoot
+# This is the base URL for your Keycloak realm
+KEYCLOAK_ISSUER=https://keycloak.example.com/realms/chatwoot
+
+# ============================================
+# REQUIRED: Client Credentials
+# ============================================
+# Client ID as configured in Keycloak
+KEYCLOAK_CLIENT_ID=chatwoot
+
+# Client Secret from Keycloak (Credentials tab)
+# Keep this secret! Do not commit to version control
+KEYCLOAK_CLIENT_SECRET=your-client-secret-here
+
+# ============================================
+# REQUIRED: Chatwoot Frontend URL
+# ============================================
+# Must match the redirect URI configured in Keycloak
+# Include protocol (https://) and no trailing slash
+FRONTEND_URL=https://chat.example.com
+
+# ============================================
+# OPTIONAL: Custom Configuration
+# ============================================
+
+# Custom OIDC scopes (default: openid profile email)
+# KEYCLOAK_SCOPES=openid profile email custom_scope
+
+# Custom UID field (default: preferred_username)
+# Options: preferred_username, sub, email
+# KEYCLOAK_UID_FIELD=preferred_username
+
+# ============================================
+# DEVELOPMENT ONLY
+# ============================================
+# For local development with HTTP (not recommended for production)
+# FRONTEND_URL=http://localhost:3000
+
+# ============================================
+# VERIFICATION
+# ============================================
+# Test your configuration:
+# 1. Verify OIDC discovery:
+#    curl https://keycloak.example.com/realms/chatwoot/.well-known/openid-configuration
+#
+# 2. Test Keycloak connection:
+#    Rails console: User.omniauth_providers
+#    Should include: [:google_oauth2, :saml, :keycloak]
+#
+# 3. Test login flow:
+#    Navigate to: https://chat.example.com/users/auth/keycloak
