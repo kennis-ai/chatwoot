@@ -8,46 +8,47 @@ The Keycloak integration enables enterprise-grade authentication for Chatwoot us
 
 ### Key Features
 
-✅ **Single Sign-On (SSO)** - Users authenticate once with Keycloak
-✅ **OpenID Connect** - Industry-standard OAuth 2.0 + identity layer
-✅ **Per-Account Configuration** - Each Chatwoot account can have its own Keycloak settings
-✅ **UI Configuration** - Configure via Chatwoot UI or environment variables
-✅ **Encrypted Secrets** - Client secrets stored with Rails 7 encryption
-✅ **Multi-Tenant Support** - Multiple Keycloak instances supported
-✅ **Connection Testing** - Validate configuration before saving
-✅ **Administrator Control** - Only admins can configure authentication
-✅ **Automatic User Provisioning** - New users created automatically on first login
+- ✅ **Single Sign-On (SSO)** - Users authenticate once with Keycloak
+- ✅ **OpenID Connect** - Industry-standard OAuth 2.0 + identity layer
+- ✅ **Per-Account Configuration** - Each Chatwoot account can have its own Keycloak settings
+- ✅ **UI Configuration** - Configure via Chatwoot UI or environment variables
+- ✅ **Encrypted Secrets** - Client secrets stored with Rails 7 encryption
+- ✅ **Multi-Tenant Support** - Multiple Keycloak instances supported
+- ✅ **Connection Testing** - Validate configuration before saving
+- ✅ **Administrator Control** - Only admins can configure authentication
+- ✅ **Automatic User Provisioning** - New users created automatically on first login
 
 ### Authentication Flow
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Chatwoot
+    participant Keycloak
+    participant OmniAuth
+    participant UserModel as User Model
+
+    User->>Chatwoot: 1. Click "Sign in with Keycloak"
+    Chatwoot->>Keycloak: 2. Redirect to Keycloak login
+    Keycloak->>User: 3. Show login page
+    User->>Keycloak: 4. Enter credentials
+    Keycloak->>OmniAuth: 5. Auth response (token)
+    OmniAuth->>UserModel: 6. Create/Update user
+    UserModel->>OmniAuth: 7. User record
+    OmniAuth->>Chatwoot: 8. Generate SSO token
+    Chatwoot->>User: 9. Redirect to dashboard (logged in)
 ```
-┌────────────┐                ┌──────────────┐               ┌──────────┐
-│            │                │              │               │          │
-│   User     │──1. Login─────▶│  Chatwoot    │──2. Redirect─▶│ Keycloak │
-│            │                │              │               │          │
-└────────────┘                └──────────────┘               └──────────┘
-      ▲                              │                             │
-      │                              │                             │
-      │                              ▼                             │
-      │                       ┌──────────────┐                     │
-      │                       │              │                     │
-      │                       │   OmniAuth   │◀─3. Auth Response──┘
-      │                       │   Callback   │
-      │                       │              │
-      │                       └──────────────┘
-      │                              │
-      │                              │ 4. Create/Login User
-      │                              ▼
-      │                       ┌──────────────┐
-      │                       │              │
-      │                       │  User Model  │
-      │                       │              │
-      │                       └──────────────┘
-      │                              │
-      │                              │ 5. Generate SSO Token
-      │                              ▼
-      └────────────6. Redirect with Token────┘
-```
+
+**Flow Steps**:
+1. User clicks "Sign in with Keycloak" button on Chatwoot login page
+2. Chatwoot redirects to Keycloak authentication endpoint
+3. Keycloak displays login page to user
+4. User enters Keycloak credentials (username/password)
+5. Keycloak validates credentials and sends auth response to OmniAuth callback
+6. OmniAuth creates new user or updates existing user in database
+7. User record returned with profile information
+8. Chatwoot generates SSO session token
+9. User redirected to Chatwoot dashboard, fully authenticated
 
 ## 🚀 Quick Start
 
