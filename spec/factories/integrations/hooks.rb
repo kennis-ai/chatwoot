@@ -48,5 +48,17 @@ FactoryBot.define do
         }
       end
     end
+
+    trait :krayin do
+      app_id { 'krayin' }
+      settings do
+        {
+          'api_url' => 'https://crm.example.com/api/admin',
+          'api_token' => SecureRandom.hex,
+          'sync_conversations' => true,
+          'sync_messages' => true
+        }
+      end
+    end
   end
 end

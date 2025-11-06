@@ -34,6 +34,11 @@ class HookListener < BaseListener
     execute_account_hooks(event, conversation.account, conversation: conversation)
   end
 
+  def conversation_updated(event)
+    conversation = extract_conversation_and_account(event)[0]
+    execute_account_hooks(event, conversation.account, conversation: conversation)
+  end
+
   private
 
   def execute_hooks(event, message)
