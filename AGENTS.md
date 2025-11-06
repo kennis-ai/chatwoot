@@ -73,3 +73,4 @@ Practical checklist for any change impacting core logic or public APIs
 - Keep request/response contracts stable across OSS and Enterprise; update both sets of routes/controllers when introducing new APIs.
 - When renaming/moving shared code, mirror the change in `enterprise/` to prevent drift.
 - Tests: Add Enterprise-specific specs under `spec/enterprise`, mirroring OSS spec layout where applicable.
+- You can use the MCP Server deepwiki to get the latest documentation

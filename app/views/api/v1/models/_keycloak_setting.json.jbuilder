@@ -1,0 +1,11 @@
+json.id keycloak_setting.id
+json.account_id keycloak_setting.account_id
+json.enabled keycloak_setting.enabled
+json.issuer keycloak_setting.issuer
+json.client_id keycloak_setting.client_id
+json.uid_field keycloak_setting.uid_field
+json.scopes keycloak_setting.scopes
+json.discovery_url keycloak_setting.discovery_url
+json.redirect_uri keycloak_setting.redirect_uri
+json.created_at keycloak_setting.created_at
+json.updated_at keycloak_setting.updated_at

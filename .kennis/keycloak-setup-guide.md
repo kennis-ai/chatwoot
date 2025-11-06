@@ -23,7 +23,10 @@ This guide covers the integration of Keycloak as an OpenID Connect (OIDC) identi
 - ✅ Email and profile synchronization
 - ✅ Seamless integration with existing Google OAuth and SAML
 - ✅ Mobile app support (via deep linking)
-- ✅ Configurable via environment variables
+- ✅ Configurable via environment variables OR UI (per-account)
+- ✅ Multi-tenant support with per-account Keycloak settings
+- ✅ Connection testing before saving configuration
+- ✅ Encrypted storage of client secrets
 
 ---
 
@@ -153,6 +156,116 @@ sudo systemctl restart chatwoot.target
 
 ---
 
+## Step 2 (Alternative): UI-Based Configuration
+
+Starting from this update, you can configure Keycloak settings per account via the Chatwoot UI instead of using environment variables. This approach is recommended for multi-tenant installations.
+
+### 2A.1 Access Keycloak Settings
+
+1. Log in to Chatwoot as an **Administrator**
+2. Navigate to **Settings** → **Integrations** → **Keycloak** (or similar path)
+3. You'll see the Keycloak Settings configuration panel
+
+### 2A.2 Configure Keycloak Settings
+
+Fill in the following fields:
+
+**Required Fields**:
+- **Enable Keycloak**: Toggle to enable/disable authentication
+- **Issuer URL**: Your Keycloak realm issuer URL
+  - Format: `https://keycloak.example.com/realms/your-realm`
+- **Client ID**: The client ID from Keycloak (e.g., `chatwoot`)
+- **Client Secret**: The client secret from Keycloak credentials tab
+- **UID Field**: User identifier field (default: `preferred_username`)
+- **Scopes**: Space-separated OIDC scopes (default: `openid profile email`)
+
+**Example Configuration**:
+```
+Enable Keycloak: ✓ (checked)
+Issuer URL: https://keycloak.example.com/realms/chatwoot
+Client ID: chatwoot
+Client Secret: abc123xyz789...
+UID Field: preferred_username
+Scopes: openid profile email
+```
+
+### 2A.3 Test Connection (Optional)
+
+Before saving, you can test the connection:
+1. Click **Test Connection** button
+2. The system will verify:
+   - Issuer URL is accessible
+   - OIDC discovery endpoint responds correctly
+   - Configuration is valid
+3. If successful, you'll see a success message
+4. If failed, check the error message and adjust configuration
+
+### 2A.4 Save Configuration
+
+1. Click **Save** or **Update** to persist settings
+2. The OmniAuth middleware will automatically reload with new settings
+3. Keycloak login option will appear on the login page
+
+### 2A.5 Retrieve Redirect URI
+
+After saving, the UI will display:
+- **Redirect URI**: The callback URL to configure in Keycloak
+  - Format: `https://your-chatwoot-domain.com/omniauth/keycloak_{account_id}/callback`
+- **Discovery URL**: The OIDC discovery endpoint for verification
+
+Copy the **Redirect URI** and add it to Keycloak's **Valid redirect URIs** list.
+
+### 2A.6 API Endpoints (for programmatic access)
+
+For automation or advanced use cases, you can use the REST API:
+
+```bash
+# Get current Keycloak settings
+curl -X GET https://chatwoot.example.com/api/v1/accounts/{account_id}/keycloak_settings \
+  -H "api_access_token: YOUR_TOKEN"
+
+# Create/Update Keycloak settings
+curl -X PUT https://chatwoot.example.com/api/v1/accounts/{account_id}/keycloak_settings \
+  -H "api_access_token: YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "keycloak_settings": {
+      "enabled": true,
+      "issuer": "https://keycloak.example.com/realms/chatwoot",
+      "client_id": "chatwoot",
+      "client_secret": "your-secret",
+      "uid_field": "preferred_username",
+      "scopes": "openid profile email"
+    }
+  }'
+
+# Test connection
+curl -X POST https://chatwoot.example.com/api/v1/accounts/{account_id}/keycloak_settings/test \
+  -H "api_access_token: YOUR_TOKEN"
+
+# Delete Keycloak settings
+curl -X DELETE https://chatwoot.example.com/api/v1/accounts/{account_id}/keycloak_settings \
+  -H "api_access_token: YOUR_TOKEN"
+```
+
+### UI vs Environment Variables
+
+You can use **both** approaches simultaneously:
+
+1. **Global Configuration (Environment Variables)**:
+   - Sets a default Keycloak provider for all accounts
+   - Useful for single-tenant installations
+   - Provider name: `:keycloak`
+
+2. **Per-Account Configuration (UI/Database)**:
+   - Each account can have its own Keycloak settings
+   - Useful for multi-tenant installations
+   - Provider name: `:keycloak_{account_id}`
+
+**Priority**: Both configurations can coexist. Users will see multiple Keycloak login options if both are enabled.
+
+---
+
 ## Step 3: Test the Integration
 
 ### 3.1 Access Keycloak Login
@@ -240,8 +353,16 @@ User.find_by(email: 'keycloak-user@example.com')
 
 1. **OmniAuth Middleware**: Handles OIDC protocol
 2. **Keycloak Provider**: Configured in `config/initializers/omniauth.rb`
-3. **Callbacks Controller**: `app/controllers/devise_overrides/omniauth_callbacks_controller.rb`
-4. **User Model**: `app/models/user.rb` (includes `:keycloak` provider)
+   - Supports both environment variables and database-driven configuration
+   - Loads enabled providers dynamically at startup
+3. **KeycloakSetting Model**: `app/models/keycloak_setting.rb`
+   - Stores per-account Keycloak configuration
+   - Encrypts client secrets using Rails 7 encryption
+4. **Keycloak Settings Controller**: `app/controllers/api/v1/accounts/keycloak_settings_controller.rb`
+   - REST API for CRUD operations
+   - Administrator-only access via Pundit policy
+5. **Callbacks Controller**: `app/controllers/devise_overrides/omniauth_callbacks_controller.rb`
+6. **User Model**: `app/models/user.rb` (includes `:keycloak` provider)
 
 ---
 
