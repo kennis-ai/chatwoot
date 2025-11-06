@@ -6,14 +6,15 @@
 
 name: Publish Chatwoot CE docker images
 
-on:
-  push:
-    branches:
-      - develop
-      - master
-    tags:
-      - v*
-  workflow_dispatch:
+# Disabled - Using GHCR (publish_github_docker.yml) instead of DockerHub
+# on:
+#   push:
+#     branches:
+#       - develop
+#       - master
+#     tags:
+#       - v*
+#   workflow_dispatch:
 
 env:
   DOCKER_REPO: chatwoot/chatwoot
