@@ -8,14 +8,14 @@ The GLPI integration automatically synchronizes your Chatwoot conversations with
 
 ### Key Features
 
-✅ **Contact Synchronization** - Chatwoot contacts sync to GLPI Users or Contacts
-✅ **Automatic Ticket Creation** - Conversations automatically create GLPI tickets
-✅ **Message Sync** - Messages sync as ITILFollowups (when enabled)
-✅ **Bi-directional Status Updates** - Conversation resolution updates ticket status
-✅ **Duplicate Prevention** - Email/phone matching prevents duplicate records
-✅ **Session Management** - Automatic reconnection and cleanup
-✅ **Mutex Locking** - Race condition prevention for concurrent operations
-✅ **Error Handling** - Robust error handling with logging
+- ✅ **Contact Synchronization** - Chatwoot contacts sync to GLPI Users or Contacts
+- ✅ **Automatic Ticket Creation** - Conversations automatically create GLPI tickets
+- ✅ **Message Sync** - Messages sync as ITILFollowups (when enabled)
+- ✅ **Bi-directional Status Updates** - Conversation resolution updates ticket status
+- ✅ **Duplicate Prevention** - Email/phone matching prevents duplicate records
+- ✅ **Session Management** - Automatic reconnection and cleanup
+- ✅ **Mutex Locking** - Race condition prevention for concurrent operations
+- ✅ **Error Handling** - Robust error handling with logging
 
 ### Architecture
 
