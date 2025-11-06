@@ -15,6 +15,8 @@ class HookJob < MutexApplicationJob
       google_translate_integration(hook, event_name, event_data)
     when 'leadsquared'
       process_leadsquared_integration_with_lock(hook, event_name, event_data)
+    when 'krayin'
+      process_krayin_integration_with_lock(hook, event_name, event_data)
     end
   rescue StandardError => e
     Rails.logger.error e
@@ -79,5 +81,28 @@ class HookJob < MutexApplicationJob
     when 'conversation.resolved'
       processor.handle_conversation_resolved(event_data[:conversation])
     end
+  end
+
+  def process_krayin_integration_with_lock(hook, event_name, event_data)
+    # Similar to LeadSquared, we need mutex protection to prevent race conditions
+    # when multiple events fire simultaneously (contact.created -> contact.updated -> conversation.created)
+    valid_event_names = ['contact.created', 'contact.updated', 'conversation.created', 'conversation.updated', 'message.created']
+    return unless valid_event_names.include?(event_name)
+    return unless hook.feature_allowed?
+
+    key = format(::Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: hook.id)
+    with_lock(key) do
+      process_krayin_integration(hook, event_name, event_data)
+    end
+  end
+
+  def process_krayin_integration(hook, event_name, event_data)
+    # Get inbox for the hook
+    inbox = hook.inbox
+    return unless inbox
+
+    # Process the event with the processor service
+    processor = Crm::Krayin::ProcessorService.new(inbox: inbox, event_name: event_name, event_data: event_data)
+    processor.perform
   end
 end

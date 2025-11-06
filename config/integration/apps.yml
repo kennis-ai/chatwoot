@@ -284,3 +284,69 @@ leadsquared:
       'conversation_activity_score',
       'transcript_activity_score',
     ]
+krayin:
+  id: krayin
+  feature_flag: crm_integration
+  logo: krayin.png
+  i18n_key: krayin
+  action: /krayin
+  hook_type: account
+  allow_multiple_hooks: false
+  settings_json_schema:
+    {
+      'type': 'object',
+      'properties':
+        {
+          'api_url': { 'type': 'string' },
+          'api_token': { 'type': 'string' },
+          'lead_source_id': { 'type': 'integer' },
+          'lead_type_id': { 'type': 'integer' },
+          'lead_pipeline_id': { 'type': 'integer' },
+          'lead_pipeline_stage_id': { 'type': 'integer' },
+          'default_pipeline_id': { 'type': 'integer' },
+          'default_stage_id': { 'type': 'integer' },
+          'default_source_id': { 'type': 'integer' },
+          'default_lead_type_id': { 'type': 'integer' },
+          'sync_conversations': { 'type': 'boolean' },
+          'sync_messages': { 'type': 'boolean' },
+        },
+      'required': ['api_url', 'api_token'],
+      'additionalProperties': false,
+    }
+  settings_form_schema:
+    [
+      {
+        'label': 'API URL',
+        'type': 'text',
+        'name': 'api_url',
+        'validation': 'required',
+        'placeholder': 'https://crm.example.com/api/admin',
+        'help': 'Your Krayin CRM API URL (including /api/admin)',
+      },
+      {
+        'label': 'API Token',
+        'type': 'text',
+        'name': 'api_token',
+        'validation': 'required',
+        'placeholder': 'Enter your Bearer token',
+        'help': 'Laravel Sanctum API token for authentication',
+      },
+      {
+        'label': 'Sync Conversations as Activities',
+        'type': 'checkbox',
+        'name': 'sync_conversations',
+        'help': 'Create activities in Krayin when conversations are created',
+      },
+      {
+        'label': 'Sync Messages as Activities',
+        'type': 'checkbox',
+        'name': 'sync_messages',
+        'help': 'Create activities in Krayin for each message',
+      },
+    ]
+  visible_properties:
+    [
+      'api_url',
+      'sync_conversations',
+      'sync_messages',
+    ]
