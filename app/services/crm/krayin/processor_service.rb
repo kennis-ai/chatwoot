@@ -80,6 +80,11 @@ class Crm::Krayin::ProcessorService
     # Store lead external ID
     store_external_id(contact, 'lead', lead['id'])
 
+    # Update lead stage based on initial contact creation if enabled
+    if stage_progression_enabled? && @event_name == 'contact_created'
+      update_lead_stage_on_creation(lead_client, lead['id'])
+    end
+
     Rails.logger.info "Krayin ProcessorService - Contact #{contact.id} synced. Person: #{person['id']}, Lead: #{lead['id']}"
   rescue Crm::Krayin::Api::BaseClient::ApiError => e
     Rails.logger.error "Krayin ProcessorService - Failed to process contact #{contact&.id}: #{e.message}"
@@ -126,6 +131,14 @@ class Crm::Krayin::ProcessorService
       activity_id = activity_client.create_activity(activity_data)
       store_external_id(conversation, 'activity', activity_id)
       Rails.logger.info "Krayin ProcessorService - Created activity #{activity_id} for conversation #{conversation.display_id}"
+    end
+
+    # Update lead stage based on conversation status if enabled
+    if stage_progression_enabled?
+      lead_id = extract_external_id(person_external_id, 'lead')
+      if lead_id.present?
+        update_lead_stage_on_conversation(conversation, lead_id)
+      end
     end
   rescue Crm::Krayin::Api::BaseClient::ApiError => e
     Rails.logger.error "Krayin ProcessorService - Failed to process conversation #{conversation&.display_id}: #{e.message}"
@@ -273,6 +286,49 @@ class Crm::Krayin::ProcessorService
 
   def sync_organizations?
     @hook.settings['sync_to_organization'] == true
+  end
+
+  def stage_progression_enabled?
+    @hook.settings['stage_progression_enabled'] == true
+  end
+
+  def update_lead_stage_on_creation(lead_client, lead_id)
+    stage_id = @hook.settings['stage_on_conversation_created']
+    return if stage_id.blank?
+
+    lead_data = { lead_pipeline_stage_id: stage_id }
+    lead_client.update_lead(lead_data, lead_id)
+    Rails.logger.info "Krayin ProcessorService - Updated lead #{lead_id} stage to #{stage_id} on creation"
+  rescue Crm::Krayin::Api::BaseClient::ApiError => e
+    Rails.logger.error "Krayin ProcessorService - Failed to update lead stage: #{e.message}"
+  end
+
+  def update_lead_stage_on_conversation(conversation, lead_id)
+    stage_id = determine_stage_from_conversation(conversation)
+    return if stage_id.blank?
+
+    lead_client = Crm::Krayin::Api::LeadClient.new(api_url, api_token)
+    lead_data = { lead_pipeline_stage_id: stage_id }
+    lead_client.update_lead(lead_data, lead_id)
+    Rails.logger.info "Krayin ProcessorService - Updated lead #{lead_id} stage to #{stage_id} based on conversation #{conversation.display_id}"
+  rescue Crm::Krayin::Api::BaseClient::ApiError => e
+    Rails.logger.error "Krayin ProcessorService - Failed to update lead stage: #{e.message}"
+  end
+
+  def determine_stage_from_conversation(conversation)
+    case conversation.status
+    when 'open'
+      # Check if this is first agent response
+      if conversation.messages.outgoing.any?
+        @hook.settings['stage_on_first_response']
+      else
+        @hook.settings['stage_on_conversation_created']
+      end
+    when 'resolved'
+      @hook.settings['stage_on_conversation_resolved']
+    else
+      nil
+    end
   end
 
   def api_url

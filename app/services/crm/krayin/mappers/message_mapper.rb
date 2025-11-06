@@ -24,7 +24,25 @@ class Crm::Krayin::Mappers::MessageMapper
   attr_reader :message
 
   def activity_type
-    # Map message types to Krayin activity types
+    # Detect activity type based on inbox channel
+    inbox_type = @message.inbox&.channel&.class&.name
+
+    case inbox_type
+    when 'Channel::Email'
+      'email'
+    when 'Channel::TwilioSms', 'Channel::Sms'
+      'call' # SMS treated as call type in Krayin
+    when 'Channel::Whatsapp'
+      'call' # WhatsApp treated as call type
+    when 'Channel::WebWidget', 'Channel::Api'
+      detect_from_message_type # Web chat or API
+    else
+      detect_from_message_type # Fallback to message type detection
+    end
+  end
+
+  def detect_from_message_type
+    # Fallback detection based on message type
     case @message.message_type
     when 'outgoing'
       'email' # Outgoing messages treated as email activities

@@ -39,6 +39,15 @@ class Crm::Krayin::SetupService
   end
 
   def fetch_default_configuration
+    # Cache configuration for 1 hour to reduce API calls
+    cache_key = "krayin:setup:#{cache_identifier}"
+
+    Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+      fetch_configuration_from_api
+    end
+  end
+
+  def fetch_configuration_from_api
     lead_client = Crm::Krayin::Api::LeadClient.new(@api_url, @api_token)
 
     config = {
@@ -83,6 +92,11 @@ class Crm::Krayin::SetupService
   rescue Crm::Krayin::Api::BaseClient::ApiError => e
     Rails.logger.error "Krayin SetupService - Failed to fetch configuration: #{e.message}"
     raise StandardError, "Failed to fetch Krayin configuration: #{e.message}"
+  end
+
+  def cache_identifier
+    # Create unique identifier for caching based on API URL (without sensitive token)
+    Digest::MD5.hexdigest(@api_url)
   end
 
   def store_hook_configuration(config)

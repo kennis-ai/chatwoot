@@ -11,7 +11,7 @@ class Crm::Krayin::Mappers::ConversationMapper
 
   def map_to_activity(person_id, settings)
     {
-      type: 'note',
+      type: determine_activity_type,
       title: activity_title,
       comment: build_activity_comment,
       person_id: person_id,
@@ -22,6 +22,24 @@ class Crm::Krayin::Mappers::ConversationMapper
   private
 
   attr_reader :conversation
+
+  def determine_activity_type
+    # Detect activity type based on inbox channel
+    inbox_type = @conversation.inbox&.channel&.class&.name
+
+    case inbox_type
+    when 'Channel::Email'
+      'email'
+    when 'Channel::TwilioSms', 'Channel::Sms'
+      'call' # SMS conversations as call type
+    when 'Channel::Whatsapp'
+      'call' # WhatsApp conversations as call type
+    when 'Channel::WebWidget', 'Channel::Api'
+      'note' # Web chat as note
+    else
+      'note' # Default
+    end
+  end
 
   def activity_title
     "Conversation ##{@conversation.display_id}"
