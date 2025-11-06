@@ -40,6 +40,30 @@ en:
     saml:
       invalid_email: 'Please enter a valid email address'
       authentication_failed: 'Authentication failed. Please check your credentials and try again.'
+    keycloak:
+      name: 'Keycloak Authentication'
+      sign_in: 'Sign in with Keycloak'
+      configuration_saved: 'Keycloak configuration saved successfully'
+      configuration_updated: 'Keycloak configuration updated successfully'
+      enabled: 'Keycloak authentication enabled'
+      disabled: 'Keycloak authentication disabled'
+      connection_successful: 'Successfully connected to Keycloak'
+      connection_failed: 'Failed to connect to Keycloak server'
+      authentication_successful: 'Authentication successful'
+      authentication_failed: 'Keycloak authentication failed. Please try again.'
+      invalid_issuer_url: 'Invalid issuer URL format'
+      invalid_client_id: 'Invalid client ID'
+      invalid_client_secret: 'Invalid client secret'
+      server_unreachable: 'Keycloak server is unreachable. Please check the configuration.'
+      invalid_configuration: 'Invalid Keycloak configuration. Please check all required fields.'
+      authentication_timeout: 'Authentication timeout. Please try again.'
+      token_validation_failed: 'Token validation failed'
+      user_info_failed: 'Failed to fetch user information from Keycloak'
+      configure: 'Configure Keycloak'
+      test_connection: 'Test Connection'
+      save_configuration: 'Save Configuration'
+      enable: 'Enable Keycloak'
+      disable: 'Disable Keycloak'
   messages:
     reset_password_success: Woot! Request for password reset is successful. Check your mail for instructions.
     reset_password_failure: Uh ho! We could not find any user with the specified email.
@@ -319,6 +343,10 @@ en:
       name: 'GLPI'
       short_description: 'Sync contacts and create tickets in GLPI Service Desk.'
       description: 'Connect Chatwoot with GLPI to automatically sync contacts as users or contacts, create tickets from conversations, and keep followup messages synchronized. Perfect for IT service management and helpdesk workflows.'
+    krayin:
+      name: 'Krayin CRM'
+      short_description: 'Sync contacts, leads, and activities with Krayin CRM.'
+      description: 'Integrate with Krayin CRM to automatically sync contacts as persons and leads, create organizations from company data, track conversations and messages as activities, and enable automatic lead stage progression based on conversation lifecycle.'
   captain:
     copilot_message_required: Message is required
     copilot_error: 'Please connect an assistant to this inbox to use Copilot'

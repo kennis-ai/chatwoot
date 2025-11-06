@@ -27,6 +27,30 @@ pt_BR:
     saml:
       invalid_email: 'Por favor, insira um endereço de e-mail válido'
       authentication_failed: 'Falha na autenticação. Por favor, verifique suas credenciais e tente novamente.'
+    keycloak:
+      name: 'Autenticação Keycloak'
+      sign_in: 'Entrar com Keycloak'
+      configuration_saved: 'Configuração do Keycloak salva com sucesso'
+      configuration_updated: 'Configuração do Keycloak atualizada com sucesso'
+      enabled: 'Autenticação Keycloak ativada'
+      disabled: 'Autenticação Keycloak desativada'
+      connection_successful: 'Conectado com sucesso ao Keycloak'
+      connection_failed: 'Falha ao conectar ao servidor Keycloak'
+      authentication_successful: 'Autenticação bem-sucedida'
+      authentication_failed: 'Falha na autenticação Keycloak. Por favor, tente novamente.'
+      invalid_issuer_url: 'Formato de URL do emissor inválido'
+      invalid_client_id: 'ID do cliente inválido'
+      invalid_client_secret: 'Segredo do cliente inválido'
+      server_unreachable: 'Servidor Keycloak não está acessível. Por favor, verifique a configuração.'
+      invalid_configuration: 'Configuração do Keycloak inválida. Por favor, verifique todos os campos obrigatórios.'
+      authentication_timeout: 'Tempo limite de autenticação. Por favor, tente novamente.'
+      token_validation_failed: 'Falha na validação do token'
+      user_info_failed: 'Falha ao obter informações do usuário do Keycloak'
+      configure: 'Configurar Keycloak'
+      test_connection: 'Testar Conexão'
+      save_configuration: 'Salvar Configuração'
+      enable: 'Ativar Keycloak'
+      disable: 'Desativar Keycloak'
   messages:
     reset_password_success: Legal! A solicitação de alteração de senha foi bem sucedida. Verifique seu e-mail para obter instruções.
     reset_password_failure: Uh ho! Não conseguimos encontrar nenhum usuário com o e-mail especificado.
@@ -296,6 +320,14 @@ pt_BR:
       name: 'LeadSquared'
       short_description: 'Sincronize seus contatos e conversas com LeadSquared CRM.'
       description: 'Sincronize seus contatos e conversas com LeadSquared CRM. Essa integração cria automaticamente leads em LeadSquared quando novos contatos são adicionados, e registra a atividade de conversação para fornecer à sua equipe de vendas um contexto completo.'
+    glpi:
+      name: 'GLPI'
+      short_description: 'Sincronize contatos e crie tickets no GLPI Service Desk.'
+      description: 'Conecte o Chatwoot com GLPI para sincronizar automaticamente contatos como usuários ou contatos, criar tickets a partir de conversas e manter mensagens de acompanhamento sincronizadas. Perfeito para fluxos de trabalho de gerenciamento de serviços de TI e helpdesk.'
+    krayin:
+      name: 'Krayin CRM'
+      short_description: 'Sincronize contatos, leads e atividades com Krayin CRM.'
+      description: 'Integre com Krayin CRM para sincronizar automaticamente contatos como pessoas e leads, criar organizações a partir de dados da empresa, rastrear conversas e mensagens como atividades, e habilitar progressão automática de estágios de leads com base no ciclo de vida da conversa.'
   captain:
     copilot_message_required: A mensagem é obrigatória
     copilot_error: 'Conecte com um assistente a esta caixa de entrada para usar Copilot'
