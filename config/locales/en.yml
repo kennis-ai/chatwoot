@@ -315,6 +315,10 @@ en:
       name: 'LeadSquared'
       short_description: 'Sync your contacts and conversations with LeadSquared CRM.'
       description: 'Sync your contacts and conversations with LeadSquared CRM. This integration automatically creates leads in LeadSquared when new contacts are added, and logs conversation activity to provide your sales team with complete context.'
+    glpi:
+      name: 'GLPI'
+      short_description: 'Sync contacts and create tickets in GLPI Service Desk.'
+      description: 'Connect Chatwoot with GLPI to automatically sync contacts as users or contacts, create tickets from conversations, and keep followup messages synchronized. Perfect for IT service management and helpdesk workflows.'
   captain:
     copilot_message_required: Message is required
     copilot_error: 'Please connect an assistant to this inbox to use Copilot'

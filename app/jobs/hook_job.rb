@@ -15,6 +15,8 @@ class HookJob < MutexApplicationJob
       google_translate_integration(hook, event_name, event_data)
     when 'leadsquared'
       process_leadsquared_integration_with_lock(hook, event_name, event_data)
+    when 'glpi'
+      process_glpi_integration_with_lock(hook, event_name, event_data)
     end
   rescue StandardError => e
     Rails.logger.error e
@@ -79,5 +81,30 @@ class HookJob < MutexApplicationJob
     when 'conversation.resolved'
       processor.handle_conversation_resolved(event_data[:conversation])
     end
+  end
+
+  def process_glpi_integration_with_lock(hook, event_name, event_data)
+    # Similar to LeadSquared, GLPI needs mutex protection to prevent race conditions
+    # When a new conversation is created, we get:
+    # 1. contact.created event
+    # 2. contact.updated event (immediately after)
+    # 3. conversation.created event
+    #
+    # Each event handler needs the GLPI User/Contact to exist before creating tickets.
+    # Without a mutex, multiple API calls could create duplicate Users/Contacts.
+    valid_event_names = ['contact.created', 'contact.updated', 'conversation.created', 'conversation.updated']
+    return unless valid_event_names.include?(event_name)
+    return unless hook.feature_allowed?
+
+    key = format(::Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: hook.id)
+    with_lock(key) do
+      process_glpi_integration(hook, event_name, event_data)
+    end
+  end
+
+  def process_glpi_integration(hook, event_name, event_data)
+    # Process the event with the GLPI processor service
+    processor = Crm::Glpi::ProcessorService.new(hook)
+    processor.process_event(event_name, event_data)
   end
 end

@@ -172,4 +172,139 @@ RSpec.describe HookJob do
       end
     end
   end
+
+  context 'when processing glpi integration' do
+    let(:contact) { create(:contact, account: account, email: 'test@example.com') }
+    let(:conversation) { create(:conversation, account: account, contact: contact) }
+    let(:processor_service) { instance_double(Crm::Glpi::ProcessorService) }
+    let(:glpi_hook) { instance_double(Integrations::Hook, id: 456, app_id: 'glpi', account: account) }
+
+    before do
+      allow(Crm::Glpi::ProcessorService).to receive(:new).with(glpi_hook).and_return(processor_service)
+      allow(processor_service).to receive(:process_event).and_return({ success: true })
+    end
+
+    context 'when processing contact.created event' do
+      let(:event_name) { 'contact.created' }
+      let(:event_data) { { contact: contact } }
+
+      it 'uses a lock when processing' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock).and_yield
+        allow(described_class).to receive(:new).and_return(job_instance)
+
+        expect(job_instance).to receive(:with_lock).with(
+          format(Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: glpi_hook.id)
+        )
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+
+      it 'calls processor service with correct arguments' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock).and_yield
+
+        expect(processor_service).to receive(:process_event).with(event_name, event_data)
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+
+      it 'does not process when feature is not allowed' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(false)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock)
+
+        expect(job_instance).not_to receive(:with_lock)
+        expect(processor_service).not_to receive(:process_event)
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+    end
+
+    context 'when processing contact.updated event' do
+      let(:event_name) { 'contact.updated' }
+      let(:event_data) { { contact: contact } }
+
+      it 'uses a lock when processing' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock).and_yield
+        allow(described_class).to receive(:new).and_return(job_instance)
+
+        expect(job_instance).to receive(:with_lock).with(
+          format(Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: glpi_hook.id)
+        )
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+    end
+
+    context 'when processing conversation.created event' do
+      let(:event_name) { 'conversation.created' }
+      let(:event_data) { { conversation: conversation } }
+
+      it 'uses a lock when processing' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock).and_yield
+        allow(described_class).to receive(:new).and_return(job_instance)
+
+        expect(job_instance).to receive(:with_lock).with(
+          format(Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: glpi_hook.id)
+        )
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+    end
+
+    context 'when processing conversation.updated event' do
+      let(:event_name) { 'conversation.updated' }
+      let(:event_data) { { conversation: conversation } }
+
+      it 'uses a lock when processing' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock).and_yield
+        allow(described_class).to receive(:new).and_return(job_instance)
+
+        expect(job_instance).to receive(:with_lock).with(
+          format(Redis::Alfred::CRM_PROCESS_MUTEX, hook_id: glpi_hook.id)
+        )
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+    end
+
+    context 'when processing invalid event' do
+      let(:event_name) { 'invalid.event' }
+      let(:event_data) { { contact: contact } }
+
+      it 'does not process for invalid event names' do
+        allow(glpi_hook).to receive(:disabled?).and_return(false)
+        allow(glpi_hook).to receive(:feature_allowed?).and_return(true)
+
+        job_instance = described_class.new
+        allow(job_instance).to receive(:with_lock)
+
+        expect(job_instance).not_to receive(:with_lock)
+        expect(processor_service).not_to receive(:process_event)
+
+        job_instance.perform(glpi_hook, event_name, event_data)
+      end
+    end
+  end
 end
