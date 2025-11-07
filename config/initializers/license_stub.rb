@@ -18,6 +18,10 @@
 # 3. Set LICENSE_TOKEN environment variable
 # 4. Ensure lib/chatwoot_app.rb includes the ThirdParty integration code
 
+# Skip initialization during asset precompilation to avoid database connection attempts
+return if defined?(Rails::Console) ||
+          (File.basename($PROGRAM_NAME) == 'rake' && ARGV.include?('assets:precompile'))
+
 Rails.application.config.after_initialize do
   # Only stub if ThirdParty licensing service is not already loaded
   # This allows the real service to take precedence if configured
