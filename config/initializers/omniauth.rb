@@ -27,7 +27,9 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 
   # Keycloak OpenID Connect provider - Per-Account (Database)
   # Load Keycloak providers from database for each enabled account
-  if defined?(KeycloakSetting) && ActiveRecord::Base.connection.table_exists?('keycloak_settings')
+  # Skip during asset precompilation when database is unavailable
+  unless defined?(Rails::Console) || (File.basename($PROGRAM_NAME) == 'rake' && ARGV.include?('assets:precompile'))
+    if defined?(KeycloakSetting) && ActiveRecord::Base.connection.table_exists?('keycloak_settings')
     KeycloakSetting.where(enabled: true).find_each do |setting|
       provider :openid_connect, {
         name: setting.provider_name,
@@ -43,6 +45,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
           redirect_uri: setting.redirect_uri
         }
       }
+    end
     end
   end
 end
