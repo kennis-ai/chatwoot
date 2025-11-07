@@ -1,4 +1,4 @@
-class AddActivitiesToKanbanItems < ActiveRecord::Migration[7.2]
+class AddActivitiesToKanbanItems < ActiveRecord::Migration[7.1]
   def up
     # Adicionar o novo campo activities
     add_column :kanban_items, :activities, :jsonb, default: []
