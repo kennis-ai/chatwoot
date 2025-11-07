@@ -319,12 +319,29 @@ The licensing system:
 ✅ **No STACKLAB_TOKEN required**
 ✅ **No external API calls** to StackLab servers
 ✅ **Full offline functionality**
+✅ **No Firebase required** (not used in backend code)
 
 The stub provides:
 - `ChatwootApp.stacklab?` → always returns `true`
 - `ChatwootApp.stacklab.plan` → returns `'pro'`
 - `ChatwootApp.stacklab.feature_enabled?(:kanban_pro)` → returns `true`
 - All other license checks → return success
+
+### Firebase Dependency
+
+**Status**: ✅ **NOT REQUIRED for backend functionality**
+
+The Firebase service account file (`stacklab/service-account-kanban-firebase.json`) was **intentionally not extracted** because:
+
+1. **Not used in backend code**: No Firebase SDK calls found in Ruby code
+2. **Frontend concern**: Real-time features (if any) would be in JavaScript/Vue frontend
+3. **Optional feature**: `notifications_enabled` is just a config flag (defaults to `false`)
+4. **All features work without it**: Complete Kanban functionality via REST API
+
+**If you later need real-time features** (live board updates, push notifications):
+- **Option 1**: Use Rails ActionCable (WebSockets, built-in)
+- **Option 2**: Use Pusher/Ably (modern alternatives)
+- **Option 3**: Extract and configure Firebase (original approach)
 
 ### Switching to Real StackLab License (Optional)
 
