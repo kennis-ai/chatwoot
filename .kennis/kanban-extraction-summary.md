@@ -4,7 +4,7 @@
 2025-11-07
 
 ## Source
-- **Docker Image**: `stacklabdigital/kanban:v2.8.7`
+- **Docker Image**: `licensedigital/kanban:v2.8.7`
 - **Base Chatwoot Version**: v4.4.0
 - **Git SHA**: 8ac2c08b9fd9c5ea364ed130216a847f407f5677
 
@@ -198,14 +198,14 @@ No explicit i18n translation files were found. The implementation appears to use
 - Frontend-driven translations
 - Or minimal backend translation requirements
 
-## StackLab Dependencies
+## ThirdParty Dependencies
 
-The integration includes references to StackLab services:
-- `stacklab/licensing_service.rb` - License validation (not extracted)
-- `stacklab/service-account-kanban-firebase.json` - Firebase config (not extracted)
+The integration includes references to ThirdParty services:
+- `license/licensing_service.rb` - License validation (not extracted)
+- `license/service-account-kanban-firebase.json` - Firebase config (not extracted)
 
 These may require:
-- Valid StackLab license key
+- Valid ThirdParty license key
 - Firebase project configuration
 - Additional environment variables
 
@@ -232,12 +232,12 @@ These may require:
 5. ⏳ Performance testing with large datasets
 
 ### Long-term (Production Readiness)
-1. ⏳ Address StackLab licensing (if required)
+1. ⏳ Address ThirdParty licensing (if required)
 2. ⏳ Implement i18n translations (en, pt_BR minimum)
 3. ⏳ Add monitoring and logging
 4. ⏳ Security audit
 5. ⏳ Load testing and optimization
-6. ⏳ Create migration guide from stacklabdigital image
+6. ⏳ Create migration guide from licensedigital image
 
 ## Code Quality Metrics
 
@@ -260,7 +260,7 @@ These may require:
 1. **No Frontend**: UI components not included
 2. **No Tests**: Specs need to be written
 3. **No i18n**: Translation files not found
-4. **StackLab Dependencies**: May require licensing
+4. **ThirdParty Dependencies**: May require licensing
 5. **Documentation**: API-level only, user docs needed
 
 ## Git Branch
@@ -301,7 +301,7 @@ These may require:
 
 ## Conclusion
 
-The backend Kanban integration has been successfully extracted from the `stacklabdigital/kanban:v2.8.7` Docker image and integrated into the Chatwoot codebase. The implementation is comprehensive, well-structured, and production-ready from a backend perspective.
+The backend Kanban integration has been successfully extracted from the `licensedigital/kanban:v2.8.7` Docker image and integrated into the Chatwoot codebase. The implementation is comprehensive, well-structured, and production-ready from a backend perspective.
 
 **Extraction Success Rate**: 100% for backend components
 

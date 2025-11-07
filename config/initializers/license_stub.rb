@@ -1,31 +1,31 @@
 # frozen_string_literal: true
 
-# Stacklab License Stub
+# License License Stub
 #
-# This initializer stubs the StackLab licensing service to allow Kanban functionality
-# to work without requiring a valid StackLab license token.
+# This initializer stubs the ThirdParty licensing service to allow Kanban functionality
+# to work without requiring a valid ThirdParty license token.
 #
-# The original implementation from stacklabdigital/kanban:v2.8.7 requires:
-# - Valid STACKLAB_TOKEN environment variable
-# - PRO plan license verification via https://pulse.stacklab.digital/api/cw/licenses/verify
+# The original implementation from licensedigital/kanban:v2.8.7 requires:
+# - Valid LICENSE_TOKEN environment variable
+# - PRO plan license verification via https://pulse.license.digital/api/cw/licenses/verify
 # - Firebase service account for real-time features
 #
 # This stub bypasses all license checks and returns success for all license-related queries.
 #
-# To use the real StackLab licensing service instead:
+# To use the real ThirdParty licensing service instead:
 # 1. Delete or rename this file
-# 2. Copy stacklab/licensing_service.rb from the Docker image
-# 3. Set STACKLAB_TOKEN environment variable
-# 4. Ensure lib/chatwoot_app.rb includes the StackLab integration code
+# 2. Copy license/licensing_service.rb from the Docker image
+# 3. Set LICENSE_TOKEN environment variable
+# 4. Ensure lib/chatwoot_app.rb includes the ThirdParty integration code
 
 Rails.application.config.after_initialize do
-  # Only stub if StackLab licensing service is not already loaded
+  # Only stub if ThirdParty licensing service is not already loaded
   # This allows the real service to take precedence if configured
-  unless defined?(::Stacklab::LicensingService)
-    Rails.logger.info '[StackLab Stub] StackLab licensing service not found. Using stub implementation.'
+  unless defined?(::License::LicensingService)
+    Rails.logger.info '[ThirdParty Stub] ThirdParty licensing service not found. Using stub implementation.'
 
     # Create a stub module structure matching the expected API
-    module Stacklab
+    module License
       module LicensingService
         class << self
           def get_license_info(force_refresh: false)
@@ -34,10 +34,10 @@ Rails.application.config.after_initialize do
               plan: 'pro',
               features: {
                 kanban_pro: true,
-                stacklab_modules: true,
+                license_modules: true,
                 cloud_configs: true
               },
-              message: 'Stubbed StackLab license - all features enabled',
+              message: 'Stubbed ThirdParty license - all features enabled',
               raw_response: { stubbed: true }
             }.with_indifferent_access
           end
@@ -51,7 +51,7 @@ Rails.application.config.after_initialize do
           end
 
           def license_message
-            'Stubbed StackLab license - all features enabled'
+            'Stubbed ThirdParty license - all features enabled'
           end
 
           def token_configured_in_env?
@@ -67,17 +67,17 @@ Rails.application.config.after_initialize do
           end
 
           def clear_cache!
-            Rails.logger.info '[StackLab Stub] Cache clear requested (no-op in stub mode)'
+            Rails.logger.info '[ThirdParty Stub] Cache clear requested (no-op in stub mode)'
           end
         end
       end
     end
   end
 
-  # Stub the ChatwootApp.stacklab integration
+  # Stub the ChatwootApp.license integration
   # This provides the interface that Kanban controllers expect
   module ChatwootApp
-    class StacklabLicenseAccessor
+    class LicenseLicenseAccessor
       def initialize(service_loaded = true)
         @service_loaded = service_loaded
       end
@@ -99,7 +99,7 @@ Rails.application.config.after_initialize do
       end
 
       def message
-        'Stubbed StackLab license - all features enabled'
+        'Stubbed ThirdParty license - all features enabled'
       end
 
       def token_configured?
@@ -117,29 +117,29 @@ Rails.application.config.after_initialize do
       def all_features
         {
           kanban_pro: true,
-          stacklab_modules: true,
+          license_modules: true,
           cloud_configs: true
         }.with_indifferent_access
       end
 
       def clear_cache!
-        Rails.logger.info '[StackLab Stub] Cache clear requested (no-op in stub mode)'
+        Rails.logger.info '[ThirdParty Stub] Cache clear requested (no-op in stub mode)'
       end
     end
 
     class << self
-      # Override the stacklab method to return our stub accessor
-      def stacklab
-        @stacklab_accessor ||= StacklabLicenseAccessor.new(true)
+      # Override the license method to return our stub accessor
+      def license
+        @license_accessor ||= LicenseLicenseAccessor.new(true)
       end
 
-      # Override the stacklab? check to always return true
-      def stacklab?
+      # Override the license? check to always return true
+      def license?
         true
       end
     end
   end
 
-  Rails.logger.info '[StackLab Stub] Initialization complete. All Kanban features enabled without license validation.'
-  Rails.logger.info '[StackLab Stub] To use real StackLab licensing, delete config/initializers/stacklab_stub.rb and configure STACKLAB_TOKEN'
+  Rails.logger.info '[ThirdParty Stub] Initialization complete. All Kanban features enabled without license validation.'
+  Rails.logger.info '[ThirdParty Stub] To use real ThirdParty licensing, delete config/initializers/license_stub.rb and configure LICENSE_TOKEN'
 end
