@@ -1,6 +1,5 @@
 import kanbanAPI from 'dashboard/api/kanban';
 import kanbanConfigAPI from 'dashboard/api/kanbanConfig';
-import Vue from 'vue';
 
 export const state = {
   records: {},
@@ -302,18 +301,18 @@ export const mutations = {
   },
 
   addKanbanItem($state, item) {
-    Vue.set($state.records, item.id, item);
+    $state.records[item.id] = item;
   },
 
   updateKanbanItem($state, item) {
-    Vue.set($state.records, item.id, {
+    $state.records[item.id] = {
       ...$state.records[item.id],
       ...item,
-    });
+    };
   },
 
   deleteKanbanItem($state, id) {
-    Vue.delete($state.records, id);
+    delete $state.records[id];
   },
 
   setConfig($state, config) {
