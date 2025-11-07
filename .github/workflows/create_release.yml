@@ -1,0 +1,249 @@
+name: Create GitHub Release
+
+permissions:
+  contents: write
+  packages: read
+
+on:
+  workflow_run:
+    workflows: ["Publish Chatwoot docker images to GitHub"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (e.g., v4.7.0-kennis-ai.1.2.2)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_dispatch') || (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG_NAME="${{ inputs.tag }}"
+          else
+            TAG_NAME="${{ github.event.workflow_run.head_branch }}"
+          fi
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=${TAG_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Get previous tag
+        id: previous
+        run: |
+          CURRENT_TAG="${{ steps.version.outputs.tag }}"
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -A 1 "^${CURRENT_TAG}$" | tail -1)
+          echo "tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          CURRENT_TAG="${{ steps.version.outputs.tag }}"
+          PREVIOUS_TAG="${{ steps.previous.outputs.tag }}"
+
+          # Get commits between tags
+          if [ -n "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --oneline ${PREVIOUS_TAG}..${CURRENT_TAG})
+            COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+          else
+            COMMITS=$(git log --oneline ${CURRENT_TAG})
+            COMPARE_URL=""
+          fi
+
+          # Extract commit details
+          FIXES=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ fix:" || echo "")
+          FEATURES=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ feat:" || echo "")
+          REFACTORS=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ refactor:" || echo "")
+          DOCS=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ docs:" || echo "")
+          CHORES=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ chore:" || echo "")
+
+          # Get tag annotation if it exists
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${CURRENT_TAG})
+
+          # Save outputs
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "fixes<<EOF" >> $GITHUB_OUTPUT
+          echo "$FIXES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "features<<EOF" >> $GITHUB_OUTPUT
+          echo "$FEATURES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "refactors<<EOF" >> $GITHUB_OUTPUT
+          echo "$REFACTORS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "docs<<EOF" >> $GITHUB_OUTPUT
+          echo "$DOCS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "chores<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHORES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "tag_message<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAG_MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "compare_url=$COMPARE_URL" >> $GITHUB_OUTPUT
+
+      - name: Determine release title
+        id: title
+        run: |
+          TAG_MESSAGE="${{ steps.changelog.outputs.tag_message }}"
+          TAG_NAME="${{ steps.version.outputs.tag }}"
+
+          # Try to extract title from tag annotation (first line)
+          if [ -n "$TAG_MESSAGE" ]; then
+            TITLE=$(echo "$TAG_MESSAGE" | head -1)
+          else
+            # Fallback to generic title
+            TITLE="Release $TAG_NAME"
+          fi
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+
+      - name: Build release notes
+        id: notes
+        run: |
+          TAG_MESSAGE="${{ steps.changelog.outputs.tag_message }}"
+          FIXES="${{ steps.changelog.outputs.fixes }}"
+          FEATURES="${{ steps.changelog.outputs.features }}"
+          REFACTORS="${{ steps.changelog.outputs.refactors }}"
+          DOCS="${{ steps.changelog.outputs.docs }}"
+          CHORES="${{ steps.changelog.outputs.chores }}"
+          COMPARE_URL="${{ steps.changelog.outputs.compare_url }}"
+          TAG_NAME="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Start building notes
+          NOTES=""
+
+          # If tag has annotation with multiple lines, use it as the main content
+          if [ -n "$TAG_MESSAGE" ] && [ $(echo "$TAG_MESSAGE" | wc -l) -gt 1 ]; then
+            # Skip first line (title) and use rest as notes
+            NOTES=$(echo "$TAG_MESSAGE" | tail -n +2)
+          else
+            # Generate notes from commits
+            NOTES="## What's Changed\n\n"
+
+            if [ -n "$FEATURES" ]; then
+              NOTES="${NOTES}### Features\n\n"
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  COMMIT_MSG=$(echo "$line" | sed 's/^[a-f0-9]* feat: //')
+                  NOTES="${NOTES}- $COMMIT_MSG\n"
+                fi
+              done <<< "$FEATURES"
+              NOTES="${NOTES}\n"
+            fi
+
+            if [ -n "$FIXES" ]; then
+              NOTES="${NOTES}### Bug Fixes\n\n"
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  COMMIT_MSG=$(echo "$line" | sed 's/^[a-f0-9]* fix: //')
+                  NOTES="${NOTES}- $COMMIT_MSG\n"
+                fi
+              done <<< "$FIXES"
+              NOTES="${NOTES}\n"
+            fi
+
+            if [ -n "$REFACTORS" ]; then
+              NOTES="${NOTES}### Refactoring\n\n"
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  COMMIT_MSG=$(echo "$line" | sed 's/^[a-f0-9]* refactor: //')
+                  NOTES="${NOTES}- $COMMIT_MSG\n"
+                fi
+              done <<< "$REFACTORS"
+              NOTES="${NOTES}\n"
+            fi
+
+            if [ -n "$DOCS" ]; then
+              NOTES="${NOTES}### Documentation\n\n"
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  COMMIT_MSG=$(echo "$line" | sed 's/^[a-f0-9]* docs: //')
+                  NOTES="${NOTES}- $COMMIT_MSG\n"
+                fi
+              done <<< "$DOCS"
+              NOTES="${NOTES}\n"
+            fi
+
+            if [ -n "$CHORES" ]; then
+              NOTES="${NOTES}### Maintenance\n\n"
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  COMMIT_MSG=$(echo "$line" | sed 's/^[a-f0-9]* chore: //')
+                  NOTES="${NOTES}- $COMMIT_MSG\n"
+                fi
+              done <<< "$CHORES"
+              NOTES="${NOTES}\n"
+            fi
+          fi
+
+          # Add Docker images section
+          NOTES="${NOTES}\n## Docker Images\n\n"
+          NOTES="${NOTES}Docker images are available at:\n"
+          NOTES="${NOTES}- \`ghcr.io/${{ github.repository }}:${TAG_NAME}\`\n"
+          NOTES="${NOTES}- \`ghcr.io/${{ github.repository }}:latest\`\n\n"
+          NOTES="${NOTES}Platforms supported:\n"
+          NOTES="${NOTES}- linux/amd64\n"
+          NOTES="${NOTES}- linux/arm64\n\n"
+
+          # Add version info
+          NOTES="${NOTES}## Version Information\n\n"
+
+          # Extract base Chatwoot version
+          if [[ "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            BASE_VERSION="${BASH_REMATCH[1]}"
+            NOTES="${NOTES}- Chatwoot: v${BASE_VERSION}\n"
+          fi
+
+          # Check for Kanban integration
+          if [ -d "app/models/kanban" ] || [ -d "app/controllers/api/v1/accounts/kanban" ]; then
+            NOTES="${NOTES}- Kanban Integration: Included\n"
+          fi
+
+          # Check for Keycloak integration
+          if [ -f "config/initializers/omniauth.rb" ] && grep -q "Keycloak" config/initializers/omniauth.rb; then
+            NOTES="${NOTES}- Keycloak Integration: Included\n"
+          fi
+
+          # Add changelog link
+          if [ -n "$COMPARE_URL" ]; then
+            NOTES="${NOTES}\n**Full Changelog**: ${COMPARE_URL}\n"
+          fi
+
+          # Save to output
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.title.outputs.title }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
