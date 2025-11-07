@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Kanban integration has been successfully extracted from `stacklabdigital/kanban:v2.8.7` Docker image and integrated into this Chatwoot codebase. This implementation provides a comprehensive Kanban workflow management system for organizing and tracking conversations.
+The Kanban integration has been successfully extracted from `licensedigital/kanban:v2.8.7` Docker image and integrated into this Chatwoot codebase. This implementation provides a comprehensive Kanban workflow management system for organizing and tracking conversations.
 
 **Base Chatwoot Version**: v4.4.0
 **Integration Date**: 2025-11-07
@@ -194,7 +194,7 @@ Support for file attachments on Kanban items using Rails Active Storage.
 **Note**: The extracted implementation appears to be primarily API-driven. The frontend components are not included in the Docker image backend files, suggesting they may be:
 
 1. Part of a separate frontend application
-2. Managed via the StackLab licensing/service system
+2. Managed via the ThirdParty licensing/service system
 3. Implemented as a client-side widget/plugin
 
 To complete the frontend integration, you will need to:
@@ -209,7 +209,7 @@ To complete the frontend integration, you will need to:
 ### Environment Variables
 The integration may require:
 - Kanban feature flags
-- StackLab licensing configuration (see `stacklab/licensing_service.rb`)
+- ThirdParty licensing configuration (see `license/licensing_service.rb`)
 - Firebase service account (if using real-time features)
 
 ### Account Setup
@@ -297,41 +297,41 @@ Use the documented endpoints in `docs/kanban/kanban_items_endpoints.txt` for man
 - Webhook delivery logs
 - Automation execution logs
 
-## StackLab Integration
+## ThirdParty Integration
 
 ### Original Implementation
 
-The original `stacklabdigital/kanban:v2.8.7` image includes StackLab licensing integration:
-- `stacklab/licensing_service.rb` - Licensing validation (not extracted)
-- `stacklab/service-account-kanban-firebase.json` - Firebase configuration (not extracted)
+The original `licensedigital/kanban:v2.8.7` image includes ThirdParty licensing integration:
+- `license/licensing_service.rb` - Licensing validation (not extracted)
+- `license/service-account-kanban-firebase.json` - Firebase configuration (not extracted)
 
 The licensing system:
-- Validates `STACKLAB_TOKEN` against `https://pulse.stacklab.digital/api/cw/licenses/verify`
+- Validates `LICENSE_TOKEN` against `https://pulse.license.digital/api/cw/licenses/verify`
 - Requires PRO plan for Kanban functionality
-- Blocks ALL Kanban API endpoints without valid license (via `before_action :check_stacklab_license`)
+- Blocks ALL Kanban API endpoints without valid license (via `before_action :check_license_license`)
 - Caches license info for 1 hour
 
 ### Our Implementation (License-Free)
 
-**We've implemented a license stub** (`config/initializers/stacklab_stub.rb`) that bypasses all StackLab licensing requirements:
+**We've implemented a license stub** (`config/initializers/license_stub.rb`) that bypasses all ThirdParty licensing requirements:
 
 ✅ **All Kanban features enabled** without external license validation
-✅ **No STACKLAB_TOKEN required**
-✅ **No external API calls** to StackLab servers
+✅ **No LICENSE_TOKEN required**
+✅ **No external API calls** to ThirdParty servers
 ✅ **Full offline functionality**
 ✅ **No Firebase required** (not used in backend code)
 
 The stub provides:
-- `ChatwootApp.stacklab?` → always returns `true`
-- `ChatwootApp.stacklab.plan` → returns `'pro'`
-- `ChatwootApp.stacklab.feature_enabled?(:kanban_pro)` → returns `true`
+- `ChatwootApp.license?` → always returns `true`
+- `ChatwootApp.license.plan` → returns `'pro'`
+- `ChatwootApp.license.feature_enabled?(:kanban_pro)` → returns `true`
 - All other license checks → return success
 
 ### Firebase Dependency
 
 **Status**: ✅ **NOT REQUIRED for backend functionality**
 
-The Firebase service account file (`stacklab/service-account-kanban-firebase.json`) was **intentionally not extracted** because:
+The Firebase service account file (`license/service-account-kanban-firebase.json`) was **intentionally not extracted** because:
 
 1. **Not used in backend code**: No Firebase SDK calls found in Ruby code
 2. **Frontend concern**: Real-time features (if any) would be in JavaScript/Vue frontend
@@ -343,29 +343,29 @@ The Firebase service account file (`stacklab/service-account-kanban-firebase.jso
 - **Option 2**: Use Pusher/Ably (modern alternatives)
 - **Option 3**: Extract and configure Firebase (original approach)
 
-### Switching to Real StackLab License (Optional)
+### Switching to Real ThirdParty License (Optional)
 
-If you want to use the official StackLab licensing:
+If you want to use the official ThirdParty licensing:
 
 1. **Delete the stub**:
    ```bash
-   rm config/initializers/stacklab_stub.rb
+   rm config/initializers/license_stub.rb
    ```
 
-2. **Extract and add StackLab files**:
+2. **Extract and add ThirdParty files**:
    ```bash
    # Extract from Docker image
-   docker run --rm stacklabdigital/kanban:v2.8.7 tar -czf - \
-     stacklab/licensing_service.rb \
-     stacklab/service-account-kanban-firebase.json \
+   docker run --rm licensedigital/kanban:v2.8.7 tar -czf - \
+     license/licensing_service.rb \
+     license/service-account-kanban-firebase.json \
      lib/chatwoot_app.rb | tar -xzf -
    ```
 
 3. **Set environment variables**:
    ```bash
-   STACKLAB_TOKEN=your_license_token_here
-   STACKLAB_API_VERIFY_URL=https://pulse.stacklab.digital/api/cw/licenses/verify
-   STACKLAB_LICENSE_CACHE_MINUTES=60
+   LICENSE_TOKEN=your_license_token_here
+   LICENSE_API_VERIFY_URL=https://pulse.license.digital/api/cw/licenses/verify
+   LICENSE_LICENSE_CACHE_MINUTES=60
    ```
 
 4. **Restart application**
@@ -409,11 +409,11 @@ If you want to use the official StackLab licensing:
 
 ## Support & References
 
-- **Original Image**: `stacklabdigital/kanban:v2.8.7`
+- **Original Image**: `licensedigital/kanban:v2.8.7`
 - **Base Chatwoot**: v4.4.0
 - **Documentation**: `docs/kanban/kanban_items_endpoints.txt`
-- **StackLab**: https://stacklab.digital
+- **ThirdParty**: https://license.digital
 
 ## Version History
 
-- **v1.0.0** (2025-11-07) - Initial extraction and integration from stacklabdigital/kanban:v2.8.7
+- **v1.0.0** (2025-11-07) - Initial extraction and integration from licensedigital/kanban:v2.8.7
