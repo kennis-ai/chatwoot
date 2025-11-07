@@ -25,6 +25,14 @@ const showActionsMenu = ref(false);
 const showSendMessageModal = ref(false);
 const selectedItemForMessage = ref(null);
 
+const navigateToSettings = () => {
+  window.router.push({ name: 'kanban_settings' });
+};
+
+const navigateToTemplates = () => {
+  window.router.push({ name: 'kanban_templates' });
+};
+
 const toggleActionsMenu = () => {
   showActionsMenu.value = !showActionsMenu.value;
 };
@@ -46,7 +54,9 @@ const handleMessageTemplates = () => {
 
 const uiFlags = computed(() => store.getters['kanban/getUIFlags']);
 const config = computed(() => store.getters['kanban/getConfig']);
-const selectedFunnel = computed(() => store.getters['kanban/getSelectedFunnel']);
+const selectedFunnel = computed(
+  () => store.getters['kanban/getSelectedFunnel']
+);
 const funnels = computed(() => store.getters['kanban/getFunnels']);
 const filters = computed(() => store.getters['kanban/getFilters']);
 
@@ -68,7 +78,7 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    console.error('Error loading Kanban:', error);
+    // Error already handled by store
   }
 });
 
@@ -78,7 +88,7 @@ const openNewItemModal = (stage = null) => {
   showItemModal.value = true;
 };
 
-const openEditItemModal = (item) => {
+const openEditItemModal = item => {
   selectedItem.value = item;
   selectedStage.value = null;
   showItemModal.value = true;
@@ -98,17 +108,7 @@ const handleItemSaved = async () => {
   }
 };
 
-const navigateToSettings = () => {
-  const accountId = store.getters.getCurrentAccountId;
-  window.router.push({ name: 'kanban_settings' });
-};
-
-const navigateToTemplates = () => {
-  const accountId = store.getters.getCurrentAccountId;
-  router.push({ name: 'kanban_templates' });
-};
-
-const handleFunnelChange = async (funnelId) => {
+const handleFunnelChange = async funnelId => {
   await store.dispatch('kanban/setSelectedFunnel', funnelId);
   if (funnelId) {
     await store.dispatch('kanban/get', { funnel_id: funnelId });
@@ -123,7 +123,7 @@ const toggleLostFilter = () => {
   store.dispatch('kanban/toggleLostFilter');
 };
 
-const handleDragStart = (item) => {
+const handleDragStart = item => {
   draggedItem.value = item;
   showDragBar.value = true;
 };
@@ -138,7 +138,7 @@ const handleMove = () => {
   showDragBar.value = false;
 };
 
-const handleOpenChat = (item) => {
+const handleOpenChat = item => {
   if (item?.conversation_display_id) {
     const accountId = store.getters.getCurrentAccountId;
     const conversationId = item.conversation_display_id;
@@ -148,7 +148,7 @@ const handleOpenChat = (item) => {
   showDragBar.value = false;
 };
 
-const handleDuplicate = async (item) => {
+const handleDuplicate = async item => {
   try {
     await store.dispatch('kanban/duplicate', item.id);
     useAlert(t('KANBAN.ITEM_DUPLICATED'));
@@ -157,7 +157,7 @@ const handleDuplicate = async (item) => {
       await store.dispatch('kanban/get', { funnel_id: funnelId });
     }
   } catch (error) {
-    console.error('Error duplicating item:', error);
+    // Error already handled by store
     useAlert(t('KANBAN.ERROR_DUPLICATING'), 'error');
   }
   showDragBar.value = false;
@@ -179,7 +179,7 @@ const handleAIGenerated = async () => {
   }
 };
 
-const openSendMessageModal = (item) => {
+const openSendMessageModal = item => {
   selectedItemForMessage.value = item;
   showSendMessageModal.value = true;
 };
@@ -193,11 +193,11 @@ const handleMessageSent = () => {
   closeSendMessageModal();
 };
 
-const handleQuickMessage = (item) => {
+const handleQuickMessage = item => {
   openSendMessageModal(item);
 };
 
-const handleViewContact = (item) => {
+const handleViewContact = item => {
   if (item?.conversation_display_id) {
     const accountId = store.getters.getCurrentAccountId;
     const conversationId = item.conversation_display_id;
@@ -210,7 +210,9 @@ const handleViewContact = (item) => {
 <template>
   <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700">
+    <div
+      class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700"
+    >
       <div class="flex items-center gap-4">
         <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-25">
           {{ t('KANBAN.TITLE') }}
@@ -218,25 +220,21 @@ const handleViewContact = (item) => {
 
         <!-- Kanban AI Badge -->
         <button
-          @click="openAIGeneratorModal"
           class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md"
+          @click="openAIGeneratorModal"
         >
           <i class="i-lucide-sparkles h-4 w-4" />
-          <span>Kanban AI</span>
+          <span>{{ t('KANBAN.AI.TITLE') }}</span>
         </button>
 
         <!-- Funnel Selector -->
         <select
           v-if="funnels.length > 0"
           :value="selectedFunnel?.id"
-          @change="handleFunnelChange($event.target.value)"
           class="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
+          @change="handleFunnelChange($event.target.value)"
         >
-          <option
-            v-for="funnel in funnels"
-            :key="funnel.id"
-            :value="funnel.id"
-          >
+          <option v-for="funnel in funnels" :key="funnel.id" :value="funnel.id">
             {{ funnel.name }}
           </option>
         </select>
@@ -245,14 +243,14 @@ const handleViewContact = (item) => {
       <div class="flex items-center gap-2">
         <!-- Filtro Ganhos -->
         <button
-          @click="toggleWonFilter"
+          class="rounded-md px-3 py-2 text-sm font-medium transition-colors"
           :class="[
-            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
             filters.showWon
               ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600'
+              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600',
           ]"
           :title="t('KANBAN.FILTER.WON')"
+          @click="toggleWonFilter"
         >
           <i class="i-lucide-check-circle mr-1" />
           {{ t('KANBAN.FILTER.WON') }}
@@ -260,14 +258,14 @@ const handleViewContact = (item) => {
 
         <!-- Filtro Perdidos -->
         <button
-          @click="toggleLostFilter"
+          class="rounded-md px-3 py-2 text-sm font-medium transition-colors"
           :class="[
-            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
             filters.showLost
               ? 'bg-red-600 text-white hover:bg-red-700'
-              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600'
+              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600',
           ]"
           :title="t('KANBAN.FILTER.LOST')"
+          @click="toggleLostFilter"
         >
           <i class="i-lucide-x-circle mr-1" />
           {{ t('KANBAN.FILTER.LOST') }}
@@ -275,38 +273,26 @@ const handleViewContact = (item) => {
 
         <div class="mx-2 h-6 w-px bg-slate-300 dark:bg-slate-600" />
 
-        <Button
-          variant="smooth"
-          size="small"
-          @click="navigateToTemplates"
-        >
+        <Button variant="smooth" size="small" @click="navigateToTemplates">
           <i class="i-lucide-mail mr-1" />
           {{ t('KANBAN.QUICK_MESSAGE') }}
         </Button>
-        <Button
-          variant="smooth"
-          size="small"
-          @click="navigateToSettings"
-        >
+        <Button variant="smooth" size="small" @click="navigateToSettings">
           {{ t('KANBAN.SETTINGS') }}
         </Button>
-        <Button
-          variant="primary"
-          size="small"
-          @click="openNewItemModal()"
-        >
+        <Button variant="primary" size="small" @click="openNewItemModal()">
           {{ t('KANBAN.NEW_ITEM') }}
         </Button>
-        
+
         <!-- Actions Menu Dropdown -->
         <div class="relative">
           <button
-            @click="toggleActionsMenu"
             class="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+            @click="toggleActionsMenu"
           >
             <i class="i-lucide-more-vertical h-5 w-5" />
           </button>
-          
+
           <!-- Dropdown Menu -->
           <div
             v-if="showActionsMenu"
@@ -314,24 +300,24 @@ const handleViewContact = (item) => {
           >
             <div class="py-1">
               <button
-                @click="handleManageFunnels"
                 class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+                @click="handleManageFunnels"
               >
                 <i class="i-lucide-funnel h-4 w-4" />
                 {{ t('KANBAN.MENU.MANAGE_FUNNELS') }}
               </button>
-              
+
               <button
-                @click="handleKanbanSettings"
                 class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+                @click="handleKanbanSettings"
               >
                 <i class="i-lucide-settings h-4 w-4" />
                 {{ t('KANBAN.MENU.KANBAN_SETTINGS') }}
               </button>
-              
+
               <button
-                @click="handleMessageTemplates"
                 class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+                @click="handleMessageTemplates"
               >
                 <i class="i-lucide-mail h-4 w-4" />
                 {{ t('KANBAN.MENU.MESSAGE_TEMPLATES') }}
@@ -356,11 +342,7 @@ const handleViewContact = (item) => {
       :title="t('KANBAN.EMPTY_STATE.NO_CONFIG.TITLE')"
       :message="t('KANBAN.EMPTY_STATE.NO_CONFIG.MESSAGE')"
     >
-      <Button
-        variant="primary"
-        size="small"
-        @click="navigateToSettings"
-      >
+      <Button variant="primary" size="small" @click="navigateToSettings">
         {{ t('KANBAN.EMPTY_STATE.NO_CONFIG.ACTION') }}
       </Button>
     </EmptyState>
@@ -371,11 +353,7 @@ const handleViewContact = (item) => {
       :title="t('KANBAN.EMPTY_STATE.NO_FUNNELS.TITLE')"
       :message="t('KANBAN.EMPTY_STATE.NO_FUNNELS.MESSAGE')"
     >
-      <Button
-        variant="primary"
-        size="small"
-        @click="navigateToSettings"
-      >
+      <Button variant="primary" size="small" @click="navigateToSettings">
         {{ t('KANBAN.EMPTY_STATE.NO_FUNNELS.ACTION') }}
       </Button>
     </EmptyState>

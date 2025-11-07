@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
   item: {
@@ -9,9 +9,9 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['quick-message', 'view-contact']);
+const emit = defineEmits(['quickMessage', 'viewContact']);
 
-const store = useStore();
+const { t } = useI18n();
 
 const showContextMenu = ref(false);
 
@@ -26,14 +26,15 @@ const conversationId = computed(() => props.item.conversation_display_id);
 const statusConfig = computed(() => {
   const configs = {
     won: {
-      color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      color:
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       icon: 'i-lucide-check-circle',
-      label: 'Ganho',
+      label: t('KANBAN.STATUS.WON'),
     },
     lost: {
       color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       icon: 'i-lucide-x-circle',
-      label: 'Perdido',
+      label: t('KANBAN.STATUS.LOST'),
     },
   };
   return configs[status.value];
@@ -42,7 +43,8 @@ const statusConfig = computed(() => {
 const priorityColor = computed(() => {
   const colors = {
     low: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
-    medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+    medium:
+      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
     high: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
     urgent: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
   };
@@ -59,12 +61,12 @@ const toggleContextMenu = () => {
 };
 
 const handleQuickMessage = () => {
-  emit('quick-message', props.item);
+  emit('quickMessage', props.item);
   showContextMenu.value = false;
 };
 
 const handleViewContact = () => {
-  emit('view-contact', props.item);
+  emit('viewContact', props.item);
   showContextMenu.value = false;
 };
 </script>
@@ -76,12 +78,14 @@ const handleViewContact = () => {
     <!-- Context Menu Button -->
     <div class="absolute right-2 top-2">
       <button
-        @click.stop="toggleContextMenu"
         class="flex h-6 w-6 items-center justify-center rounded opacity-0 transition-opacity hover:bg-slate-100 group-hover:opacity-100 dark:hover:bg-slate-700"
+        @click.stop="toggleContextMenu"
       >
-        <i class="i-lucide-more-vertical h-4 w-4 text-slate-600 dark:text-slate-400" />
+        <i
+          class="i-lucide-more-vertical h-4 w-4 text-slate-600 dark:text-slate-400"
+        />
       </button>
-      
+
       <!-- Dropdown Menu -->
       <div
         v-if="showContextMenu"
@@ -89,19 +93,19 @@ const handleViewContact = () => {
       >
         <div class="py-1">
           <button
-            @click="handleQuickMessage"
             class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+            @click="handleQuickMessage"
           >
             <i class="i-lucide-mail h-4 w-4" />
-            <span>Mensagem Rápida</span>
+            <span>{{ t('KANBAN.CARD.QUICK_MESSAGE') }}</span>
           </button>
-          
+
           <button
-            @click="handleViewContact"
             class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+            @click="handleViewContact"
           >
             <i class="i-lucide-user h-4 w-4" />
-            <span>Ver Contato</span>
+            <span>{{ t('KANBAN.CARD.VIEW_CONTACT') }}</span>
           </button>
         </div>
       </div>
@@ -110,9 +114,10 @@ const handleViewContact = () => {
     <!-- Status Badge (Won/Lost) -->
     <div
       v-if="statusConfig"
-      :class="[statusConfig.color, 'mb-2 flex items-center gap-1 rounded-lg px-2 py-1']"
+      class="mb-2 flex items-center gap-1 rounded-lg px-2 py-1"
+      :class="[statusConfig.color]"
     >
-      <i :class="[statusConfig.icon, 'h-3 w-3']" />
+      <i class="h-3 w-3" :class="[statusConfig.icon]" />
       <span class="text-xs font-semibold">{{ statusConfig.label }}</span>
     </div>
 
@@ -146,10 +151,7 @@ const handleViewContact = () => {
     </p>
 
     <!-- Labels -->
-    <div
-      v-if="labels.length > 0"
-      class="mb-2 flex flex-wrap gap-1"
-    >
+    <div v-if="labels.length > 0" class="mb-2 flex flex-wrap gap-1">
       <span
         v-for="label in labels.slice(0, 3)"
         :key="label"
@@ -166,7 +168,9 @@ const handleViewContact = () => {
     </div>
 
     <!-- Footer -->
-    <div class="mt-2 flex items-center justify-between border-t border-slate-100 pt-2 dark:border-slate-700">
+    <div
+      class="mt-2 flex items-center justify-between border-t border-slate-100 pt-2 dark:border-slate-700"
+    >
       <!-- Assigned Agents -->
       <div class="flex -space-x-2">
         <div
@@ -191,7 +195,9 @@ const handleViewContact = () => {
         class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400"
       >
         <span class="i-lucide-check-square" />
-        {{ item.checklist.filter(c => c.checked).length }}/{{ item.checklist.length }}
+        {{ item.checklist.filter(c => c.checked).length }}/{{
+          item.checklist.length
+        }}
       </div>
     </div>
   </div>

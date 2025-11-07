@@ -13,7 +13,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['move', 'open-chat', 'duplicate']);
+const emit = defineEmits(['move', 'openChat', 'duplicate']);
 
 const { t } = useI18n();
 
@@ -27,7 +27,7 @@ const handleMove = () => {
 
 const handleOpenChat = () => {
   if (hasConversation.value) {
-    emit('open-chat', props.item);
+    emit('openChat', props.item);
   }
 };
 
@@ -55,11 +55,11 @@ const handleDuplicate = () => {
         <!-- Open Chat Button -->
         <button
           :disabled="!hasConversation"
+          class="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors"
           :class="[
-            'flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors',
             hasConversation
               ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-600 dark:text-slate-400'
+              : 'cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-600 dark:text-slate-400',
           ]"
           @click="handleOpenChat"
         >
@@ -83,7 +83,9 @@ const handleDuplicate = () => {
 <style scoped>
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-out;
 }
 
 .slide-up-enter-from {

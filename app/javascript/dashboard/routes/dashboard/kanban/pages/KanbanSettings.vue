@@ -52,7 +52,7 @@ const addStage = () => {
   newStageName.value = '';
 };
 
-const removeStage = (index) => {
+const removeStage = index => {
   newFunnel.value.stages.splice(index, 1);
 };
 
@@ -72,7 +72,8 @@ const addFunnel = () => {
   newFunnel.value = { name: '', stages: [] };
 };
 
-const removeFunnel = (index) => {
+const removeFunnel = index => {
+  // eslint-disable-next-line no-restricted-globals, no-alert
   if (!confirm(t('KANBAN.SETTINGS.CONFIRM_REMOVE_FUNNEL'))) return;
   formData.value.funnels.splice(index, 1);
 };
@@ -98,13 +99,11 @@ const handleSave = async () => {
 
     useAlert(t('KANBAN.SETTINGS.SAVED'));
   } catch (error) {
-    console.error('Error saving config:', error);
     useAlert(t('KANBAN.SETTINGS.ERROR_SAVING'), 'error');
   }
 };
 
 const navigateToBoard = () => {
-  const accountId = store.getters.getCurrentAccountId;
   router.push({ name: 'kanban_board' });
 };
 </script>
@@ -112,15 +111,13 @@ const navigateToBoard = () => {
 <template>
   <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700">
+    <div
+      class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700"
+    >
       <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-25">
         {{ t('KANBAN.SETTINGS.TITLE') }}
       </h1>
-      <Button
-        variant="clear"
-        size="small"
-        @click="navigateToBoard"
-      >
+      <Button variant="clear" size="small" @click="navigateToBoard">
         {{ t('KANBAN.SETTINGS.BACK_TO_BOARD') }}
       </Button>
     </div>
@@ -134,14 +131,15 @@ const navigateToBoard = () => {
     </div>
 
     <!-- Settings Form -->
-    <div
-      v-else
-      class="flex-1 overflow-y-auto p-6"
-    >
+    <div v-else class="flex-1 overflow-y-auto p-6">
       <div class="mx-auto max-w-4xl space-y-8">
         <!-- Enable/Disable -->
-        <div class="rounded-lg border border-slate-200 p-6 dark:border-slate-700">
-          <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25">
+        <div
+          class="rounded-lg border border-slate-200 p-6 dark:border-slate-700"
+        >
+          <h2
+            class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25"
+          >
             {{ t('KANBAN.SETTINGS.GENERAL') }}
           </h2>
           <label class="flex items-center gap-2">
@@ -157,16 +155,17 @@ const navigateToBoard = () => {
         </div>
 
         <!-- Funnels Configuration -->
-        <div class="rounded-lg border border-slate-200 p-6 dark:border-slate-700">
-          <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25">
+        <div
+          class="rounded-lg border border-slate-200 p-6 dark:border-slate-700"
+        >
+          <h2
+            class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25"
+          >
             {{ t('KANBAN.SETTINGS.FUNNELS') }}
           </h2>
 
           <!-- Existing Funnels -->
-          <div
-            v-if="formData.funnels.length > 0"
-            class="mb-6 space-y-4"
-          >
+          <div v-if="formData.funnels.length > 0" class="mb-6 space-y-4">
             <div
               v-for="(funnel, index) in formData.funnels"
               :key="funnel.id"
@@ -198,7 +197,9 @@ const navigateToBoard = () => {
           </div>
 
           <!-- Add New Funnel -->
-          <div class="rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800">
+          <div
+            class="rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800"
+          >
             <h3 class="mb-3 font-medium text-slate-900 dark:text-slate-25">
               {{ t('KANBAN.SETTINGS.ADD_FUNNEL') }}
             </h3>
@@ -222,7 +223,9 @@ const navigateToBoard = () => {
 
             <!-- Stages -->
             <div class="mb-3">
-              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label
+                class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
                 {{ t('KANBAN.SETTINGS.STAGES') }}
               </label>
               <div class="mb-2 flex gap-2">
@@ -233,11 +236,7 @@ const navigateToBoard = () => {
                   :placeholder="t('KANBAN.SETTINGS.STAGE_NAME_PLACEHOLDER')"
                   @keyup.enter="addStage"
                 />
-                <Button
-                  variant="smooth"
-                  size="small"
-                  @click="addStage"
-                >
+                <Button variant="smooth" size="small" @click="addStage">
                   {{ t('ADD') }}
                 </Button>
               </div>
@@ -253,33 +252,37 @@ const navigateToBoard = () => {
                   {{ stage }}
                   <button
                     type="button"
-                    @click="removeStage(index)"
                     class="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100"
+                    @click="removeStage(index)"
                   >
-                    ×
+                    <i class="i-lucide-x h-4 w-4" />
                   </button>
                 </span>
               </div>
             </div>
 
-            <Button
-              variant="smooth"
-              size="small"
-              @click="addFunnel"
-            >
+            <Button variant="smooth" size="small" @click="addFunnel">
               {{ t('KANBAN.SETTINGS.CREATE_FUNNEL') }}
             </Button>
           </div>
         </div>
 
         <!-- AI Integration -->
-        <div class="rounded-lg border border-slate-200 p-6 dark:border-slate-700">
+        <div
+          class="rounded-lg border border-slate-200 p-6 dark:border-slate-700"
+        >
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900">
-              <i class="i-lucide-sparkles h-5 w-5 text-purple-600 dark:text-purple-300" />
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900"
+            >
+              <i
+                class="i-lucide-sparkles h-5 w-5 text-purple-600 dark:text-purple-300"
+              />
             </div>
             <div>
-              <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-25">
+              <h2
+                class="text-lg font-semibold text-slate-900 dark:text-slate-25"
+              >
                 {{ t('KANBAN.SETTINGS.AI_INTEGRATION') }}
               </h2>
               <p class="text-sm text-slate-600 dark:text-slate-400">
@@ -299,7 +302,7 @@ const navigateToBoard = () => {
               v-model="formData.openai_api_key"
               type="password"
               class="w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              placeholder="sk-..."
+              :placeholder="t('KANBAN.SETTINGS.API_KEY_PLACEHOLDER')"
             />
             <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {{ t('KANBAN.SETTINGS.OPENAI_API_KEY_HINT') }}
@@ -308,8 +311,12 @@ const navigateToBoard = () => {
         </div>
 
         <!-- Webhook Configuration (Optional) -->
-        <div class="rounded-lg border border-slate-200 p-6 dark:border-slate-700">
-          <h2 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25">
+        <div
+          class="rounded-lg border border-slate-200 p-6 dark:border-slate-700"
+        >
+          <h2
+            class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-25"
+          >
             {{ t('KANBAN.SETTINGS.WEBHOOKS') }}
           </h2>
           <div class="space-y-4">
@@ -325,7 +332,7 @@ const navigateToBoard = () => {
                 v-model="formData.webhook_url"
                 type="url"
                 class="w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                placeholder="https://example.com/webhook"
+                :placeholder="t('KANBAN.SETTINGS.WEBHOOK_URL_PLACEHOLDER')"
               />
             </div>
             <div>
@@ -340,7 +347,7 @@ const navigateToBoard = () => {
                 v-model="formData.webhook_secret"
                 type="password"
                 class="w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                placeholder="••••••••"
+                :placeholder="t('KANBAN.SETTINGS.WEBHOOK_SECRET_PLACEHOLDER')"
               />
             </div>
           </div>
@@ -348,11 +355,7 @@ const navigateToBoard = () => {
 
         <!-- Save Button -->
         <div class="flex justify-end gap-2">
-          <Button
-            variant="clear"
-            size="small"
-            @click="navigateToBoard"
-          >
+          <Button variant="clear" size="small" @click="navigateToBoard">
             {{ t('CANCEL') }}
           </Button>
           <Button

@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
 import draggable from 'vuedraggable';
 import KanbanCard from './KanbanCard.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
@@ -17,14 +16,21 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['new-item', 'edit-item', 'drag-start', 'drag-end', 'quick-message', 'view-contact']);
+const emit = defineEmits([
+  'newItem',
+  'editItem',
+  'dragStart',
+  'dragEnd',
+  'quickMessage',
+  'viewContact',
+]);
 
 const store = useStore();
-const { t } = useI18n();
 
 const items = computed({
-  get: () => store.getters['kanban/getItemsByStage'](props.funnelId, props.stage),
-  set: (value) => {
+  get: () =>
+    store.getters['kanban/getItemsByStage'](props.funnelId, props.stage),
+  set: value => {
     // Update order
     const itemIds = value.map(item => item.id);
     store.dispatch('kanban/reorder', {
@@ -37,13 +43,14 @@ const items = computed({
 
 const itemCount = computed(() => items.value.length);
 
-const handleDragStart = (event) => {
+const handleDragStart = event => {
+  // eslint-disable-next-line no-underscore-dangle
   const item = event.item._underlying_vm_;
-  emit('drag-start', item);
+  emit('dragStart', item);
 };
 
-const handleDragEnd = async (event) => {
-  emit('drag-end');
+const handleDragEnd = async event => {
+  emit('dragEnd');
 
   if (event.added) {
     // Item moved to this column from another
@@ -57,46 +64,47 @@ const handleDragEnd = async (event) => {
         position: newPosition,
       });
     } catch (error) {
-      console.error('Error moving item:', error);
+      // Error already handled by store
     }
   }
 };
 
 const handleNewItem = () => {
-  emit('new-item', props.stage);
+  emit('newItem', props.stage);
 };
 
-const handleEditItem = (item) => {
-  emit('edit-item', item);
+const handleEditItem = item => {
+  emit('editItem', item);
 };
 
-const handleQuickMessage = (item) => {
-  emit('quick-message', item);
+const handleQuickMessage = item => {
+  emit('quickMessage', item);
 };
 
-const handleViewContact = (item) => {
-  emit('view-contact', item);
+const handleViewContact = item => {
+  emit('viewContact', item);
 };
 </script>
 
 <template>
-  <div class="flex w-80 flex-shrink-0 flex-col rounded-lg bg-white shadow-sm dark:bg-slate-800">
+  <div
+    class="flex w-80 flex-shrink-0 flex-col rounded-lg bg-white shadow-sm dark:bg-slate-800"
+  >
     <!-- Column Header -->
-    <div class="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-700">
+    <div
+      class="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-700"
+    >
       <div class="flex items-center gap-2">
         <h3 class="font-semibold text-slate-900 dark:text-slate-25">
           {{ stage }}
         </h3>
-        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+        <span
+          class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+        >
           {{ itemCount }}
         </span>
       </div>
-      <Button
-        variant="clear"
-        size="small"
-        icon="add"
-        @click="handleNewItem"
-      />
+      <Button variant="clear" size="small" icon="add" @click="handleNewItem" />
     </div>
 
     <!-- Cards Container -->

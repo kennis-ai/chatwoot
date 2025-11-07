@@ -56,7 +56,11 @@ onMounted(() => {
 });
 
 const handleSave = () => {
-  if (!formData.value.title.trim() || !formData.value.message.trim() || !formData.value.stage) {
+  if (
+    !formData.value.title.trim() ||
+    !formData.value.message.trim() ||
+    !formData.value.stage
+  ) {
     return;
   }
 
@@ -71,15 +75,16 @@ const handleSave = () => {
 </script>
 
 <template>
-  <Modal
-    :show="true"
-    :on-close="() => emit('close')"
-  >
+  <Modal show :on-close="() => emit('close')">
     <div class="w-full max-w-4xl">
       <!-- Header -->
       <div class="border-b border-slate-200 p-6 dark:border-slate-700">
         <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-25">
-          {{ isEditing ? t('KANBAN.TEMPLATES.EDIT_TEMPLATE') : t('KANBAN.TEMPLATES.ADD_TEMPLATE') }}
+          {{
+            isEditing
+              ? t('KANBAN.TEMPLATES.EDIT_TEMPLATE')
+              : t('KANBAN.TEMPLATES.ADD_TEMPLATE')
+          }}
         </h2>
       </div>
 
@@ -88,7 +93,9 @@ const handleSave = () => {
         <div class="grid grid-cols-2 gap-6">
           <!-- Left Column: Configuration -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <h3
+              class="text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
               {{ t('KANBAN.TEMPLATES.FUNNEL_INFO') }}
             </h3>
 
@@ -100,9 +107,13 @@ const handleSave = () => {
                   type="checkbox"
                   class="peer sr-only"
                 />
-                <div class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"></div>
+                <div
+                  class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"
+                />
               </label>
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span
+                class="text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
                 {{ t('KANBAN.TEMPLATES.DEFAULT_MESSAGE') }}
               </span>
             </div>
@@ -132,7 +143,9 @@ const handleSave = () => {
             </div>
 
             <!-- Basic Information -->
-            <h3 class="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <h3
+              class="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
               {{ t('KANBAN.TEMPLATES.BASIC_INFO') }}
             </h3>
 
@@ -164,7 +177,9 @@ const handleSave = () => {
                     type="checkbox"
                     class="peer sr-only"
                   />
-                  <div class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"></div>
+                  <div
+                    class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"
+                  />
                 </label>
                 <span class="text-sm text-slate-700 dark:text-slate-300">
                   {{ t('KANBAN.TEMPLATES.WEBHOOK') }}
@@ -179,7 +194,9 @@ const handleSave = () => {
                     type="checkbox"
                     class="peer sr-only"
                   />
-                  <div class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"></div>
+                  <div
+                    class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-slate-600 dark:bg-slate-700 dark:peer-focus:ring-blue-800"
+                  />
                 </label>
                 <span class="text-sm text-slate-700 dark:text-slate-300">
                   {{ t('KANBAN.TEMPLATES.CONDITIONS') }}
@@ -198,7 +215,9 @@ const handleSave = () => {
             </label>
 
             <!-- Simple Toolbar -->
-            <div class="flex gap-1 rounded-t-md border border-b-0 border-slate-300 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-800">
+            <div
+              class="flex gap-1 rounded-t-md border border-b-0 border-slate-300 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-800"
+            >
               <button
                 type="button"
                 class="rounded px-2 py-1 text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
@@ -220,7 +239,7 @@ const handleSave = () => {
               >
                 <i class="i-lucide-strikethrough h-4 w-4" />
               </button>
-              <div class="mx-2 w-px bg-slate-300 dark:bg-slate-600"></div>
+              <div class="mx-2 w-px bg-slate-300 dark:bg-slate-600" />
               <button
                 type="button"
                 class="rounded px-2 py-1 text-slate-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700"
@@ -258,12 +277,10 @@ const handleSave = () => {
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-2 border-t border-slate-200 p-6 dark:border-slate-700">
-        <Button
-          variant="clear"
-          size="small"
-          @click="emit('close')"
-        >
+      <div
+        class="flex items-center justify-end gap-2 border-t border-slate-200 p-6 dark:border-slate-700"
+      >
+        <Button variant="clear" size="small" @click="emit('close')">
           {{ t('CANCEL') }}
         </Button>
         <Button

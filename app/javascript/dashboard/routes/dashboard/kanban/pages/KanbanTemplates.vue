@@ -23,7 +23,9 @@ const editingTemplate = ref(null);
 const selectedStage = ref(null);
 
 const selectedFunnel = computed(() => {
-  return funnels.value.find(f => f.id === selectedFunnelId.value) || funnels.value[0];
+  return (
+    funnels.value.find(f => f.id === selectedFunnelId.value) || funnels.value[0]
+  );
 });
 
 onMounted(async () => {
@@ -39,13 +41,13 @@ onMounted(async () => {
   }
 });
 
-const getTemplatesForStage = (stage) => {
+const getTemplatesForStage = stage => {
   if (!selectedFunnelId.value) return [];
   const key = `${selectedFunnelId.value}_${stage}`;
   return templates.value[key] || [];
 };
 
-const openNewTemplateModal = (stage) => {
+const openNewTemplateModal = stage => {
   editingTemplate.value = null;
   selectedStage.value = stage;
   showTemplateModal.value = true;
@@ -63,38 +65,6 @@ const closeTemplateModal = () => {
   selectedStage.value = null;
 };
 
-const handleTemplateSaved = (templateData) => {
-  const key = `${selectedFunnelId.value}_${selectedStage.value}`;
-
-  if (!templates.value[key]) {
-    templates.value[key] = [];
-  }
-
-  if (editingTemplate.value) {
-    // Update existing
-    const index = templates.value[key].findIndex(t => t.id === editingTemplate.value.id);
-    if (index !== -1) {
-      templates.value[key][index] = { ...templateData, id: editingTemplate.value.id };
-    }
-  } else {
-    // Add new
-    templates.value[key].push({ ...templateData, id: Date.now() });
-  }
-
-  saveTemplates();
-  closeTemplateModal();
-};
-
-const handleDeleteTemplate = (template, stage) => {
-  if (!confirm(t('KANBAN.TEMPLATES.CONFIRM_DELETE'))) return;
-
-  const key = `${selectedFunnelId.value}_${stage}`;
-  if (templates.value[key]) {
-    templates.value[key] = templates.value[key].filter(t => t.id !== template.id);
-    saveTemplates();
-  }
-};
-
 const saveTemplates = async () => {
   try {
     const payload = {
@@ -108,8 +78,48 @@ const saveTemplates = async () => {
     await store.dispatch('kanban/updateConfig', payload);
     useAlert(t('KANBAN.TEMPLATES.SAVED'));
   } catch (error) {
-    console.error('Error saving templates:', error);
+    // Error already handled by store
     useAlert(t('KANBAN.TEMPLATES.ERROR_SAVING'), 'error');
+  }
+};
+
+const handleTemplateSaved = templateData => {
+  const key = `${selectedFunnelId.value}_${selectedStage.value}`;
+
+  if (!templates.value[key]) {
+    templates.value[key] = [];
+  }
+
+  if (editingTemplate.value) {
+    // Update existing
+    const index = templates.value[key].findIndex(
+      tmpl => tmpl.id === editingTemplate.value.id
+    );
+    if (index !== -1) {
+      templates.value[key][index] = {
+        ...templateData,
+        id: editingTemplate.value.id,
+      };
+    }
+  } else {
+    // Add new
+    templates.value[key].push({ ...templateData, id: Date.now() });
+  }
+
+  saveTemplates();
+  closeTemplateModal();
+};
+
+const handleDeleteTemplate = (template, stage) => {
+  // eslint-disable-next-line no-restricted-globals, no-alert
+  if (!confirm(t('KANBAN.TEMPLATES.CONFIRM_DELETE'))) return;
+
+  const key = `${selectedFunnelId.value}_${stage}`;
+  if (templates.value[key]) {
+    templates.value[key] = templates.value[key].filter(
+      tmpl => tmpl.id !== template.id
+    );
+    saveTemplates();
   }
 };
 
@@ -117,19 +127,21 @@ const navigateToBoard = () => {
   router.push({ name: 'kanban_board' });
 };
 
-const handleFunnelChange = (funnelId) => {
-  selectedFunnelId.value = parseInt(funnelId);
+const handleFunnelChange = funnelId => {
+  selectedFunnelId.value = parseInt(funnelId, 10);
 };
 </script>
 
 <template>
   <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700">
+    <div
+      class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700"
+    >
       <div class="flex items-center gap-4">
         <button
-          @click="navigateToBoard"
           class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          @click="navigateToBoard"
         >
           <i class="i-lucide-arrow-left h-5 w-5" />
         </button>
@@ -166,13 +178,13 @@ const handleFunnelChange = (funnelId) => {
           <button
             v-for="funnel in funnels"
             :key="funnel.id"
-            @click="handleFunnelChange(funnel.id)"
+            class="rounded-lg px-4 py-2 font-medium transition-colors"
             :class="[
-              'rounded-lg px-4 py-2 font-medium transition-colors',
               selectedFunnelId === funnel.id
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700',
             ]"
+            @click="handleFunnelChange(funnel.id)"
           >
             {{ funnel.name }}
           </button>
@@ -194,8 +206,8 @@ const handleFunnelChange = (funnelId) => {
                 {{ stage }}
               </h3>
               <button
-                @click="openNewTemplateModal(stage)"
                 class="rounded-lg p-1 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                @click="openNewTemplateModal(stage)"
               >
                 <i class="i-lucide-plus h-4 w-4" />
               </button>
@@ -213,20 +225,30 @@ const handleFunnelChange = (funnelId) => {
                     {{ template.title }}
                   </h4>
                   <button
-                    @click="openEditTemplateModal(template, stage)"
                     class="opacity-0 transition-opacity group-hover:opacity-100"
+                    @click="openEditTemplateModal(template, stage)"
                   >
-                    <i class="i-lucide-pencil h-4 w-4 text-slate-600 dark:text-slate-400" />
+                    <i
+                      class="i-lucide-pencil h-4 w-4 text-slate-600 dark:text-slate-400"
+                    />
                   </button>
                 </div>
-                <p class="mb-3 line-clamp-3 text-sm text-slate-600 dark:text-slate-400">
+                <p
+                  class="mb-3 line-clamp-3 text-sm text-slate-600 dark:text-slate-400"
+                >
                   {{ template.message }}
                 </p>
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                  <span>{{ template.created_at ? new Date(template.created_at).toLocaleDateString() : '-' }}</span>
+                <div
+                  class="flex items-center justify-between text-xs text-slate-500"
+                >
+                  <span>{{
+                    template.created_at
+                      ? new Date(template.created_at).toLocaleDateString()
+                      : '-'
+                  }}</span>
                   <button
-                    @click="handleDeleteTemplate(template, stage)"
                     class="text-red-600 hover:text-red-700 dark:text-red-400"
+                    @click="handleDeleteTemplate(template, stage)"
                   >
                     {{ t('DELETE') }}
                   </button>
@@ -238,7 +260,9 @@ const handleFunnelChange = (funnelId) => {
                 v-if="getTemplatesForStage(stage).length === 0"
                 class="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 dark:border-slate-600 dark:bg-slate-800"
               >
-                <p class="text-center text-sm text-slate-500 dark:text-slate-400">
+                <p
+                  class="text-center text-sm text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.TEMPLATES.NO_TEMPLATES') }}
                 </p>
               </div>

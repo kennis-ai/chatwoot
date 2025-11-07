@@ -1,4 +1,5 @@
 import kanbanAPI from 'dashboard/api/kanban';
+import kanbanConfigAPI from 'dashboard/api/kanbanConfig';
 import Vue from 'vue';
 
 export const state = {
@@ -61,8 +62,8 @@ export const getters = {
   getFunnels($state) {
     return $state.config?.config?.funnels || [];
   },
-  getSelectedFunnel($state, getters) {
-    const funnels = getters.getFunnels;
+  getSelectedFunnel($state, $getters) {
+    const funnels = $getters.getFunnels;
     return funnels.find(f => f.id === $state.selectedFunnelId) || funnels[0];
   },
   getFilters($state) {
@@ -74,7 +75,7 @@ export const actions = {
   async get({ commit }, params = {}) {
     commit('setUIFlags', { isFetching: true });
     try {
-      const response = await kanbanAPI.items.get(params);
+      const response = await kanbanAPI.get(params);
       commit('setKanbanItems', response.data);
       return response.data;
     } catch (error) {
@@ -87,7 +88,7 @@ export const actions = {
   async show({ commit }, id) {
     commit('setUIFlags', { isFetching: true });
     try {
-      const response = await kanbanAPI.items.show(id);
+      const response = await kanbanAPI.show(id);
       commit('updateKanbanItem', response.data);
       return response.data;
     } catch (error) {
@@ -100,7 +101,7 @@ export const actions = {
   async create({ commit }, itemData) {
     commit('setUIFlags', { isCreating: true });
     try {
-      const response = await kanbanAPI.items.create(itemData);
+      const response = await kanbanAPI.create(itemData);
       commit('addKanbanItem', response.data);
       return response.data;
     } catch (error) {
@@ -113,7 +114,7 @@ export const actions = {
   async update({ commit }, { id, ...itemData }) {
     commit('setUIFlags', { isUpdating: true });
     try {
-      const response = await kanbanAPI.items.update(id, itemData);
+      const response = await kanbanAPI.update(id, itemData);
       commit('updateKanbanItem', response.data);
       return response.data;
     } catch (error) {
@@ -126,7 +127,7 @@ export const actions = {
   async delete({ commit }, id) {
     commit('setUIFlags', { isDeleting: true });
     try {
-      await kanbanAPI.items.delete(id);
+      await kanbanAPI.delete(id);
       commit('deleteKanbanItem', id);
     } catch (error) {
       throw new Error(error);
@@ -137,7 +138,7 @@ export const actions = {
 
   async move({ commit }, { id, funnel_stage, position }) {
     try {
-      const response = await kanbanAPI.items.move(id, {
+      const response = await kanbanAPI.move(id, {
         funnel_stage,
         position,
       });
@@ -150,11 +151,7 @@ export const actions = {
 
   async reorder({ commit }, { funnelId, funnelStage, itemIds }) {
     try {
-      const response = await kanbanAPI.items.reorder(
-        funnelId,
-        funnelStage,
-        itemIds
-      );
+      const response = await kanbanAPI.reorder(funnelId, funnelStage, itemIds);
       // Update positions for all items in the response
       if (response.data && response.data.items) {
         response.data.items.forEach(item => {
@@ -169,7 +166,7 @@ export const actions = {
 
   async assign({ commit }, { id, agentId }) {
     try {
-      const response = await kanbanAPI.items.assign(id, agentId);
+      const response = await kanbanAPI.assign(id, agentId);
       commit('updateKanbanItem', response.data);
       return response.data;
     } catch (error) {
@@ -179,7 +176,7 @@ export const actions = {
 
   async bulkMove({ commit }, { itemIds, funnel_stage, position }) {
     try {
-      const response = await kanbanAPI.items.bulkMove(itemIds, {
+      const response = await kanbanAPI.bulkMove(itemIds, {
         funnel_stage,
         position,
       });
@@ -196,7 +193,7 @@ export const actions = {
 
   async bulkAssign({ commit }, { itemIds, agentId }) {
     try {
-      const response = await kanbanAPI.items.bulkAssign(itemIds, agentId);
+      const response = await kanbanAPI.bulkAssign(itemIds, agentId);
       if (response.data && response.data.items) {
         response.data.items.forEach(item => {
           commit('updateKanbanItem', item);
@@ -210,7 +207,7 @@ export const actions = {
 
   async duplicate({ commit }, id) {
     try {
-      const response = await kanbanAPI.items.duplicate(id);
+      const response = await kanbanAPI.duplicate(id);
       commit('addKanbanItem', response.data);
       return response.data;
     } catch (error) {
@@ -221,7 +218,7 @@ export const actions = {
   async getConfig({ commit }) {
     commit('setUIFlags', { isFetching: true });
     try {
-      const response = await kanbanAPI.config.get();
+      const response = await kanbanConfigAPI.get();
       commit('setConfig', response.data);
       return response.data;
     } catch (error) {
@@ -239,7 +236,7 @@ export const actions = {
   async updateConfig({ commit }, configData) {
     commit('setUIFlags', { isUpdating: true });
     try {
-      const response = await kanbanAPI.config.update(configData);
+      const response = await kanbanConfigAPI.update(configData);
       commit('setConfig', response.data);
       return response.data;
     } catch (error) {
@@ -252,7 +249,7 @@ export const actions = {
   async createConfig({ commit }, configData) {
     commit('setUIFlags', { isCreating: true });
     try {
-      const response = await kanbanAPI.config.create(configData);
+      const response = await kanbanConfigAPI.create(configData);
       commit('setConfig', response.data);
       return response.data;
     } catch (error) {
@@ -266,18 +263,18 @@ export const actions = {
     commit('setSelectedFunnel', funnelId);
   },
 
-  toggleWonFilter({ commit, state }) {
-    commit('setFilters', { showWon: !state.filters.showWon });
+  toggleWonFilter({ commit, state: $state }) {
+    commit('setFilters', { showWon: !$state.filters.showWon });
   },
 
-  toggleLostFilter({ commit, state }) {
-    commit('setFilters', { showLost: !state.filters.showLost });
+  toggleLostFilter({ commit, state: $state }) {
+    commit('setFilters', { showLost: !$state.filters.showLost });
   },
 
   async generateWithAI({ commit }, { funnel_id, source, max_items, filters }) {
     commit('setUIFlags', { isCreating: true });
     try {
-      const response = await kanbanAPI.items.generateWithAI({
+      const response = await kanbanAPI.generateWithAI({
         funnel_id,
         source,
         max_items,

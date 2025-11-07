@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useStore } from 'vuex';
 import { useAlert } from 'dashboard/composables';
@@ -29,10 +29,10 @@ const isSending = ref(false);
 const config = computed(() => store.getters['kanban/getConfig']);
 const templates = computed(() => {
   if (!config.value?.funnels) return [];
-  
+
   const funnel = config.value.funnels.find(f => f.id === props.funnelId);
   if (!funnel?.templates) return [];
-  
+
   return funnel.templates;
 });
 
@@ -54,7 +54,8 @@ const statusConfig = computed(() => {
       label: t('KANBAN.STATUS.OPEN'),
     },
     won: {
-      color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      color:
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       label: t('KANBAN.STATUS.WON'),
     },
     lost: {
@@ -67,14 +68,17 @@ const statusConfig = computed(() => {
 
 const messageToSend = computed(() => {
   if (selectedTemplate.value) {
-    return templates.value.find(t => t.id === selectedTemplate.value)?.message || '';
+    return (
+      templates.value.find(tmpl => tmpl.id === selectedTemplate.value)
+        ?.message || ''
+    );
   }
   return customMessage.value;
 });
 
-const selectTemplate = (templateId) => {
+const selectTemplate = templateId => {
   selectedTemplate.value = templateId;
-  const template = templates.value.find(t => t.id === templateId);
+  const template = templates.value.find(tmpl => tmpl.id === templateId);
   if (template) {
     customMessage.value = template.message;
   }
@@ -98,9 +102,8 @@ const sendMessage = async () => {
   isSending.value = true;
 
   try {
-    const accountId = store.getters.getCurrentAccountId;
     const conversationId = props.item.conversation_display_id;
-    
+
     // Send message via Chatwoot API
     await store.dispatch('sendMessage', {
       conversationId,
@@ -110,7 +113,7 @@ const sendMessage = async () => {
     useAlert(t('KANBAN.SEND_MESSAGE.SUCCESS'));
     emit('sent');
   } catch (error) {
-    console.error('Error sending message:', error);
+    // Error already handled by store
     useAlert(t('KANBAN.SEND_MESSAGE.ERROR'), 'error');
   } finally {
     isSending.value = false;
@@ -119,10 +122,7 @@ const sendMessage = async () => {
 </script>
 
 <template>
-  <Modal
-    :show="true"
-    :on-close="() => emit('close')"
-  >
+  <Modal show :on-close="() => emit('close')">
     <div class="w-full max-w-2xl">
       <!-- Header -->
       <div class="border-b border-slate-200 p-6 dark:border-slate-700">
@@ -134,20 +134,28 @@ const sendMessage = async () => {
       <!-- Content -->
       <div class="p-6">
         <!-- Contact Information Card -->
-        <div class="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+        <div
+          class="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div>
               <div class="mb-3">
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span
+                  class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.SEND_MESSAGE.CONTACT_NAME') }}
                 </span>
-                <p class="text-sm font-semibold text-slate-900 dark:text-slate-25">
+                <p
+                  class="text-sm font-semibold text-slate-900 dark:text-slate-25"
+                >
                   {{ contactInfo.name }}
                 </p>
               </div>
-              
+
               <div class="mb-3">
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span
+                  class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.SEND_MESSAGE.PHONE') }}
                 </span>
                 <p class="text-sm text-slate-700 dark:text-slate-300">
@@ -155,19 +163,23 @@ const sendMessage = async () => {
                 </p>
               </div>
             </div>
-            
+
             <div>
               <div class="mb-3">
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span
+                  class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.SEND_MESSAGE.CHANNEL') }}
                 </span>
                 <p class="text-sm text-slate-700 dark:text-slate-300">
                   {{ contactInfo.channel }}
                 </p>
               </div>
-              
+
               <div class="mb-3">
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span
+                  class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.SEND_MESSAGE.STATUS') }}
                 </span>
                 <span
@@ -177,9 +189,11 @@ const sendMessage = async () => {
                   {{ statusConfig.label }}
                 </span>
               </div>
-              
+
               <div>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span
+                  class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >
                   {{ t('KANBAN.SEND_MESSAGE.CONVERSATION_ID') }}
                 </span>
                 <p class="text-sm text-slate-700 dark:text-slate-300">
@@ -191,17 +205,16 @@ const sendMessage = async () => {
         </div>
 
         <!-- Template Selector -->
-        <div
-          v-if="templates.length > 0"
-          class="mb-4"
-        >
-          <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div v-if="templates.length > 0" class="mb-4">
+          <label
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
             {{ t('KANBAN.SEND_MESSAGE.SELECT_TEMPLATE') }}
           </label>
           <select
             v-model="selectedTemplate"
-            @change="selectTemplate($event.target.value)"
             class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
+            @change="selectTemplate($event.target.value)"
           >
             <option :value="null">
               {{ t('KANBAN.SEND_MESSAGE.CUSTOM_MESSAGE') }}
@@ -219,13 +232,15 @@ const sendMessage = async () => {
         <!-- Message Textarea -->
         <div class="mb-4">
           <div class="mb-2 flex items-center justify-between">
-            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              class="text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               {{ t('KANBAN.SEND_MESSAGE.MESSAGE') }}
             </label>
             <button
               v-if="selectedTemplate"
-              @click="clearTemplate"
               class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              @click="clearTemplate"
             >
               {{ t('KANBAN.SEND_MESSAGE.CLEAR_TEMPLATE') }}
             </button>
@@ -240,12 +255,10 @@ const sendMessage = async () => {
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-2 border-t border-slate-200 p-6 dark:border-slate-700">
-        <Button
-          variant="clear"
-          size="small"
-          @click="emit('close')"
-        >
+      <div
+        class="flex items-center justify-end gap-2 border-t border-slate-200 p-6 dark:border-slate-700"
+      >
+        <Button variant="clear" size="small" @click="emit('close')">
           {{ t('CANCEL') }}
         </Button>
         <Button

@@ -38,7 +38,9 @@ const formData = ref({
 
 const isEditing = computed(() => !!props.item);
 const uiFlags = computed(() => store.getters['kanban/getUIFlags']);
-const selectedFunnel = computed(() => store.getters['kanban/getSelectedFunnel']);
+const selectedFunnel = computed(
+  () => store.getters['kanban/getSelectedFunnel']
+);
 const stages = computed(() => selectedFunnel.value?.stages || []);
 
 onMounted(() => {
@@ -93,12 +95,13 @@ const handleSave = async () => {
 
     emit('saved');
   } catch (error) {
-    console.error('Error saving item:', error);
+    // Error already handled by store
     useAlert(t('KANBAN.ERROR_SAVING'), 'error');
   }
 };
 
 const handleDelete = async () => {
+  // eslint-disable-next-line no-restricted-globals, no-alert
   if (!confirm(t('KANBAN.CONFIRM_DELETE'))) return;
 
   try {
@@ -106,44 +109,47 @@ const handleDelete = async () => {
     useAlert(t('KANBAN.ITEM_DELETED'));
     emit('saved');
   } catch (error) {
-    console.error('Error deleting item:', error);
+    // Error already handled by store
     useAlert(t('KANBAN.ERROR_DELETING'), 'error');
   }
 };
 
 const statusColor = computed(() => {
   const status = formData.value.status;
-  return {
-    won: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    lost: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-    open: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  }[status] || 'bg-slate-100 text-slate-800';
+  return (
+    {
+      won: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      lost: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      open: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    }[status] || 'bg-slate-100 text-slate-800'
+  );
 });
 
 const statusIcon = computed(() => {
   const status = formData.value.status;
-  return {
-    won: 'i-lucide-check-circle',
-    lost: 'i-lucide-x-circle',
-    open: 'i-lucide-circle-dashed',
-  }[status] || 'i-lucide-circle-dashed';
+  return (
+    {
+      won: 'i-lucide-check-circle',
+      lost: 'i-lucide-x-circle',
+      open: 'i-lucide-circle-dashed',
+    }[status] || 'i-lucide-circle-dashed'
+  );
 });
 
 const statusText = computed(() => {
   const status = formData.value.status;
-  return {
-    won: t('KANBAN.STATUS.WON'),
-    lost: t('KANBAN.STATUS.LOST'),
-    open: t('KANBAN.STATUS.OPEN'),
-  }[status] || t('KANBAN.STATUS.OPEN');
+  return (
+    {
+      won: t('KANBAN.STATUS.WON'),
+      lost: t('KANBAN.STATUS.LOST'),
+      open: t('KANBAN.STATUS.OPEN'),
+    }[status] || t('KANBAN.STATUS.OPEN')
+  );
 });
 </script>
 
 <template>
-  <Modal
-    :show="true"
-    :on-close="() => emit('close')"
-  >
+  <Modal show :on-close="() => emit('close')">
     <div class="w-full max-w-2xl">
       <!-- Header -->
       <div class="border-b border-slate-200 p-6 dark:border-slate-700">
@@ -155,12 +161,10 @@ const statusText = computed(() => {
       <!-- Status Badge (if editing) -->
       <div
         v-if="isEditing"
-        :class="[
-          'mx-6 mt-6 flex items-center gap-2 rounded-lg p-3',
-          statusColor
-        ]"
+        class="mx-6 mt-6 flex items-center gap-2 rounded-lg p-3"
+        :class="[statusColor]"
       >
-        <i :class="[statusIcon, 'h-5 w-5']" />
+        <i class="h-5 w-5" :class="[statusIcon]" />
         <span class="font-semibold">{{ statusText }}</span>
       </div>
 
@@ -254,11 +258,7 @@ const statusText = computed(() => {
             required
             class="w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option
-              v-for="stage in stages"
-              :key="stage"
-              :value="stage"
-            >
+            <option v-for="stage in stages" :key="stage" :value="stage">
               {{ stage }}
             </option>
           </select>
@@ -283,7 +283,9 @@ const statusText = computed(() => {
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-between border-t border-slate-200 p-6 dark:border-slate-700">
+      <div
+        class="flex items-center justify-between border-t border-slate-200 p-6 dark:border-slate-700"
+      >
         <div>
           <Button
             v-if="isEditing"
@@ -296,11 +298,7 @@ const statusText = computed(() => {
           </Button>
         </div>
         <div class="flex gap-2">
-          <Button
-            variant="clear"
-            size="small"
-            @click="emit('close')"
-          >
+          <Button variant="clear" size="small" @click="emit('close')">
             {{ t('CANCEL') }}
           </Button>
           <Button
