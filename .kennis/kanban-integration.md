@@ -299,14 +299,59 @@ Use the documented endpoints in `docs/kanban/kanban_items_endpoints.txt` for man
 
 ## StackLab Integration
 
-The implementation includes StackLab-specific files:
-- `stacklab/licensing_service.rb` - Licensing validation
-- `stacklab/service-account-kanban-firebase.json` - Firebase configuration
+### Original Implementation
 
-These may require:
-- Valid StackLab license key
-- Firebase project setup
-- Additional environment configuration
+The original `stacklabdigital/kanban:v2.8.7` image includes StackLab licensing integration:
+- `stacklab/licensing_service.rb` - Licensing validation (not extracted)
+- `stacklab/service-account-kanban-firebase.json` - Firebase configuration (not extracted)
+
+The licensing system:
+- Validates `STACKLAB_TOKEN` against `https://pulse.stacklab.digital/api/cw/licenses/verify`
+- Requires PRO plan for Kanban functionality
+- Blocks ALL Kanban API endpoints without valid license (via `before_action :check_stacklab_license`)
+- Caches license info for 1 hour
+
+### Our Implementation (License-Free)
+
+**We've implemented a license stub** (`config/initializers/stacklab_stub.rb`) that bypasses all StackLab licensing requirements:
+
+✅ **All Kanban features enabled** without external license validation
+✅ **No STACKLAB_TOKEN required**
+✅ **No external API calls** to StackLab servers
+✅ **Full offline functionality**
+
+The stub provides:
+- `ChatwootApp.stacklab?` → always returns `true`
+- `ChatwootApp.stacklab.plan` → returns `'pro'`
+- `ChatwootApp.stacklab.feature_enabled?(:kanban_pro)` → returns `true`
+- All other license checks → return success
+
+### Switching to Real StackLab License (Optional)
+
+If you want to use the official StackLab licensing:
+
+1. **Delete the stub**:
+   ```bash
+   rm config/initializers/stacklab_stub.rb
+   ```
+
+2. **Extract and add StackLab files**:
+   ```bash
+   # Extract from Docker image
+   docker run --rm stacklabdigital/kanban:v2.8.7 tar -czf - \
+     stacklab/licensing_service.rb \
+     stacklab/service-account-kanban-firebase.json \
+     lib/chatwoot_app.rb | tar -xzf -
+   ```
+
+3. **Set environment variables**:
+   ```bash
+   STACKLAB_TOKEN=your_license_token_here
+   STACKLAB_API_VERIFY_URL=https://pulse.stacklab.digital/api/cw/licenses/verify
+   STACKLAB_LICENSE_CACHE_MINUTES=60
+   ```
+
+4. **Restart application**
 
 ## Next Steps
 
