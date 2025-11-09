@@ -326,15 +326,61 @@ Rails.application.routes.draw do
 
           resources :upload, only: [:create]
 
+          # Kanban CRM Integration
           resources :funnels do
             member do
               get :stage_stats
             end
+            resources :kanban_items, only: [:index]
+          end
+
+          resources :kanban_items, only: [:index, :show, :create, :update, :destroy] do
+            collection do
+              post :reorder
+              get :debug
+              get :reports
+              get :search
+              get :filter
+              # Bulk operations
+              post :bulk_move_items
+              post :bulk_assign_agent
+              post :bulk_set_priority
+            end
+            member do
+              post :move_to_stage
+              post :move
+              post :create_checklist_item
+              post :create_note
+              get :get_notes
+              delete :delete_note
+              get :get_checklist
+              delete :delete_checklist_item
+            end
+          end
+
+          resource :kanban_config, only: [:show, :create, :update, :destroy] do
+            member do
+              post :test_webhook
+            end
+          end
+
+          # Nested Kanban namespace (optional - for future use)
+          namespace :kanban do
+            resources :items do
+              resources :attachments, only: [:index, :create, :destroy]
+              resources :note_attachments, only: [:create, :destroy]
+            end
+            resources :funnels
+            resources :stages
+            resources :automations
           end
         end
       end
       # end of account scoped api routes
       # ----------------------------------
+
+      # Kanban Automations (outside accounts namespace)
+      resources :kanban_automations
 
       namespace :integrations do
         resources :webhooks, only: [:create]

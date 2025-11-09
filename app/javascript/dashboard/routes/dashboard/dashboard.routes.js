@@ -10,6 +10,7 @@ import campaignsRoutes from './campaigns/campaigns.routes';
 import { routes as captainRoutes } from './captain/captain.routes';
 import AppContainer from './Dashboard.vue';
 import Suspended from './suspended/Index.vue';
+import KanbanView from './kanban/KanbanView.vue';
 
 export default {
   routes: [
@@ -26,6 +27,14 @@ export default {
         ...notificationRoutes,
         ...helpcenterRoutes.routes,
         ...campaignsRoutes.routes,
+        {
+          path: 'kanban',
+          name: 'kanban',
+          component: KanbanView,
+          meta: {
+            permissions: ['administrator', 'agent'],
+          },
+        },
       ],
     },
     {

@@ -31,11 +31,13 @@ import customRole from './modules/customRole';
 import customViews from './modules/customViews';
 import dashboardApps from './modules/dashboardApps';
 import draftMessages from './modules/draftMessages';
+import funnel from './modules/funnel';
 import globalConfig from 'shared/store/globalConfig';
 import inboxAssignableAgents from './modules/inboxAssignableAgents';
 import inboxes from './modules/inboxes';
 import inboxMembers from './modules/inboxMembers';
 import integrations from './modules/integrations';
+import kanban from './modules/kanban';
 import labels from './modules/labels';
 import macros from './modules/macros';
 import notifications from './modules/notifications';
@@ -94,11 +96,13 @@ export default createStore({
     customViews,
     dashboardApps,
     draftMessages,
+    funnel,
     globalConfig,
     inboxAssignableAgents,
     inboxes,
     inboxMembers,
     integrations,
+    kanban,
     labels,
     macros,
     notifications,
