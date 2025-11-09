@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 import KanbanHeader from './KanbanHeader.vue';
 import KanbanAPI from '../../../../api/kanban';
 import Modal from 'dashboard/components/Modal.vue';
-import CustomContextMenu from 'dashboard/components/ui/CustomContextMenu.vue';
 import SendMessageTemplate from './SendMessageTemplate.vue';
 import KanbanItemForm from './KanbanItemForm.vue';
 
