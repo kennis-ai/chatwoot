@@ -326,60 +326,15 @@ Rails.application.routes.draw do
 
           resources :upload, only: [:create]
 
-          resources :kanban_items, only: [:index, :show, :create, :update, :destroy] do
-            collection do
-              post :reorder
-              get :debug
-              get :reports
-              get :search
-              get :filter
-              # Bulk actions
-              post :bulk_move_items
-              post :bulk_assign_agent
-              post :bulk_set_priority
-              post :bulk_update_custom_attributes
-              post :bulk_delete
-            end
-            member do
-              post :move
-              post :assign
-              post :add_label
-              post :remove_label
-              post :schedule_message
-              post :unschedule_message
-              post :duplicate
-            end
-          end
-
-          resource :kanban_config, only: [:index, :show, :create, :update, :destroy] do
-            member do
-              post :test_webhook
-            end
-          end
-
           resources :funnels do
             member do
               get :stage_stats
             end
-            resources :kanban_items, only: [:index]
-          end
-
-          namespace :kanban do
-            resources :items do
-              resources :attachments, only: [:index, :create, :destroy]
-              resources :note_attachments, only: [:create, :destroy]
-            end
-            resources :funnels
-            resources :stages
-            resources :automations
           end
         end
       end
       # end of account scoped api routes
       # ----------------------------------
-
-      # Kanban Automations
-      resources :kanban_automations
 
       namespace :integrations do
         resources :webhooks, only: [:create]
