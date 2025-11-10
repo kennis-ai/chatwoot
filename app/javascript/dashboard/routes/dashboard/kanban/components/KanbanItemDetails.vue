@@ -43,16 +43,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits([
-  'update:item',
-  'item-updated',
-  'close',
-  'edit',
-  'deleted',
-  'navigate-to-conversation',
-  'context-menu',
-  'stage-click',
-]);
+const emit = defineEmits(['update:item', 'item-updated', 'close', 'edit', 'deleted', 'navigate-to-conversation', 'context-menu', 'stage-click']);
 
 const { t } = useI18n();
 const store = useStore();
@@ -99,12 +90,7 @@ const stageProgress = computed(() => {
   const activities = item.value?.activities || [];
 
   if (!stages || !activities.length) {
-    return {
-      stages: [],
-      currentStageIndex: -1,
-      completedStages: [],
-      stageTransitions: [],
-    };
+    return { stages: [], currentStageIndex: -1, completedStages: [], stageTransitions: [] };
   }
 
   // Converte stages object para array ordenado por position
@@ -163,13 +149,8 @@ const stageProgress = computed(() => {
       if (!change.details?.old_stage || !change.details?.new_stage) continue;
 
       // Verifica se essa mudança representa uma transição entre as etapas consecutivas atuais
-      if (
-        change.details.old_stage === fromStage.key &&
-        change.details.new_stage === toStage.key
-      ) {
-        const changeDate = new Date(
-          change.details.created_at || change.created_at
-        );
+      if (change.details.old_stage === fromStage.key && change.details.new_stage === toStage.key) {
+        const changeDate = new Date(change.details.created_at || change.created_at);
 
         if (!latestDate || changeDate > latestDate) {
           latestDate = changeDate;
@@ -180,7 +161,7 @@ const stageProgress = computed(() => {
             toIndex: i + 1,
             user: change.user || change.details?.user,
             created_at: change.created_at,
-            key: transitionKey,
+            key: transitionKey
           };
         }
       }
@@ -202,27 +183,30 @@ const stageProgress = computed(() => {
   };
 });
 
-const currentUser = computed(() => store.getters.getCurrentUser);
+const currentUser = computed(() => store.getters['getCurrentUser']);
 const fetchItemDetails = async () => {
   try {
     isLoading.value = true;
     error.value = null;
-
+    
     const { data } = await KanbanAPI.getItem(props.itemId);
     item.value = data;
-
+    
     // Dados completos serão buscados pelas abas individuais quando necessário
     // O show retorna apenas metadados para performance
-
+    
     // Inicializar agentData se já estiver nos dados
     if (data.assigned_agents?.length > 0) {
       agentData.value = data.assigned_agents[0];
     } else if (data.agent) {
       agentData.value = data.agent;
     }
-
+    
     // Buscar dados relacionados apenas se necessário
-    await Promise.all([fetchKanbanItems()]);
+    await Promise.all([
+      fetchKanbanItems()
+    ]);
+    
   } catch (err) {
     error.value = err;
   } finally {
@@ -435,7 +419,10 @@ const registerActivity = async (type, details) => {
     const existingActivities = Array.isArray(item.value?.activities)
       ? item.value.activities
       : [];
-    const activities = [...existingActivities, newActivity];
+    const activities = [
+      ...existingActivities,
+      newActivity,
+    ];
 
     const payload = {
       ...(item.value || {}),
@@ -453,6 +440,7 @@ const registerActivity = async (type, details) => {
     // Handle error silently
   }
 };
+
 
 // Watchers para notes e checklist serão gerenciados pelas abas individuais
 
@@ -660,8 +648,13 @@ const checklistItemButtonText = computed(() => {
   return t('KANBAN.FORM.NOTES.LINK_ITEM');
 });
 
+
+
+
 // Computed para obter a lista de agentes
 const agentList = computed(() => store.getters['agents/getAgents']);
+
+
 
 // Modifique a função handleNoteAttachment para atualizar o nome do arquivo
 const handleNoteAttachment = async file => {
@@ -700,9 +693,7 @@ const handleNoteAttachment = async file => {
       };
 
       // Adiciona o anexo à lista de anexos da nota atual
-      const currentAttachments = Array.isArray(noteAttachments.value)
-        ? noteAttachments.value
-        : [];
+      const currentAttachments = Array.isArray(noteAttachments.value) ? noteAttachments.value : [];
       noteAttachments.value = [...currentAttachments, newAttachment];
     }
   } catch (error) {
@@ -711,6 +702,7 @@ const handleNoteAttachment = async file => {
     isUploadingAttachment.value = false;
   }
 };
+
 
 // Adicione a função formatDate
 const formatDate = date => {
@@ -721,6 +713,7 @@ const formatDate = date => {
     return '';
   }
 };
+
 
 onMounted(() => {
   // Buscar dados do item
@@ -754,7 +747,9 @@ onMounted(() => {
   onUnmounted(() => {
     document.removeEventListener('mousedown', handleClickOutside);
   });
+
 });
+
 
 // Adicione a função para formatar o valor em BRL
 const formatCurrency = value => {
@@ -776,6 +771,8 @@ const formatCurrencyForOffer = (value, currency) => {
   // Fallback para formatação padrão
   return formatCurrency(value);
 };
+
+
 
 // Notes serão gerenciados pelas abas individuais
 
@@ -872,6 +869,7 @@ watch(showSendMessageModal, newValue => {
   }
 });
 
+
 // Adicione este computed
 const truncatedConversationTitle = computed(() => {
   const title =
@@ -880,6 +878,7 @@ const truncatedConversationTitle = computed(() => {
     '';
   return title.length > 17 ? `${title.substring(0, 10)}...` : title;
 });
+
 
 // Adicione este computed para lidar com a descrição
 const itemDescription = computed(() => {
@@ -982,8 +981,9 @@ const handleItemUpdated = () => {
   emit('item-updated');
 };
 
+
 // Função para lidar com clique na etapa
-const handleStageClick = stage => {
+const handleStageClick = (stage) => {
   // Não permitir mover para a mesma etapa atual
   if (stage.key === item.value?.funnel_stage) {
     return;
@@ -1054,7 +1054,7 @@ const moveForm = ref({
 // Inicializar moveForm quando item for carregado
 watch(
   () => item.value,
-  newItem => {
+  (newItem) => {
     if (newItem) {
       moveForm.value = {
         funnel_id: newItem.funnel_id,
@@ -1192,7 +1192,7 @@ watch(
 // Garante que as mensagens sejam carregadas quando o item for carregado
 watch(
   () => item.value,
-  newItem => {
+  (newItem) => {
     if (newItem) {
       loadMessages();
     }
@@ -1232,7 +1232,7 @@ const selectedLinksPreview = computed(() => {
 // Attachments serão gerenciados pelas abas individuais
 
 // Função para remover anexo
-const removeAttachment = async attachmentId => {
+const removeAttachment = async (attachmentId) => {
   try {
     // Implementar lógica para remover anexo
     // Aqui você pode implementar a lógica de remoção
@@ -1240,15 +1240,13 @@ const removeAttachment = async attachmentId => {
     // Handle error silently
   }
 };
+
 </script>
 
 <template>
   <div class="kanban-details flex flex-col gap-6">
     <!-- Header with Edit Button -->
-    <div
-      v-if="!isLoading && item && showHeader"
-      class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700"
-    >
+    <div v-if="!isLoading && item && showHeader" class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
       <div class="flex items-center gap-3">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
           {{ item?.item_details?.title || t('KANBAN.ITEM_DETAILS') }}
@@ -1258,19 +1256,11 @@ const removeAttachment = async attachmentId => {
           v-if="item?.item_details?.status"
           class="px-2.5 py-1 text-xs font-medium rounded-full"
           :class="{
-            'bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300':
-              item.item_details.status === 'won',
-            'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300':
-              item.item_details.status === 'lost',
+            'bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300': item.item_details.status === 'won',
+            'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300': item.item_details.status === 'lost',
           }"
         >
-          {{
-            item.item_details.status === 'won'
-              ? 'Ganho'
-              : item.item_details.status === 'lost'
-                ? 'Perdido'
-                : item.item_details.status
-          }}
+          {{ item.item_details.status === 'won' ? 'Ganho' : item.item_details.status === 'lost' ? 'Perdido' : item.item_details.status }}
         </span>
         <!-- Priority Badge -->
         <span
@@ -1295,22 +1285,14 @@ const removeAttachment = async attachmentId => {
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex-1 flex justify-center items-center py-12">
-      <span
-        class="w-8 h-8 border-2 border-t-woot-500 border-r-woot-500 border-b-transparent border-l-transparent rounded-full animate-spin"
-      />
+      <span class="w-8 h-8 border-2 border-t-woot-500 border-r-woot-500 border-b-transparent border-l-transparent rounded-full animate-spin" />
     </div>
 
     <!-- Error State -->
-    <div
-      v-else-if="error"
-      class="flex-1 flex justify-center items-center py-12"
-    >
+    <div v-else-if="error" class="flex-1 flex justify-center items-center py-12">
       <div class="text-center">
         <p class="text-red-500 mb-4">Erro ao carregar detalhes do item</p>
-        <button
-          class="px-4 py-2 bg-woot-500 text-white rounded"
-          @click="fetchItemDetails"
-        >
+        <button @click="fetchItemDetails" class="px-4 py-2 bg-woot-500 text-white rounded">
           Tentar novamente
         </button>
       </div>
@@ -1318,65 +1300,49 @@ const removeAttachment = async attachmentId => {
 
     <!-- Content -->
     <div v-else-if="item">
+
       <!-- Indicador de Progresso nas Etapas -->
-      <div v-if="stageProgress.stages.length > 0" class="w-full p-4">
-        <div
-          class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm stage-progress-container"
-        >
+      <div
+        v-if="stageProgress.stages.length > 0"
+        class="w-full p-4"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm stage-progress-container">
           <!-- Header com progresso geral -->
-          <div
-            class="flex items-center justify-between mb-4 stage-progress-header"
-          >
+          <div class="flex items-center justify-between mb-4 stage-progress-header">
             <div class="flex items-center gap-2">
-              <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse" />
-              <span
-                class="text-sm font-semibold text-slate-900 dark:text-slate-100"
-              >
+              <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse"></div>
+              <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {{ t('KANBAN.STAGE.FUNNEL_PROGRESS') }}
               </span>
             </div>
             <div class="flex items-center gap-2">
-              <span
-                class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full font-medium"
-              >
-                {{ stageProgress.currentStageIndex + 1 }} de
-                {{ stageProgress.stages.length }}
+              <span class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full font-medium">
+                {{ stageProgress.currentStageIndex + 1 }} de {{ stageProgress.stages.length }}
               </span>
-              <span
-                class="text-xs text-slate-600 dark:text-slate-400 font-medium"
-              >
-                {{
-                  Math.round(
-                    (stageProgress.currentStageIndex /
-                      Math.max(stageProgress.stages.length - 1, 1)) *
-                      100
-                  )
-                }}%
+              <span class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                {{ Math.round((stageProgress.currentStageIndex / Math.max(stageProgress.stages.length - 1, 1)) * 100) }}%
               </span>
             </div>
           </div>
 
           <!-- Barra de progresso principal -->
           <div class="relative mb-6">
-            <div
-              class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden stage-progress-bar"
-            >
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden stage-progress-bar">
               <div
                 class="h-full bg-gradient-to-r from-woot-500 via-woot-500 to-woot-600 rounded-full transition-all duration-1000 ease-out"
                 :style="{
-                  width:
-                    stageProgress.currentStageIndex > 0
-                      ? `${(stageProgress.currentStageIndex / Math.max(stageProgress.stages.length - 1, 1)) * 100}%`
-                      : '0%',
+                  width: stageProgress.currentStageIndex > 0
+                    ? `${(stageProgress.currentStageIndex / Math.max(stageProgress.stages.length - 1, 1)) * 100}%`
+                    : '0%',
                 }"
-              />
+              ></div>
             </div>
           </div>
 
           <!-- Etapas detalhadas -->
           <div class="relative">
             <!-- Linha de conexão sutil -->
-            <div class="absolute top-6 left-6 right-6 h-px stage-connector" />
+            <div class="absolute top-6 left-6 right-6 h-px stage-connector"></div>
 
             <!-- Container das etapas -->
             <div class="flex justify-between relative">
@@ -1386,13 +1352,11 @@ const removeAttachment = async attachmentId => {
                 :key="transition.key"
                 class="absolute top-0 flex flex-col items-center justify-center hidden lg:flex"
                 :style="{
-                  left: `calc(1.5rem + ${((transition.fromIndex + (transition.toIndex - transition.fromIndex) / 2) / Math.max(stageProgress.stages.length - 1, 1)) * 100}%)`,
-                  transform: 'translateX(-50%) translateY(-100%)',
+                  left: `calc(1.5rem + ${(transition.fromIndex + (transition.toIndex - transition.fromIndex) / 2) / Math.max(stageProgress.stages.length - 1, 1) * 100}%)`,
+                  transform: 'translateX(-50%) translateY(-100%)'
                 }"
               >
-                <div
-                  class="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg px-3 py-2 shadow-lg mb-2 max-w-32 stage-tooltip"
-                >
+                <div class="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg px-3 py-2 shadow-lg mb-2 max-w-32 stage-tooltip">
                   <div class="text-center">
                     <span class="text-xs font-semibold block">
                       {{ transition.user?.name || 'Sistema' }}
@@ -1402,9 +1366,7 @@ const removeAttachment = async attachmentId => {
                     </span>
                   </div>
                   <!-- Seta do tooltip -->
-                  <div
-                    class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-100"
-                  />
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-100"></div>
                 </div>
               </div>
 
@@ -1441,29 +1403,19 @@ const removeAttachment = async attachmentId => {
                 >
                   <!-- Ícones baseados no status -->
                   <span
-                    v-if="
-                      index < stageProgress.currentStageIndex &&
-                      stageProgress.completedStages.includes(stage.key)
-                    "
+                    v-if="index < stageProgress.currentStageIndex && stageProgress.completedStages.includes(stage.key)"
                     class="text-sm font-bold"
                   >
                     ✓
                   </span>
                   <span
-                    v-else-if="
-                      stageProgress.visitedStages.includes(stage.key) &&
-                      index < stageProgress.currentStageIndex &&
-                      !stageProgress.completedStages.includes(stage.key)
-                    "
+                    v-else-if="stageProgress.visitedStages.includes(stage.key) && index < stageProgress.currentStageIndex && !stageProgress.completedStages.includes(stage.key)"
                     class="text-sm font-bold"
                   >
                     ↺
                   </span>
                   <span
-                    v-else-if="
-                      index < stageProgress.currentStageIndex &&
-                      !stageProgress.visitedStages.includes(stage.key)
-                    "
+                    v-else-if="index < stageProgress.currentStageIndex && !stageProgress.visitedStages.includes(stage.key)"
                     class="text-sm font-bold"
                   >
                     ✗
@@ -1476,7 +1428,7 @@ const removeAttachment = async attachmentId => {
                   <div
                     v-if="index === stageProgress.currentStageIndex"
                     class="absolute inset-0 rounded-full bg-woot-500 animate-ping opacity-20"
-                  />
+                  ></div>
                 </div>
 
                 <!-- Nome da etapa -->
@@ -1508,53 +1460,41 @@ const removeAttachment = async attachmentId => {
                     v-if="index === stageProgress.currentStageIndex"
                     class="mt-2"
                   >
-                    <span
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-woot-100 dark:bg-woot-900/50 text-woot-700 dark:text-woot-300 border border-woot-200 dark:border-woot-800"
-                    >
-                      <div
-                        class="w-1.5 h-1.5 bg-woot-500 rounded-full mr-1.5 animate-pulse"
-                      />
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-woot-100 dark:bg-woot-900/50 text-woot-700 dark:text-woot-300 border border-woot-200 dark:border-woot-800">
+                      <div class="w-1.5 h-1.5 bg-woot-500 rounded-full mr-1.5 animate-pulse"></div>
                       Atual
                     </span>
                   </div>
+
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Legenda (mobile) -->
-          <div
-            class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 lg:hidden"
-          >
+          <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 lg:hidden">
             <div class="flex flex-wrap justify-center gap-4 text-xs">
               <div class="flex items-center gap-1">
-                <div
-                  class="w-3 h-3 bg-woot-500 rounded-full border border-woot-400"
-                />
+                <div class="w-3 h-3 bg-woot-500 rounded-full border border-woot-400"></div>
                 <span class="text-slate-600 dark:text-slate-400">Atual</span>
               </div>
               <div class="flex items-center gap-1">
-                <div
-                  class="w-3 h-3 bg-green-500 rounded-full border border-green-400"
-                />
+                <div class="w-3 h-3 bg-green-500 rounded-full border border-green-400"></div>
                 <span class="text-slate-600 dark:text-slate-400">Concluída</span>
               </div>
               <div class="flex items-center gap-1">
-                <div
-                  class="w-3 h-3 bg-amber-400 rounded-full border border-amber-300"
-                />
+                <div class="w-3 h-3 bg-amber-400 rounded-full border border-amber-300"></div>
                 <span class="text-slate-600 dark:text-slate-400">Visitada</span>
               </div>
               <div class="flex items-center gap-1">
-                <div
-                  class="w-3 h-3 bg-slate-100 dark:bg-slate-700 rounded-full border border-slate-300 dark:border-slate-600"
-                />
+                <div class="w-3 h-3 bg-slate-100 dark:bg-slate-700 rounded-full border border-slate-300 dark:border-slate-600"></div>
                 <span class="text-slate-600 dark:text-slate-400">Pendente</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
 
       <!-- Container das colunas esquerda, meio e direita -->
       <div class="flex flex-col lg:flex-row gap-4">
@@ -1600,6 +1540,7 @@ const removeAttachment = async attachmentId => {
 
         <!-- Coluna Direita - Ações e Informações -->
         <div class="w-full lg:w-1/4 p-4 space-y-6">
+
           <!-- Seção de Agente Responsável -->
           <KanbanAgentInfo
             :item="item"
@@ -1608,28 +1549,12 @@ const removeAttachment = async attachmentId => {
           />
 
           <!-- Seção de Ofertas -->
-          <div
-            v-if="
-              item?.item_details?.offers && item.item_details.offers.length > 0
-            "
-            class="offers-section -mt-6"
-          >
+          <div v-if="item?.item_details?.offers && item.item_details.offers.length > 0" class="offers-section -mt-6">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-1.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-users-round-icon lucide-users-round text-slate-600 dark:text-slate-400"
-                >
-                  <line x1="12" x2="12" y1="2" y2="22" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-round-icon lucide-users-round text-slate-600 dark:text-slate-400">
+                  <line x1="12" x2="12" y1="2" y2="22"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                 </svg>
                 <span class="text-xs text-slate-700 dark:text-slate-300">
                   {{ t('KANBAN.OFFERS.TITLE') || 'Ofertas' }}
@@ -1644,38 +1569,19 @@ const removeAttachment = async attachmentId => {
                   :key="offer.id || offer.name"
                   class="flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
                 >
-                  <div
-                    class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="text-blue-600 dark:text-blue-400"
-                    >
-                      <line x1="12" x2="12" y1="2" y2="22" />
-                      <path
-                        d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
-                      />
+                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
+                      <line x1="12" x2="12" y1="2" y2="22"/>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div
-                      class="font-medium text-sm text-slate-900 dark:text-slate-100 truncate"
-                    >
+                    <div class="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">
                       {{ offer.description || 'Oferta' }}
                     </div>
                   </div>
                   <div v-if="offer.value" class="text-right flex-shrink-0">
-                    <div
-                      class="font-semibold text-sm text-slate-900 dark:text-slate-100"
-                    >
+                    <div class="font-semibold text-sm text-slate-900 dark:text-slate-100">
                       {{ formatCurrencyForOffer(offer.value, offer.currency) }}
                     </div>
                   </div>
@@ -1686,33 +1592,20 @@ const removeAttachment = async attachmentId => {
 
           <!-- Seção de Atividades -->
           <div class="activities-section">
-            <KanbanActivitiesTab :item="item" :is-stacklab="isStacklab" />
+            <KanbanActivitiesTab
+              :item="item"
+              :is-stacklab="isStacklab"
+            />
           </div>
 
           <!-- Seção de Conversa Vinculada -->
-          <div
-            v-if="conversationInfo && currentActiveTab !== 'basic_data'"
-            class="conversation-section"
-          >
+          <div v-if="conversationInfo && currentActiveTab !== 'basic_data'" class="conversation-section">
             <div class="flex items-center justify-between gap-1 mb-2">
               <div class="flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="text-slate-600 dark:text-slate-400 flex-shrink-0"
-                >
-                  <path
-                    d="M12 3H4a2 2 0 0 0-2 2v16.286a.71.71 0 0 0 1.212.502l2.202-2.202A2 2 0 0 1 6.828 19H20a2 2 0 0 0 2-2v-4"
-                  />
-                  <path d="M16 3h6v6" />
-                  <path d="m16 9 6-6" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600 dark:text-slate-400 flex-shrink-0">
+                  <path d="M12 3H4a2 2 0 0 0-2 2v16.286a.71.71 0 0 0 1.212.502l2.202-2.202A2 2 0 0 1 6.828 19H20a2 2 0 0 0 2-2v-4"/>
+                  <path d="M16 3h6v6"/>
+                  <path d="m16 9 6-6"/>
                 </svg>
                 <span class="text-xs text-slate-700 dark:text-slate-300">
                   {{ t('KANBAN.FORM.CONVERSATION.LABEL') }}
@@ -1724,90 +1617,42 @@ const removeAttachment = async attachmentId => {
             </div>
             <div
               class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200/30 dark:border-slate-700/30 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-              @click="
-                navigateToConversation($event, conversationInfo.display_id)
-              "
+              @click="navigateToConversation($event, conversationInfo.display_id)"
               @contextmenu="handleContextMenu($event, conversationInfo.id)"
             >
               <!-- Contato -->
-              <div
-                v-if="conversationInfo.contact"
-                class="flex items-center gap-3 mb-2"
-              >
+              <div v-if="conversationInfo.contact" class="flex items-center gap-3 mb-2">
                 <img
                   v-if="conversationInfo.contact.thumbnail"
                   :src="conversationInfo.contact.thumbnail"
                   :alt="conversationInfo.contact.name"
                   class="w-8 h-8 rounded-full object-cover"
                 />
-                <div
-                  v-else
-                  class="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center"
-                >
-                  <span
-                    class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                  >
-                    {{
-                      conversationInfo.contact.name?.charAt(0)?.toUpperCase() ||
-                      '?'
-                    }}
+                <div v-else class="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                  <span class="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    {{ conversationInfo.contact.name?.charAt(0)?.toUpperCase() || '?' }}
                   </span>
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center justify-between">
-                    <div
-                      class="font-semibold text-sm text-slate-900 dark:text-slate-100"
-                    >
-                      <span
-                        class="text-xs text-slate-500 dark:text-slate-400 mr-1"
-                        >#{{ conversationInfo.display_id }}</span>
-                      {{
-                        conversationInfo.contact.name ||
-                        t('KANBAN.CONTACT_UNKNOWN')
-                      }}
+                    <div class="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                      <span class="text-xs text-slate-500 dark:text-slate-400 mr-1">#{{ conversationInfo.display_id }}</span>
+                      {{ conversationInfo.contact.name || t('KANBAN.CONTACT_UNKNOWN') }}
                     </div>
                     <!-- Informações à direita: telefone, inbox e tipo -->
                     <div class="flex items-center gap-3">
                       <!-- Phone number do contato -->
-                      <div
-                        v-if="conversationInfo.contact?.phone_number"
-                        class="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="text-slate-500 dark:text-slate-400"
-                        >
-                          <path
-                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
-                          />
+                      <div v-if="conversationInfo.contact?.phone_number" class="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 dark:text-slate-400">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                         </svg>
                         {{ conversationInfo.contact.phone_number }}
                       </div>
                       <!-- Inbox info -->
-                      <div
-                        v-if="conversationInfo.inbox"
-                        class="flex items-center gap-1"
-                      >
-                        <span
-                          class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                          >{{ conversationInfo.inbox.name }}</span>
-                        <span
-                          class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-700 dark:text-slate-300"
-                        >
-                          {{
-                            conversationInfo.inbox.channel_type?.replace(
-                              'Channel::',
-                              ''
-                            ) || 'Web'
-                          }}
+                      <div v-if="conversationInfo.inbox" class="flex items-center gap-1">
+                        <span class="text-xs font-medium text-slate-600 dark:text-slate-400">{{ conversationInfo.inbox.name }}</span>
+                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-700 dark:text-slate-300">
+                          {{ conversationInfo.inbox.channel_type?.replace('Channel::', '') || 'Web' }}
                         </span>
                       </div>
                     </div>
@@ -1833,39 +1678,22 @@ const removeAttachment = async attachmentId => {
                     v-if="conversationInfo.unread_count > 0"
                     class="flex items-center justify-center h-5 min-w-[1rem] px-1.5 text-xs font-medium bg-red-500 text-white rounded-full shadow-sm"
                   >
-                    {{
-                      conversationInfo.unread_count > 9
-                        ? '9+'
-                        : conversationInfo.unread_count
-                    }}
+                    {{ conversationInfo.unread_count > 9 ? '9+' : conversationInfo.unread_count }}
                   </span>
                 </div>
               </div>
 
               <!-- Informações adicionais -->
-              <div
-                class="flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-400 mb-2"
-              >
+              <div class="flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-400 mb-2">
                 <!-- Última atividade -->
-                <div
-                  v-if="conversationInfo.last_activity_at"
-                  class="flex items-center gap-1"
-                >
+                <div v-if="conversationInfo.last_activity_at" class="flex items-center gap-1">
                   <span class="font-medium">{{ t('KANBAN.LAST_ACTIVITY') }}:</span>
-                  <span>{{
-                    formatDate(conversationInfo.last_activity_at)
-                  }}</span>
+                  <span>{{ formatDate(conversationInfo.last_activity_at) }}</span>
                 </div>
               </div>
 
               <!-- Labels -->
-              <div
-                v-if="
-                  conversationInfo.label_list &&
-                  conversationInfo.label_list.length > 0
-                "
-                class="flex flex-wrap gap-1"
-              >
+              <div v-if="conversationInfo.label_list && conversationInfo.label_list.length > 0" class="flex flex-wrap gap-1">
                 <span
                   v-for="label in conversationInfo.label_list"
                   :key="label"
@@ -1966,17 +1794,10 @@ const removeAttachment = async attachmentId => {
 
       <div class="settings-content">
         <SendMessageTemplate
-          :conversation-id="
-            conversationInfo?.id || item.value?.item_details?.conversation_id
-          "
+          :conversation-id="conversationInfo?.id || item.value?.item_details?.conversation_id"
           :current-stage="item.value?.funnel_stage || ''"
-          :contact="
-            conversationInfo?.contact ||
-            item.value?.item_details?.conversation?.contact
-          "
-          :conversation="
-            conversationInfo || item.value?.item_details?.conversation
-          "
+          :contact="conversationInfo?.contact || item.value?.item_details?.conversation?.contact"
+          :conversation="conversationInfo || item.value?.item_details?.conversation"
           :item="item.value"
           @close="() => (showSendMessageModal = false)"
           @send="handleSendMessage"
@@ -1998,18 +1819,12 @@ const removeAttachment = async attachmentId => {
 
       <div class="space-y-3">
         <p class="text-sm text-slate-600 dark:text-slate-400">
-          {{
-            t('KANBAN.MOVE_STAGE_CONFIRMATION.MESSAGE') ||
-            'Tem certeza que deseja mover este item para a etapa:'
-          }}
+          {{ t('KANBAN.MOVE_STAGE_CONFIRMATION.MESSAGE') || 'Tem certeza que deseja mover este item para a etapa:' }}
         </p>
 
-        <div
-          v-if="selectedStageForMove"
-          class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border"
-        >
+        <div v-if="selectedStageForMove" class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border">
           <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-slate-400" />
+            <div class="w-3 h-3 rounded-full bg-slate-400"></div>
             <span class="font-medium text-slate-900 dark:text-slate-100">
               {{ selectedStageForMove.name }}
             </span>
@@ -2034,6 +1849,7 @@ const removeAttachment = async attachmentId => {
       </div>
     </div>
   </Modal>
+
 </template>
 
 <style scoped>
@@ -2043,10 +1859,11 @@ const removeAttachment = async attachmentId => {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
-
+    
 .kanban-details::-webkit-scrollbar {
   display: none;
 }
+
 
 .conversation-section {
   margin-bottom: 1.5rem;
@@ -2096,24 +1913,13 @@ const removeAttachment = async attachmentId => {
 
 /* Animações do componente de progresso */
 @keyframes progress-shine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 @keyframes stage-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
 
 @keyframes fade-in-up {
@@ -2160,8 +1966,7 @@ const removeAttachment = async attachmentId => {
 }
 
 .stage-connector {
-  background: linear-gradient(
-    90deg,
+  background: linear-gradient(90deg,
     rgba(148, 163, 184, 0.3),
     rgba(148, 163, 184, 0.6),
     rgba(148, 163, 184, 0.3)
@@ -2170,8 +1975,7 @@ const removeAttachment = async attachmentId => {
 
 /* Dark mode adjustments */
 .dark .stage-connector {
-  background: linear-gradient(
-    90deg,
+  background: linear-gradient(90deg,
     rgba(71, 85, 105, 0.3),
     rgba(71, 85, 105, 0.6),
     rgba(71, 85, 105, 0.3)
@@ -2193,4 +1997,5 @@ const removeAttachment = async attachmentId => {
     font-size: 0.75rem;
   }
 }
+
 </style>

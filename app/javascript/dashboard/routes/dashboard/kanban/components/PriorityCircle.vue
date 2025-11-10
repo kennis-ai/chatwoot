@@ -1,3 +1,25 @@
+<template>
+  <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="priority-circle">
+    <circle
+      :cx="size/2"
+      :cy="size/2"
+      :r="radius"
+      :stroke="borderColor"
+      stroke-width="2"
+      fill="none"
+    />
+    <template v-for="n in filledBlocks" :key="n">
+      <path
+        v-bind="getArcProps(n - 1)"
+        :stroke="priorityColor"
+        stroke-width="2.5"
+        fill="none"
+        stroke-linecap="round"
+      />
+    </template>
+  </svg>
+</template>
+
 <script setup>
 import { computed } from 'vue';
 const props = defineProps({
@@ -62,36 +84,9 @@ function getArcProps(index) {
 }
 </script>
 
-<template>
-  <svg
-    :width="size"
-    :height="size"
-    :viewBox="`0 0 ${size} ${size}`"
-    class="priority-circle"
-  >
-    <circle
-      :cx="size / 2"
-      :cy="size / 2"
-      :r="radius"
-      :stroke="borderColor"
-      stroke-width="2"
-      fill="none"
-    />
-    <template v-for="n in filledBlocks" :key="n">
-      <path
-        v-bind="getArcProps(n - 1)"
-        :stroke="priorityColor"
-        stroke-width="2.5"
-        fill="none"
-        stroke-linecap="round"
-      />
-    </template>
-  </svg>
-</template>
-
 <style scoped>
 .priority-circle {
   display: inline-block;
   vertical-align: middle;
 }
-</style>
+</style> 

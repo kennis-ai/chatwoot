@@ -16,8 +16,8 @@ const emit = defineEmits(['update:modelValue']);
   <div class="stage-color-picker" @click.stop.prevent>
     <ColorPicker
       :model-value="modelValue"
-      class="!w-full"
       @update:model-value="color => emit('update:modelValue', color)"
+      class="!w-full"
     />
   </div>
 </template>

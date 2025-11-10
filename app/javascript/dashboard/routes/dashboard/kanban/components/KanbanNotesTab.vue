@@ -63,20 +63,20 @@ const emit = defineEmits([
   'update:item',
   'item-updated',
   'upload-attachment',
-  'delete-attachment',
+  'delete-attachment'
 ]);
 
 const { t } = useI18n();
 
 // Instância do MarkdownIt com configurações padrão
 const md = new MarkdownIt({
-  html: false, // Desabilitar HTML inline para segurança
-  breaks: true, // Converter quebras de linha em <br>
-  linkify: true, // Converter URLs em links automaticamente
+  html: false,      // Desabilitar HTML inline para segurança
+  breaks: true,     // Converter quebras de linha em <br>
+  linkify: true     // Converter URLs em links automaticamente
 });
 
 // Função para renderizar markdown
-const renderMarkdown = text => {
+const renderMarkdown = (text) => {
   if (!text) return '';
 
   // Renderizar diretamente - markdown-it já suporta listas por padrão
@@ -258,6 +258,7 @@ const handleAddNote = async () => {
       message: t('KANBAN.NOTES.CREATED_SUCCESSFULLY'),
       action: { type: 'success' },
     });
+
   } catch (error) {
     console.error('Erro ao criar nota:', error);
     emitter.emit('newToastMessage', {
@@ -276,7 +277,7 @@ const handleEditNote = note => {
   noteAttachments.value = note.attachments || [];
 };
 
-const handleDeleteNote = async noteId => {
+const handleDeleteNote = async (noteId) => {
   try {
     await KanbanAPI.deleteNote(props.item.id, noteId);
 
@@ -288,6 +289,7 @@ const handleDeleteNote = async noteId => {
       message: t('KANBAN.NOTES.DELETED_SUCCESSFULLY'),
       action: { type: 'success' },
     });
+
   } catch (error) {
     console.error('Erro ao deletar nota:', error);
     emitter.emit('newToastMessage', {
@@ -334,9 +336,7 @@ const handleNoteAttachment = async file => {
       emit('upload-attachment', {
         file,
         type: 'note',
-        source: editingNoteId.value
-          ? { type: 'note', id: editingNoteId.value }
-          : null,
+        source: editingNoteId.value ? { type: 'note', id: editingNoteId.value } : null
       });
     }
   } catch (error) {
@@ -351,7 +351,7 @@ const toggleLinkDropdown = () => {
   showLinkDropdown.value = !showLinkDropdown.value;
 };
 
-const selectLinkType = type => {
+const selectLinkType = (type) => {
   showLinkDropdown.value = false;
 
   switch (type) {
@@ -453,12 +453,9 @@ const sortOrder = ref('newest'); // 'newest', 'oldest'
 // Computed para usar notas internas ou da prop
 const displayNotes = computed(() => {
   // Priorizar notas internas, depois props.notes, garantir sempre um array
-  let notes =
-    Array.isArray(internalNotes.value) && internalNotes.value.length > 0
-      ? internalNotes.value
-      : Array.isArray(props.notes)
-        ? props.notes
-        : [];
+  let notes = Array.isArray(internalNotes.value) && internalNotes.value.length > 0
+    ? internalNotes.value
+    : (Array.isArray(props.notes) ? props.notes : []);
 
   if (!notes || notes.length === 0) return [];
 
@@ -552,12 +549,12 @@ const openImagePreview = url => {
       <!-- Botões de ação -->
       <div class="flex items-center justify-between mt-2">
         <!-- Botão único de vinculação com dropdown -->
-        <div v-if="isStacklab" class="relative">
+        <div class="relative" v-if="isStacklab">
           <!-- Botão principal de vinculação -->
           <button
             class="action-button hover:bg-slate-100 dark:hover:bg-slate-600"
-            :class="{ 'bg-slate-100 dark:bg-slate-600': showLinkDropdown }"
             @click="toggleLinkDropdown"
+            :class="{ 'bg-slate-100 dark:bg-slate-600': showLinkDropdown }"
           >
             <fluent-icon
               :icon="showLinkDropdown ? 'dismiss' : 'attach'"
@@ -565,10 +562,10 @@ const openImagePreview = url => {
             />
           </button>
 
-          <!-- Dropdown de opções -->
-          <div
-            v-if="showLinkDropdown"
-            class="link-dropdown absolute top-full mt-2 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-[180px] flex flex-col items-start"
+                      <!-- Dropdown de opções -->
+            <div
+              v-if="showLinkDropdown"
+              class="link-dropdown absolute top-full mt-2 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-[180px] flex flex-col items-start"
           >
             <!-- Opção de upload de arquivo -->
             <FileUpload
@@ -580,49 +577,34 @@ const openImagePreview = url => {
                 class="link-dropdown-item"
                 :disabled="isUploadingAttachment"
               >
-                <fluent-icon
-                  icon="attach"
-                  size="16"
-                  class="text-slate-600 dark:text-slate-400"
-                />
-                <span>{{
-                  isUploadingAttachment ? '...' : 'Anexar arquivo'
-                }}</span>
+                <fluent-icon icon="attach" size="16" class="text-slate-600 dark:text-slate-400" />
+                <span>{{ isUploadingAttachment ? '...' : 'Anexar arquivo' }}</span>
               </button>
             </FileUpload>
 
             <!-- Separador -->
-            <div class="border-t border-slate-200 dark:border-slate-700 my-1" />
+            <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
 
             <!-- Opções de vinculação -->
-            <button class="link-dropdown-item" @click="selectLinkType('item')">
-              <fluent-icon
-                icon="link"
-                size="16"
-                class="text-blue-600 dark:text-blue-400"
-              />
+            <button
+              class="link-dropdown-item"
+              @click="selectLinkType('item')"
+            >
+              <fluent-icon icon="link" size="16" class="text-blue-600 dark:text-blue-400" />
               <span>{{ t('KANBAN.FORM.NOTES.LINK_ITEM') }}</span>
             </button>
             <button
               class="link-dropdown-item"
               @click="selectLinkType('conversation')"
             >
-              <fluent-icon
-                icon="chat"
-                size="16"
-                class="text-slate-600 dark:text-slate-400"
-              />
+              <fluent-icon icon="chat" size="16" class="text-slate-600 dark:text-slate-400" />
               <span>{{ t('KANBAN.FORM.NOTES.LINK_CONVERSATION') }}</span>
             </button>
             <button
               class="link-dropdown-item"
               @click="selectLinkType('contact')"
             >
-              <fluent-icon
-                icon="person"
-                size="16"
-                class="text-purple-600 dark:text-purple-400"
-              />
+              <fluent-icon icon="person" size="16" class="text-purple-600 dark:text-purple-400" />
               <span>{{ t('KANBAN.FORM.NOTES.LINK_CONTACT') }}</span>
             </button>
           </div>
@@ -655,7 +637,9 @@ const openImagePreview = url => {
 
       <!-- Preview das seleções ativas -->
       <div
-        v-if="selectedItemId || selectedConversationId || selectedContactId"
+        v-if="
+          selectedItemId || selectedConversationId || selectedContactId
+        "
         class="selected-links-preview mt-2 mb-3 space-y-2"
       >
         <!-- Item selecionado -->
@@ -720,10 +704,12 @@ const openImagePreview = url => {
                 size="14"
                 class="text-purple-600 dark:text-purple-400"
               />
-              <span class="text-sm text-purple-700 dark:text-purple-300">
+              <span
+                class="text-sm text-purple-700 dark:text-purple-300"
+              >
                 {{
-                  contactsList.find(c => c.id === selectedContactId)?.name ||
-                  `Contato #${selectedContactId}`
+                  contactsList.find(c => c.id === selectedContactId)
+                    ?.name || `Contato #${selectedContactId}`
                 }}
               </span>
             </div>
@@ -736,6 +722,7 @@ const openImagePreview = url => {
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Seletor de itens -->
@@ -744,9 +731,15 @@ const openImagePreview = url => {
       :show="showItemSelector"
       @close="showItemSelector = false"
     >
-      <div class="item-selector p-0 bg-transparent border-none shadow-none">
-        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300">
+      <div
+        class="item-selector p-0 bg-transparent border-none shadow-none"
+      >
+        <div
+          class="px-4 py-3 border-b border-slate-200 dark:border-slate-700"
+        >
+          <h4
+            class="text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
             {{ t('KANBAN.FORM.NOTES.SELECT_ITEM') }}
           </h4>
         </div>
@@ -775,7 +768,10 @@ const openImagePreview = url => {
               {{ t('KANBAN.FORM.NOTES.NO_ITEMS') }}
             </p>
           </div>
-          <div v-else class="divide-y divide-slate-100 dark:divide-slate-700">
+          <div
+            v-else
+            class="divide-y divide-slate-100 dark:divide-slate-700"
+          >
             <button
               v-for="item in filteredKanbanItems"
               :key="item.id"
@@ -833,8 +829,12 @@ const openImagePreview = url => {
       <div
         class="conversation-selector p-0 bg-transparent border-none shadow-none"
       >
-        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div
+          class="px-4 py-3 border-b border-slate-200 dark:border-slate-700"
+        >
+          <h4
+            class="text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
             {{ t('KANBAN.FORM.NOTES.SELECT_CONVERSATION') }}
           </h4>
         </div>
@@ -863,7 +863,10 @@ const openImagePreview = url => {
               {{ t('KANBAN.FORM.NOTES.NO_CONVERSATIONS') }}
             </p>
           </div>
-          <div v-else class="divide-y divide-slate-100 dark:divide-slate-700">
+          <div
+            v-else
+            class="divide-y divide-slate-100 dark:divide-slate-700"
+          >
             <button
               v-for="conversation in filteredConversations"
               :key="conversation.id"
@@ -916,9 +919,15 @@ const openImagePreview = url => {
       :show="showContactSelector"
       @close="showContactSelector = false"
     >
-      <div class="contact-selector p-0 bg-transparent border-none shadow-none">
-        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300">
+      <div
+        class="contact-selector p-0 bg-transparent border-none shadow-none"
+      >
+        <div
+          class="px-4 py-3 border-b border-slate-200 dark:border-slate-700"
+        >
+          <h4
+            class="text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
             {{ t('KANBAN.FORM.NOTES.SELECT_CONTACT') }}
           </h4>
         </div>
@@ -947,7 +956,10 @@ const openImagePreview = url => {
               {{ t('KANBAN.FORM.NOTES.NO_CONTACTS') }}
             </p>
           </div>
-          <div v-else class="divide-y divide-slate-100 dark:divide-slate-700">
+          <div
+            v-else
+            class="divide-y divide-slate-100 dark:divide-slate-700"
+          >
             <button
               v-for="contact in filteredContactsList"
               :key="contact.id"
@@ -973,7 +985,10 @@ const openImagePreview = url => {
                 v-if="contact.phone || contact.last_activity_at"
                 class="mt-1 ml-9 flex items-center gap-4 text-xs text-slate-500"
               >
-                <span v-if="contact.phone" class="flex items-center gap-1">
+                <span
+                  v-if="contact.phone"
+                  class="flex items-center gap-1"
+                >
                   <fluent-icon icon="call" size="12" />
                   {{ contact.phone }}
                 </span>
@@ -1002,8 +1017,8 @@ const openImagePreview = url => {
         <button
           v-if="displayNotes.length > 1"
           class="sort-button"
-          :title="getSortOrderText()"
           @click="toggleSortOrder"
+          :title="getSortOrderText()"
         >
           <fluent-icon icon="arrow-sort" size="16" />
           <span class="ml-1">{{ getSortOrderText() }}</span>
@@ -1013,9 +1028,10 @@ const openImagePreview = url => {
       <!-- Lista de notas -->
       <div v-for="note in displayNotes" :key="note.id" class="note-card">
         <div class="note-layout">
-          <div class="note-content">
-            <div class="flex items-start justify-between">
-              <div class="note-text" v-html="renderMarkdown(note.text)" />
+                      <div class="note-content">
+              <div class="flex items-start justify-between">
+                <div class="note-text" v-html="renderMarkdown(note.text)">
+                </div>
               <!-- Botões de ação -->
               <div class="flex items-center gap-1">
                 <button
@@ -1056,11 +1072,13 @@ const openImagePreview = url => {
                     size="14"
                     class="text-blue-600 dark:text-blue-400"
                   />
-                  <span class="text-sm text-blue-700 dark:text-blue-300">
+                  <span
+                    class="text-sm text-blue-700 dark:text-blue-300"
+                  >
                     {{ t('KANBAN.FORM.NOTES.LINKED_ITEM') }}:
                     {{
-                      getLinkedItemDetails(note.linked_item_id)?.title ||
-                      `#${note.linked_item_id}`
+                      getLinkedItemDetails(note.linked_item_id)
+                        ?.title || `#${note.linked_item_id}`
                     }}
                   </span>
                 </div>
@@ -1079,16 +1097,20 @@ const openImagePreview = url => {
                     size="14"
                     class="text-green-600 dark:text-green-400"
                   />
-                  <span class="text-sm text-green-700 dark:text-green-300">
-                    {{ t('KANBAN.FORM.NOTES.LINKED_CONVERSATION') }}: #{{
-                      note.linked_conversation_id
-                    }}
+                  <span
+                    class="text-sm text-green-700 dark:text-green-300"
+                  >
+                    {{ t('KANBAN.FORM.NOTES.LINKED_CONVERSATION') }}:
+                    #{{ note.linked_conversation_id }}
                   </span>
                 </div>
               </div>
 
               <!-- Contato vinculado -->
-              <div v-if="note.linked_contact_id" class="linked-contact mt-2">
+              <div
+                v-if="note.linked_contact_id"
+                class="linked-contact mt-2"
+              >
                 <div
                   class="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800"
                 >
@@ -1097,11 +1119,14 @@ const openImagePreview = url => {
                     size="14"
                     class="text-purple-600 dark:text-purple-400"
                   />
-                  <span class="text-sm text-purple-700 dark:text-purple-300">
+                  <span
+                    class="text-sm text-purple-700 dark:text-purple-300"
+                  >
                     {{ t('KANBAN.FORM.NOTES.LINKED_CONTACT') }}:
                     {{
-                      contactsList?.find?.(c => c.id === note.linked_contact_id)
-                        ?.name || `#${note.linked_contact_id}`
+                      contactsList?.find?.(
+                        c => c.id === note.linked_contact_id
+                      )?.name || `#${note.linked_contact_id}`
                     }}
                   </span>
                 </div>

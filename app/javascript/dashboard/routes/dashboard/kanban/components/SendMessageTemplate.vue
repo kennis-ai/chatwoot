@@ -567,7 +567,7 @@ const channelName = computed(() => {
           color="blue"
           size="sm"
           :disabled="(!selectedTemplate && !customMessage) || sendingMessage"
-          :is-loading="sendingMessage"
+          :isLoading="sendingMessage"
           @click="handleSendMessage"
         >
           {{

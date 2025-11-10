@@ -13,13 +13,6 @@ import KanbanItemDetails from './KanbanItemDetails.vue';
 import KanbanFilter from './KanbanFilter.vue';
 import { emitter } from 'shared/helpers/mitt';
 
-const props = defineProps({
-  currentView: {
-    type: String,
-    default: 'kanban',
-  },
-});
-const emit = defineEmits(['switchView', 'itemClick']);
 // Emitir evento para navegar para funnels no modo de criação
 const handleCreateFunnelClick = () => {
   emit('switchView', 'funnels', { mode: 'create' });
@@ -27,6 +20,14 @@ const handleCreateFunnelClick = () => {
 import FunnelForm from './FunnelForm.vue';
 import Dragbar from './Dragbar.vue';
 
+const props = defineProps({
+  currentView: {
+    type: String,
+    default: 'kanban',
+  },
+});
+
+const emit = defineEmits(['switchView', 'itemClick']);
 const { t } = useI18n();
 const store = useStore();
 const router = useRouter();
@@ -180,7 +181,7 @@ const handleDrop = async ({ itemId, columnId, funnelId }) => {
       itemId: parseInt(itemId, 10),
       fromStage: fromStage,
       toStage: columnId,
-      itemData: updatedItem,
+      itemData: updatedItem
     });
 
     // ✅ EMITIR EVENTO PARA ATUALIZAR STATS DAS COLUNAS
@@ -188,7 +189,7 @@ const handleDrop = async ({ itemId, columnId, funnelId }) => {
       itemId: parseInt(itemId, 10),
       fromStage: fromStage,
       toStage: columnId,
-      funnelId: funnelId,
+      funnelId: funnelId
     });
 
     // Apenas forçar atualização visual das colunas sem buscar novos dados
@@ -197,11 +198,8 @@ const handleDrop = async ({ itemId, columnId, funnelId }) => {
     });
   } catch (err) {
     // Exibir mensagem de erro específica se for erro de checklist obrigatório
-    const errorMessage =
-      err.response?.data?.error ||
-      err.response?.data?.message ||
-      t('KANBAN.ERROR_MOVING_ITEM');
-
+    const errorMessage = err.response?.data?.error || err.response?.data?.message || t('KANBAN.ERROR_MOVING_ITEM');
+    
     emitter.emit('newToastMessage', {
       message: errorMessage,
       action: { type: 'error' },
@@ -250,13 +248,10 @@ const handleFilterClose = () => {
 };
 
 const handleFilter = filters => {
-  console.log('[KanbanTab] handleFilter - Filtros recebidos:', filters);
+  console.log('[KanbanTab] handleFilter - Filtros recebidos:', filters)
   // Verificação defensiva: se filters for null ou undefined, use um objeto vazio
   activeFilters.value = filters || {};
-  console.log(
-    '[KanbanTab] handleFilter - activeFilters atualizado:',
-    activeFilters.value
-  );
+  console.log('[KanbanTab] handleFilter - activeFilters atualizado:', activeFilters.value)
 };
 
 const handleEdit = item => {
@@ -485,11 +480,8 @@ const handleMoveItemFromModal = async () => {
     }
   } catch (err) {
     // Exibir mensagem de erro específica se for erro de checklist obrigatório
-    const errorMessage =
-      err.response?.data?.error ||
-      err.response?.data?.message ||
-      t('KANBAN.ERROR_MOVING_ITEM');
-
+    const errorMessage = err.response?.data?.error || err.response?.data?.message || t('KANBAN.ERROR_MOVING_ITEM');
+    
     emitter.emit('newToastMessage', {
       message: errorMessage,
       action: { type: 'error' },
@@ -566,12 +558,8 @@ const filteredResults = computed(() => {
         const itemDate = item.created_at || item.item_details?.created_at;
         if (itemDate) {
           const itemDateTime = new Date(itemDate);
-          const startDate = activeFilters.value.date.start
-            ? new Date(activeFilters.value.date.start)
-            : null;
-          const endDate = activeFilters.value.date.end
-            ? new Date(activeFilters.value.date.end)
-            : null;
+          const startDate = activeFilters.value.date.start ? new Date(activeFilters.value.date.start) : null;
+          const endDate = activeFilters.value.date.end ? new Date(activeFilters.value.date.end) : null;
 
           if (startDate && itemDateTime < startDate) return false;
           if (endDate && itemDateTime > endDate) return false;
@@ -612,19 +600,13 @@ const filteredResults = computed(() => {
 
       const title = (item.item_details.title || '').toLowerCase();
       const description = (item.item_details.description || '').toLowerCase();
-      const customerName = (
-        item.item_details.customer_name || ''
-      ).toLowerCase();
-      const customerEmail = (
-        item.item_details.customer_email || ''
-      ).toLowerCase();
+      const customerName = (item.item_details.customer_name || '').toLowerCase();
+      const customerEmail = (item.item_details.customer_email || '').toLowerCase();
 
-      return (
-        title.includes(query) ||
-        description.includes(query) ||
-        customerName.includes(query) ||
-        customerEmail.includes(query)
-      );
+      return title.includes(query) ||
+             description.includes(query) ||
+             customerName.includes(query) ||
+             customerEmail.includes(query);
     });
   }
 
@@ -668,15 +650,15 @@ const handleCloseExpanded = () => {
       :kanban-items="[]"
       :is-dragging-active="isDraggingActive"
       :dragged-item="activeDraggedItem"
-      @open-filter-modal="showFilterModal = true"
-      @filter-applied="handleFilter"
-      @global-filter-change="handleFilter"
+      @openFilterModal="showFilterModal = true"
+      @filterApplied="handleFilter"
+      @globalFilterChange="handleFilter"
       @settings="handleSettings"
-      @item-created="handleItemCreated"
+      @itemCreated="handleItemCreated"
       @search="handleSearch"
-      @search-results="handleSearchResults"
-      @switch-view="view => emit('switchView', view)"
-      @global-status-filter-change="handleGlobalStatusFilterChange"
+      @searchResults="handleSearchResults"
+      @switchView="view => emit('switchView', view)"
+      @globalStatusFilterChange="handleGlobalStatusFilterChange"
     />
 
     <div v-if="isLoading" class="flex-1 overflow-x-auto kanban-columns">
@@ -698,89 +680,47 @@ const handleCloseExpanded = () => {
     >
       <div class="max-w-2xl w-full space-y-6">
         <!-- Card principal -->
-        <div
-          class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 p-8 relative overflow-hidden"
-        >
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 p-8 relative overflow-hidden">
           <!-- Gradiente de fundo sutil -->
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-woot-50/20 via-transparent to-woot-100/10 dark:from-woot-900/5 dark:via-transparent dark:to-woot-800/5 pointer-events-none"
-          />
+          <div class="absolute inset-0 bg-gradient-to-br from-woot-50/20 via-transparent to-woot-100/10 dark:from-woot-900/5 dark:via-transparent dark:to-woot-800/5 pointer-events-none"></div>
 
           <div class="relative z-10">
             <!-- Ícone principal -->
             <div class="flex justify-center mb-6">
-              <div
-                class="w-20 h-20 bg-gradient-to-br from-woot-500 to-woot-600 dark:from-woot-600 dark:to-woot-700 rounded-2xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform duration-200"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="text-white"
-                >
-                  <rect width="20" height="14" x="2" y="3" rx="2" />
-                  <line x1="8" x2="16" y1="21" y2="21" />
-                  <line x1="12" x2="12" y1="17" y2="21" />
+              <div class="w-20 h-20 bg-gradient-to-br from-woot-500 to-woot-600 dark:from-woot-600 dark:to-woot-700 rounded-2xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                  <rect width="20" height="14" x="2" y="3" rx="2"/>
+                  <line x1="8" x2="16" y1="21" y2="21"/>
+                  <line x1="12" x2="12" y1="17" y2="21"/>
                 </svg>
               </div>
             </div>
 
             <!-- Título principal -->
-            <h3
-              class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 leading-tight"
-            >
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 leading-tight">
               {{ t('KANBAN.FUNNELS.FORM.CREATE_FIRST') }}
             </h3>
 
             <!-- Descrição -->
-            <p
-              class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed text-base max-w-lg mx-auto"
-            >
+            <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed text-base max-w-lg mx-auto">
               {{ t('KANBAN.FUNNELS.FORM.CREATE_FIRST_MESSAGE') }}
             </p>
 
             <!-- Dica rápida integrada -->
-            <div
-              class="bg-gradient-to-r from-slate-50/80 to-slate-100/80 dark:from-slate-800/50 dark:to-slate-700/50 rounded-xl border border-slate-200/60 dark:border-slate-600/60 p-4 mb-8 shadow-sm hover:shadow-md transition-shadow"
-            >
+            <div class="bg-gradient-to-r from-slate-50/80 to-slate-100/80 dark:from-slate-800/50 dark:to-slate-700/50 rounded-xl border border-slate-200/60 dark:border-slate-600/60 p-4 mb-8 shadow-sm hover:shadow-md transition-shadow">
               <div class="flex items-start gap-3">
-                <div
-                  class="w-8 h-8 bg-gradient-to-br from-woot-100 to-woot-200 dark:from-woot-800 dark:to-woot-700 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="text-woot-600 dark:text-woot-300"
-                  >
-                    <path
-                      d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.5 2.5"
-                    />
-                    <path d="M9 18h6" />
-                    <path d="M10 22h4" />
+                <div class="w-8 h-8 bg-gradient-to-br from-woot-100 to-woot-200 dark:from-woot-800 dark:to-woot-700 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-woot-600 dark:text-woot-300">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.5 2.5"/>
+                    <path d="M9 18h6"/>
+                    <path d="M10 22h4"/>
                   </svg>
                 </div>
                 <div class="flex-1 text-left">
-                  <h4
-                    class="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1"
-                  >
+                  <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
                     {{ t('KANBAN.FUNNELS.FORM.TIP.TITLE') }}
                   </h4>
-                  <p
-                    class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed"
-                  >
+                  <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                     {{ t('KANBAN.FUNNELS.FORM.TIP.DESCRIPTION') }}
                   </p>
                 </div>
@@ -792,25 +732,15 @@ const handleCloseExpanded = () => {
               class="w-full bg-gradient-to-r from-woot-500 to-woot-600 hover:from-woot-600 hover:to-woot-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-woot-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 flex items-center justify-center gap-3 group"
               @click="handleCreateFunnelClick"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="transition-transform group-hover:scale-110"
-              >
-                <path d="M5 12h14" />
-                <path d="M12 5v14" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+                <path d="M5 12h14"/>
+                <path d="M12 5v14"/>
               </svg>
               <span>{{ t('KANBAN.FUNNELS.FORM.CREATE_BUTTON') }}</span>
             </button>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -847,8 +777,8 @@ const handleCloseExpanded = () => {
             v-for="column in filteredColumns.filter(
               col => col.id === expandedColumnId
             )"
-            :id="column.id"
             :key="column.id"
+            :id="column.id"
             :title="column.title"
             :color="column.color"
             :total-columns="filteredColumns.length"
@@ -862,10 +792,10 @@ const handleCloseExpanded = () => {
             @delete="handleDelete"
             @drop="handleDrop"
             @item-click="handleItemClick"
-            @item-dragstart="handleItemDragStart"
-            @item-dragend="handleItemDragEnd"
+            @itemDragstart="handleItemDragStart"
+            @itemDragend="handleItemDragEnd"
             @expand="handleExpandColumn"
-            @close-expanded="handleCloseExpanded"
+            @closeExpanded="handleCloseExpanded"
           />
         </template>
         <template v-else>
@@ -873,8 +803,8 @@ const handleCloseExpanded = () => {
             v-for="column in filteredColumns
               .slice()
               .sort((a, b) => a.position - b.position)"
-            :id="column.id"
             :key="column.id"
+            :id="column.id"
             :title="column.title"
             :color="column.color"
             :total-columns="filteredColumns.length"
@@ -888,10 +818,10 @@ const handleCloseExpanded = () => {
             @delete="handleDelete"
             @drop="handleDrop"
             @item-click="handleItemClick"
-            @item-dragstart="handleItemDragStart"
-            @item-dragend="handleItemDragEnd"
+            @itemDragstart="handleItemDragStart"
+            @itemDragend="handleItemDragEnd"
             @expand="handleExpandColumn"
-            @close-expanded="handleCloseExpanded"
+            @closeExpanded="handleCloseExpanded"
           />
         </template>
       </div>

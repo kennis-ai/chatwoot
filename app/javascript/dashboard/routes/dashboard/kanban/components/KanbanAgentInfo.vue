@@ -57,7 +57,7 @@ const conversationAgent = computed(() => {
 });
 
 // Função para formatar data de forma compacta
-const formatDate = dateString => {
+const formatDate = (dateString) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
@@ -98,7 +98,7 @@ const formatDate = dateString => {
 };
 
 // Função para obter status de disponibilidade do agente da conversa
-const getAgentAvailabilityStatus = agent => {
+const getAgentAvailabilityStatus = (agent) => {
   if (!agent) return null;
 
   // Primeiro tenta obter do agente da conversa
@@ -111,7 +111,7 @@ const getAgentAvailabilityStatus = agent => {
 };
 
 // Função para obter nome do status de disponibilidade
-const getAvailabilityLabel = status => {
+const getAvailabilityLabel = (status) => {
   switch (status) {
     case 'online':
       return 'Online';
@@ -152,7 +152,7 @@ const assignAgent = async () => {
 };
 
 // Função para remover agente
-const removeAgent = async agentId => {
+const removeAgent = async (agentId) => {
   try {
     const { data } = await KanbanAPI.removeAgent(props.item.id, agentId);
     if (data) {
@@ -164,7 +164,7 @@ const removeAgent = async agentId => {
 };
 
 // Função para obter o nome do agente que atribuiu baseado no ID
-const getAssignedByName = assignedById => {
+const getAssignedByName = (assignedById) => {
   if (!assignedById) return '';
 
   // Primeiro tenta encontrar na lista de agentes do funnel
@@ -187,13 +187,11 @@ const getAssignedByName = assignedById => {
 
 <template>
   <!-- Container principal com estilo consistente -->
-  <div
-    class="agent-info-container bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 shadow-sm"
-  >
+  <div class="agent-info-container bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
     <!-- Cabeçalho da seção com indicador de pulso -->
     <div class="agent-info-header flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse" />
+        <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse"></div>
         <h4 class="text-base font-semibold text-slate-900 dark:text-slate-100">
           {{ t('KANBAN.ITEM_DETAILS.AGENT_RESPONSIBLE') }}
         </h4>
@@ -202,10 +200,14 @@ const getAssignedByName = assignedById => {
       <!-- Ícone para adicionar agente -->
       <button
         class="flex items-center justify-center p-1.5 text-slate-500 dark:text-slate-400 hover:text-woot-500 dark:hover:text-woot-400 hover:bg-woot-50 dark:hover:bg-woot-900/20 transition-all rounded-lg"
-        title="Adicionar agente"
         @click="openAgentAssignModal"
+        title="Adicionar agente"
       >
-        <fluent-icon icon="person-add" size="14" class="text-current" />
+        <fluent-icon
+          icon="person-add"
+          size="14"
+          class="text-current"
+        />
       </button>
     </div>
 
@@ -216,10 +218,7 @@ const getAssignedByName = assignedById => {
           {{ t('KANBAN.ITEM_DETAILS.LOADING_AGENT') }}
         </span>
       </div>
-      <div
-        v-else-if="assignedAgents && assignedAgents.length > 0"
-        class="space-y-2"
-      >
+      <div v-else-if="assignedAgents && assignedAgents.length > 0" class="space-y-2">
         <div
           v-for="agent in assignedAgents"
           :key="agent.id"
@@ -232,9 +231,7 @@ const getAssignedByName = assignedById => {
           />
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <span
-                class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate"
-              >
+              <span class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                 {{ agent.name }}
               </span>
               <!-- Status de disponibilidade do agente da conversa -->
@@ -247,30 +244,19 @@ const getAssignedByName = assignedById => {
                   'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400':
                     getAgentAvailabilityStatus(conversationAgent) === 'offline',
                   'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300':
-                    getAgentAvailabilityStatus(conversationAgent) === 'busy',
+                    getAgentAvailabilityStatus(conversationAgent) === 'busy'
                 }"
               >
                 <div
                   class="w-1.5 h-1.5 rounded-full"
                   :class="{
-                    'bg-green-500 animate-pulse':
-                      getAgentAvailabilityStatus(conversationAgent) ===
-                      'online',
-                    'bg-slate-400':
-                      getAgentAvailabilityStatus(conversationAgent) ===
-                      'offline',
-                    'bg-red-500':
-                      getAgentAvailabilityStatus(conversationAgent) === 'busy',
+                    'bg-green-500 animate-pulse': getAgentAvailabilityStatus(conversationAgent) === 'online',
+                    'bg-slate-400': getAgentAvailabilityStatus(conversationAgent) === 'offline',
+                    'bg-red-500': getAgentAvailabilityStatus(conversationAgent) === 'busy'
                   }"
-                />
+                ></div>
                 <span class="text-[10px]">
-                  {{
-                    getAgentAvailabilityStatus(conversationAgent) === 'online'
-                      ? 'Online'
-                      : getAgentAvailabilityStatus(conversationAgent) === 'busy'
-                        ? 'Ocupado'
-                        : 'Offline'
-                  }}
+                  {{ getAgentAvailabilityStatus(conversationAgent) === 'online' ? 'Online' : getAgentAvailabilityStatus(conversationAgent) === 'busy' ? 'Ocupado' : 'Offline' }}
                 </span>
               </div>
               <span
@@ -281,32 +267,28 @@ const getAssignedByName = assignedById => {
               </span>
             </div>
             <!-- Data de atribuição apenas se houver -->
-            <div
-              v-if="agent.assigned_at"
-              class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"
-            >
+            <div v-if="agent.assigned_at" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Atribuído em {{ formatDate(agent.assigned_at) }}
             </div>
           </div>
           <!-- Botão de remover agente -->
           <button
             class="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all rounded-full"
-            title="Remover agente"
             @click="removeAgent(agent.id)"
+            title="Remover agente"
           >
             <fluent-icon icon="delete" size="14" />
           </button>
         </div>
       </div>
-      <div
-        v-else-if="agentInfo"
-        class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
-      >
-        <Avatar :name="agentInfo.name" :src="agentInfo.avatar_url" :size="28" />
+      <div v-else-if="agentInfo" class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+        <Avatar
+          :name="agentInfo.name"
+          :src="agentInfo.avatar_url"
+          :size="28"
+        />
         <div class="flex-1">
-          <span
-            class="text-sm font-medium text-slate-900 dark:text-slate-100"
-            >{{ agentInfo.name }}</span>
+          <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ agentInfo.name }}</span>
         </div>
       </div>
       <div v-else class="text-center py-6 text-slate-500 dark:text-slate-400">
@@ -329,9 +311,7 @@ const getAssignedByName = assignedById => {
 
         <!-- Seção de agentes já atribuídos -->
         <div v-if="assignedAgents.length > 0" class="mb-4">
-          <h4
-            class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
+          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Agentes Atribuídos ({{ assignedAgents.length }})
           </h4>
           <div class="space-y-2">
@@ -354,9 +334,7 @@ const getAssignedByName = assignedById => {
                   </div>
                   <div class="text-xs text-slate-500 dark:text-slate-400">
                     Atribuído em
-                    {{
-                      new Date(agent.assigned_at).toLocaleDateString('pt-BR')
-                    }}
+                    {{ new Date(agent.assigned_at).toLocaleDateString('pt-BR') }}
                   </div>
                 </div>
               </div>
@@ -372,9 +350,7 @@ const getAssignedByName = assignedById => {
 
         <!-- Seção para adicionar novos agentes -->
         <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-          <h4
-            class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-          >
+          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Adicionar Novo Agente
           </h4>
           <input
@@ -433,23 +409,21 @@ const getAssignedByName = assignedById => {
             color="slate"
             size="sm"
             @click="showAgentAssignModal = false"
+            >Fechar</Button
           >
-            Fechar
-          </Button>
           <Button
             variant="solid"
             color="blue"
             size="sm"
-            :is-loading="agentAssignLoading"
+            :isLoading="agentAssignLoading"
             :disabled="
               !selectedAgentId ||
               agentAssignLoading ||
               assignedAgents.some(a => a.id === selectedAgentId)
             "
             @click="assignAgent"
+            >Adicionar Agente</Button
           >
-            Adicionar Agente
-          </Button>
         </div>
       </div>
     </Modal>

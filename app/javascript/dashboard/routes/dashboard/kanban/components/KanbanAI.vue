@@ -1008,7 +1008,9 @@ const confirmChanges = async () => {
 
 const sendTelemetryEvent = async (eventName, eventData = {}) => {
   try {
-    const baseUrl = 'https://api.os.stacklab.digital/api';
+    // Stacklab API removed - telemetry disabled
+    // const baseUrl = 'https://api.os.stacklab.digital/api';
+    const baseUrl = null; // Telemetry disabled
     const eventsUrl = `${baseUrl}/events`;
     const installationData = {
       installation_identifier:
@@ -1086,7 +1088,7 @@ const toggleQuickActions = () => {
       <div class="quick-actions">
         <div class="flex justify-between items-center mb-4">
           <h3 class="section-title">Ações Rápidas</h3>
-          <button class="toggle-text-button" @click="toggleQuickActions">
+          <button @click="toggleQuickActions" class="toggle-text-button">
             {{ isQuickActionsCollapsed ? 'Expandir' : 'Colapsar' }}
           </button>
         </div>
@@ -1096,8 +1098,8 @@ const toggleQuickActions = () => {
             :key="action.id"
             class="action-card group"
             :class="{ disabled: action.disabled }"
-            :disabled="action.disabled"
             @click="handleQuickAction(action)"
+            :disabled="action.disabled"
           >
             <div class="action-icon">
               <fluent-icon :icon="action.icon" size="18" />
@@ -1119,12 +1121,11 @@ const toggleQuickActions = () => {
       <div class="ai-chat">
         <h3 class="section-title">Assistente IA</h3>
         <div class="chat-container">
-          <div ref="messagesContainer" class="chat-messages">
+          <div class="chat-messages" ref="messagesContainer">
             <div
               v-for="(message, index) in messages"
               :key="index"
-              class="message"
-              :class="[message.type]"
+              :class="['message', message.type]"
             >
               <div v-if="message.type === 'ai'" class="avatar">
                 <img
@@ -1284,7 +1285,7 @@ const toggleQuickActions = () => {
           </div>
 
           <div class="chat-input-container">
-            <div v-if="isLoading" class="typing-indicator">
+            <div class="typing-indicator" v-if="isLoading">
               IA está pensando...
             </div>
             <div class="chat-input">

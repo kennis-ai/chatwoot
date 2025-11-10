@@ -175,4 +175,4 @@ const handleDragLeaveAction = actionId => {
 .dragbar-action-btn.dragover-active {
   @apply ring-2 ring-woot-500 ring-offset-4 ring-offset-current;
 }
-</style>
+</style> 

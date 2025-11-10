@@ -9,6 +9,11 @@ import AccordionItem from 'dashboard/components/Accordion/AccordionItem.vue';
 import KanbanCustomFieldsTab from './KanbanCustomFieldsTab.vue';
 import kanbanAPI from 'dashboard/api/kanban';
 
+const { t } = useI18n();
+const store = useStore();
+
+const contactGetter = useMapGetter('contacts/getContact');
+
 const props = defineProps({
   item: {
     type: Object,
@@ -47,17 +52,6 @@ const props = defineProps({
     default: () => [],
   },
 });
-const emit = defineEmits([
-  'navigate-to-conversation',
-  'context-menu',
-  'stage-click',
-  'update:item',
-  'item-updated',
-]);
-const { t } = useI18n();
-const store = useStore();
-
-const contactGetter = useMapGetter('contacts/getContact');
 
 // Computed para formatar data
 const formatDate = date => {
@@ -95,10 +89,7 @@ const conversationInfo = computed(() => {
 
   // Fallback para a prop conversationData (compatibilidade)
   if (props.conversationData) {
-    console.log(
-      'DEBUG - conversationInfo from props.conversationData:',
-      props.conversationData
-    );
+    console.log('DEBUG - conversationInfo from props.conversationData:', props.conversationData);
     return props.conversationData;
   }
 
@@ -123,38 +114,28 @@ watch(contactId, (newContactId, prevContactId) => {
 });
 
 // Watch para buscar counts quando o item muda
-watch(
-  () => props.item?.id,
-  (newItemId, oldItemId) => {
-    if (newItemId && newItemId !== oldItemId) {
-      fetchItemCounts(newItemId);
-    }
-  },
-  { immediate: false }
-);
+watch(() => props.item?.id, (newItemId, oldItemId) => {
+  if (newItemId && newItemId !== oldItemId) {
+    fetchItemCounts(newItemId);
+  }
+}, { immediate: false });
 
 // Computed para obter os valores dos atributos do contato do store
 const contactAttributeValues = computed(() => {
   console.log('DEBUG - contact from store:', contact.value);
-  console.log(
-    'DEBUG - contact custom_attributes:',
-    contact.value?.custom_attributes
-  );
+  console.log('DEBUG - contact custom_attributes:', contact.value?.custom_attributes);
 
   if (!contact.value?.custom_attributes) {
     console.log('DEBUG - No contact custom_attributes found');
     return [];
   }
 
-  const attributes = Object.entries(contact.value.custom_attributes).map(
-    ([key, value]) => ({
+  const attributes = Object.entries(contact.value.custom_attributes)
+    .map(([key, value]) => ({
       key,
       value,
-      displayName: key
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, l => l.toUpperCase()),
-    })
-  );
+      displayName: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    }));
 
   console.log('DEBUG - contactAttributeValues:', attributes);
   return attributes;
@@ -162,23 +143,19 @@ const contactAttributeValues = computed(() => {
 
 // Computed para obter os valores dos atributos da conversa diretamente do objeto
 const conversationAttributeValues = computed(() => {
-  console.log(
-    'DEBUG - conversation custom_attributes:',
-    conversationInfo.value?.custom_attributes
-  );
+  console.log('DEBUG - conversation custom_attributes:', conversationInfo.value?.custom_attributes);
 
   if (!conversationInfo.value?.custom_attributes) {
     console.log('DEBUG - No conversation custom_attributes found');
     return [];
   }
 
-  const attributes = Object.entries(
-    conversationInfo.value.custom_attributes
-  ).map(([key, value]) => ({
-    key,
-    value,
-    displayName: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-  }));
+  const attributes = Object.entries(conversationInfo.value.custom_attributes)
+    .map(([key, value]) => ({
+      key,
+      value,
+      displayName: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    }));
 
   console.log('DEBUG - conversationAttributeValues:', attributes);
   return attributes;
@@ -186,24 +163,20 @@ const conversationAttributeValues = computed(() => {
 
 // Computed para obter os valores dos custom_attributes do item
 const itemCustomAttributeValues = computed(() => {
-  console.log(
-    'DEBUG - item custom_attributes:',
-    props.item?.item_details?.custom_attributes
-  );
+  console.log('DEBUG - item custom_attributes:', props.item?.item_details?.custom_attributes);
 
   if (!props.item?.item_details?.custom_attributes) {
     console.log('DEBUG - No item custom_attributes found');
     return [];
   }
 
-  const attributes = Object.entries(
-    props.item.item_details.custom_attributes
-  ).map(([key, value]) => ({
-    key,
-    value,
-    displayName: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-    isArray: Array.isArray(value),
-  }));
+  const attributes = Object.entries(props.item.item_details.custom_attributes)
+    .map(([key, value]) => ({
+      key,
+      value,
+      displayName: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      isArray: Array.isArray(value)
+    }));
 
   console.log('DEBUG - itemCustomAttributeValues:', attributes);
   return attributes;
@@ -221,7 +194,7 @@ const statisticsCollapsed = ref(false);
 const itemCounts = ref({
   notes_count: 0,
   checklist_count: 0,
-  attachments_count: 0,
+  attachments_count: 0
 });
 
 // Função para alternar estado das estatísticas
@@ -230,7 +203,7 @@ const toggleStatistics = () => {
 };
 
 // Função para buscar os counts do item
-const fetchItemCounts = async itemId => {
+const fetchItemCounts = async (itemId) => {
   try {
     const response = await kanbanAPI.getCounts(itemId);
     itemCounts.value = response.data;
@@ -240,7 +213,7 @@ const fetchItemCounts = async itemId => {
     itemCounts.value = {
       notes_count: props.notes?.length || 0,
       checklist_count: props.checklistItems?.length || 0,
-      attachments_count: props.attachments?.length || 0,
+      attachments_count: props.attachments?.length || 0
     };
   }
 };
@@ -256,10 +229,9 @@ const completedChecklistItems = computed(() => {
   return props.checklistItems.filter(item => item.completed).length;
 });
 
-const calculateStageChanges = activities => {
+const calculateStageChanges = (activities) => {
   if (!activities || !Array.isArray(activities)) return 0;
-  return activities.filter(activity => activity.type === 'stage_changed')
-    .length;
+  return activities.filter(activity => activity.type === 'stage_changed').length;
 };
 
 const stageChangesCount = computed(() => {
@@ -268,10 +240,7 @@ const stageChangesCount = computed(() => {
 
 const itemStatistics = computed(() => {
   const timeInStage = props.item.stage_entered_at
-    ? formatDistanceToNow(new Date(props.item.stage_entered_at), {
-        locale: ptBR,
-        addSuffix: false,
-      })
+    ? formatDistanceToNow(new Date(props.item.stage_entered_at), { locale: ptBR, addSuffix: false })
     : t('KANBAN.STATISTICS.NOT_AVAILABLE');
 
   // Usar os counts do backend, com fallback para valores calculados localmente
@@ -280,33 +249,15 @@ const itemStatistics = computed(() => {
   const attachmentCount = itemCounts.value.attachments_count;
 
   return [
-    {
-      icon: 'lock',
-      label: t('KANBAN.STATISTICS.TIME_IN_STAGE'),
-      value: timeInStage,
-    },
-    {
-      icon: 'comment-add',
-      label: t('KANBAN.STATISTICS.NOTES'),
-      value: noteCount,
-    },
-    {
-      icon: 'checkmark-circle',
-      label: t('KANBAN.STATISTICS.CHECKLIST'),
-      value: checklistProgressText,
-    },
-    {
-      icon: 'attach',
-      label: t('KANBAN.STATISTICS.ATTACHMENTS'),
-      value: attachmentCount,
-    },
-    {
-      icon: 'arrow-right',
-      label: t('KANBAN.STATISTICS.STAGE_CHANGES'),
-      value: stageChangesCount.value,
-    },
+    { icon: 'lock', label: t('KANBAN.STATISTICS.TIME_IN_STAGE'), value: timeInStage },
+    { icon: 'comment-add', label: t('KANBAN.STATISTICS.NOTES'), value: noteCount },
+    { icon: 'checkmark-circle', label: t('KANBAN.STATISTICS.CHECKLIST'), value: checklistProgressText },
+    { icon: 'attach', label: t('KANBAN.STATISTICS.ATTACHMENTS'), value: attachmentCount },
+    { icon: 'arrow-right', label: t('KANBAN.STATISTICS.STAGE_CHANGES'), value: stageChangesCount.value },
   ];
 });
+
+const emit = defineEmits(['navigate-to-conversation', 'context-menu', 'stage-click', 'update:item', 'item-updated']);
 
 // Carregar dados do contato quando o componente for montado
 onMounted(() => {
@@ -328,22 +279,15 @@ onMounted(() => {
     </div>
 
     <!-- Header do contato -->
-    <div
-      v-if="contact && conversationInfo"
-      class="relative bg-gradient-to-r from-slate-50/80 to-slate-100/80 dark:from-slate-800/80 dark:to-slate-700/80 border border-slate-200/50 dark:border-slate-600/50 rounded-xl p-4 mx-2 mb-4 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
-    >
+    <div v-if="contact && conversationInfo" class="relative bg-gradient-to-r from-slate-50/80 to-slate-100/80 dark:from-slate-800/80 dark:to-slate-700/80 border border-slate-200/50 dark:border-slate-600/50 rounded-xl p-4 mx-2 mb-4 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
       <!-- Elemento decorativo de fundo -->
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-xl"
-      />
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-xl"></div>
 
       <!-- Conteúdo principal -->
       <div class="relative flex items-center gap-4">
         <!-- Avatar com efeitos modernos -->
         <div class="relative">
-          <div
-            class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur opacity-30"
-          />
+          <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur opacity-30"></div>
           <div class="relative">
             <img
               v-if="contact.thumbnail"
@@ -351,101 +295,60 @@ onMounted(() => {
               :alt="contact.name"
               class="w-12 h-12 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-lg"
             />
-            <div
-              v-else
-              class="w-12 h-12 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-700 shadow-lg"
-            >
-              <span
-                class="text-sm font-bold text-slate-600 dark:text-slate-300"
-              >
+            <div v-else class="w-12 h-12 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-700 shadow-lg">
+              <span class="text-sm font-bold text-slate-600 dark:text-slate-300">
                 {{ contact.name?.charAt(0)?.toUpperCase() || '?' }}
               </span>
             </div>
           </div>
 
           <!-- Indicador de status online/offline -->
-          <div
-            class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ring-2 ring-white dark:ring-slate-700 shadow-sm"
-            :class="{
-              'bg-green-400': contact.availability_status === 'online',
-              'bg-yellow-400':
-                contact.availability_status === 'busy' ||
-                !contact.availability_status,
-              'bg-slate-400': contact.availability_status === 'offline',
-            }"
-          >
-            <div
-              v-if="contact.availability_status === 'online'"
-              class="w-full h-full rounded-full bg-green-400 animate-pulse"
-            />
+          <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ring-2 ring-white dark:ring-slate-700 shadow-sm"
+               :class="{
+                 'bg-green-400': contact.availability_status === 'online',
+                 'bg-yellow-400': contact.availability_status === 'busy' || !contact.availability_status,
+                 'bg-slate-400': contact.availability_status === 'offline'
+               }">
+            <div v-if="contact.availability_status === 'online'" class="w-full h-full rounded-full bg-green-400 animate-pulse"></div>
           </div>
         </div>
 
         <!-- Informações do contato -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-3 mb-1">
-            <h3
-              class="text-base font-bold text-slate-900 dark:text-slate-100 truncate"
-            >
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
               {{ contact.name }}
             </h3>
 
             <!-- Status de disponibilidade com badge moderno -->
             <div class="flex items-center gap-1.5">
-              <div
-                class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold shadow-sm"
-                :class="{
-                  'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800':
-                    contact.availability_status === 'online',
-                  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 ring-1 ring-yellow-200 dark:ring-yellow-800':
-                    contact.availability_status === 'busy' ||
-                    !contact.availability_status,
-                  'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-600':
-                    contact.availability_status === 'offline',
-                }"
-              >
-                <div
-                  class="w-1.5 h-1.5 rounded-full"
-                  :class="{
-                    'bg-green-500': contact.availability_status === 'online',
-                    'bg-yellow-500':
-                      contact.availability_status === 'busy' ||
-                      !contact.availability_status,
-                    'bg-slate-400': contact.availability_status === 'offline',
-                  }"
-                />
-                <span class="capitalize">{{
-                  contact.availability_status || 'ausente'
-                }}</span>
+              <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold shadow-sm"
+                   :class="{
+                     'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800': contact.availability_status === 'online',
+                     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 ring-1 ring-yellow-200 dark:ring-yellow-800': contact.availability_status === 'busy' || !contact.availability_status,
+                     'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-600': contact.availability_status === 'offline'
+                   }">
+                <div class="w-1.5 h-1.5 rounded-full"
+                     :class="{
+                       'bg-green-500': contact.availability_status === 'online',
+                       'bg-yellow-500': contact.availability_status === 'busy' || !contact.availability_status,
+                       'bg-slate-400': contact.availability_status === 'offline'
+                     }"></div>
+                <span class="capitalize">{{ contact.availability_status || 'ausente' }}</span>
               </div>
             </div>
           </div>
 
           <!-- Email e telefone com ícones -->
-          <div
-            class="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-2"
-          >
+          <div class="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-2">
             <a
               v-if="contact.email"
               :href="`mailto:${contact.email}`"
               class="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="group-hover:scale-110 transition-transform"
-              >
-                <path
-                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                />
-                <polyline points="22,6 12,13 2,6" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
               </svg>
               <span class="truncate max-w-32">{{ contact.email }}</span>
             </a>
@@ -454,21 +357,8 @@ onMounted(() => {
               :href="`tel:${contact.phone_number}`"
               class="flex items-center gap-1.5 hover:text-green-600 dark:hover:text-green-400 transition-colors group"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="group-hover:scale-110 transition-transform"
-              >
-                <path
-                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
               <span>{{ contact.phone_number }}</span>
             </a>
@@ -477,15 +367,9 @@ onMounted(() => {
 
         <!-- Elementos decorativos sutis -->
         <div class="absolute top-2 right-2 flex gap-0.5">
-          <div class="w-1 h-1 rounded-full bg-blue-400/40" />
-          <div
-            class="w-1 h-1 rounded-full bg-purple-400/40"
-            style="animation-delay: 0.3s"
-          />
-          <div
-            class="w-1 h-1 rounded-full bg-pink-400/40"
-            style="animation-delay: 0.6s"
-          />
+          <div class="w-1 h-1 rounded-full bg-blue-400/40"></div>
+          <div class="w-1 h-1 rounded-full bg-purple-400/40" style="animation-delay: 0.3s"></div>
+          <div class="w-1 h-1 rounded-full bg-pink-400/40" style="animation-delay: 0.6s"></div>
         </div>
       </div>
     </div>
@@ -495,28 +379,17 @@ onMounted(() => {
       <!-- Cabeçalho com botão de colapso -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2 text-base font-medium">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-chart-no-axes-column-icon lucide-chart-no-axes-column"
-          >
-            <path d="M5 21v-6" />
-            <path d="M12 21V3" />
-            <path d="M19 21V9" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-column-icon lucide-chart-no-axes-column">
+            <path d="M5 21v-6"/>
+            <path d="M12 21V3"/>
+            <path d="M19 21V9"/>
           </svg>
           <span>{{ t('KANBAN.STATISTICS.TITLE') }}</span>
         </div>
         <button
           type="button"
-          class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           @click="toggleStatistics"
+          class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
         >
           <fluent-icon
             :icon="statisticsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -526,10 +399,7 @@ onMounted(() => {
       </div>
 
       <!-- Conteúdo colapsável -->
-      <div
-        v-show="!statisticsCollapsed"
-        class="statistics-content transition-all duration-300 ease-in-out"
-      >
+      <div v-show="!statisticsCollapsed" class="statistics-content transition-all duration-300 ease-in-out">
         <div class="flex flex-col gap-2">
           <div
             v-for="stat in itemStatistics"
@@ -540,20 +410,9 @@ onMounted(() => {
             <div class="flex items-center gap-1.5">
               <!-- Ícone inline para tempo na etapa -->
               <div v-if="stat.icon === 'lock'" class="flex-shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-clock-icon lucide-clock text-slate-500 dark:text-slate-400"
-                >
-                  <path d="M12 6v6l4 2" />
-                  <circle cx="12" cy="12" r="10" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock-icon lucide-clock text-slate-500 dark:text-slate-400">
+                  <path d="M12 6v6l4 2"/>
+                  <circle cx="12" cy="12" r="10"/>
                 </svg>
               </div>
               <!-- Outros ícones continuam usando fluent-icon -->
@@ -569,9 +428,7 @@ onMounted(() => {
             </div>
 
             <!-- Lado direito: valor -->
-            <span
-              class="text-sm font-medium text-slate-800 dark:text-slate-200"
-            >
+            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">
               {{ stat.value }}
             </span>
           </div>
@@ -584,9 +441,7 @@ onMounted(() => {
       <div class="flex flex-col gap-3">
         <!-- Seção de Informações do Item -->
         <AccordionItem
-          :title="
-            t('KANBAN.BASIC_DATA_PANEL.ITEM_INFO') || 'Informações do Item'
-          "
+          :title="t('KANBAN.BASIC_DATA_PANEL.ITEM_INFO') || 'Informações do Item'"
           :is-open="isItemInfoOpen"
           compact
           @toggle="isItemInfoOpen = !isItemInfoOpen"
@@ -595,30 +450,21 @@ onMounted(() => {
             <!-- Informações básicas do item -->
             <div class="mb-4">
               <div class="flex items-center justify-between mb-2">
-                <h3
-                  class="text-sm font-semibold text-slate-900 dark:text-slate-100"
-                >
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {{ item.title || item.name || 'Item' }}
                 </h3>
-                <span
-                  class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded"
-                >
+                <span class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
                   {{ currentStageName || 'Sem estágio' }}
                 </span>
               </div>
-              <p
-                v-if="itemDescription"
-                class="text-sm text-slate-600 dark:text-slate-400"
-              >
+              <p v-if="itemDescription" class="text-sm text-slate-600 dark:text-slate-400">
                 {{ itemDescription }}
               </p>
             </div>
 
             <!-- Atributos do Contato -->
             <div v-if="contactAttributeValues.length > 0" class="mb-4">
-              <h4
-                class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2"
-              >
+              <h4 class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2">
                 Atributos do Contato
               </h4>
               <div class="space-y-2">
@@ -627,9 +473,7 @@ onMounted(() => {
                   :key="attr.key"
                   class="flex justify-between items-center py-2 px-3 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700"
                 >
-                  <span
-                    class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                  >
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {{ attr.displayName }}
                   </span>
                   <span class="text-sm text-slate-900 dark:text-slate-100">
@@ -641,9 +485,7 @@ onMounted(() => {
 
             <!-- Atributos da Conversa -->
             <div v-if="conversationAttributeValues.length > 0" class="mb-4">
-              <h4
-                class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2"
-              >
+              <h4 class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2">
                 Atributos da Conversa
               </h4>
               <div class="space-y-2">
@@ -652,9 +494,7 @@ onMounted(() => {
                   :key="attr.key"
                   class="flex justify-between items-center py-2 px-3 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700"
                 >
-                  <span
-                    class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                  >
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {{ attr.displayName }}
                   </span>
                   <span class="text-sm text-slate-900 dark:text-slate-100">
@@ -666,9 +506,7 @@ onMounted(() => {
 
             <!-- Atributos Customizados do Item -->
             <div v-if="itemCustomAttributeValues.length > 0" class="mb-4">
-              <h4
-                class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2"
-              >
+              <h4 class="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2">
                 Atributos do Item
               </h4>
               <div class="space-y-2">
@@ -678,9 +516,7 @@ onMounted(() => {
                   class="py-2 px-3 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700"
                 >
                   <div class="flex justify-between items-center mb-1">
-                    <span
-                      class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                    >
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {{ attr.displayName }}
                     </span>
                   </div>
@@ -697,10 +533,7 @@ onMounted(() => {
                     </div>
                   </div>
                   <!-- Se não for array, mostra como texto normal -->
-                  <div
-                    v-else
-                    class="text-sm text-slate-900 dark:text-slate-100"
-                  >
+                  <div v-else class="text-sm text-slate-900 dark:text-slate-100">
                     {{ attr.value }}
                   </div>
                 </div>
@@ -708,14 +541,7 @@ onMounted(() => {
             </div>
 
             <!-- Mensagem quando não há atributos -->
-            <div
-              v-if="
-                contactAttributeValues.length === 0 &&
-                conversationAttributeValues.length === 0 &&
-                itemCustomAttributeValues.length === 0
-              "
-              class="text-center py-4"
-            >
+            <div v-if="contactAttributeValues.length === 0 && conversationAttributeValues.length === 0 && itemCustomAttributeValues.length === 0" class="text-center py-4">
               <span class="text-sm text-slate-500 dark:text-slate-400">
                 {{ t('KANBAN.CUSTOM_FIELDS.NO_ATTRIBUTES_FOUND') }}
               </span>
@@ -723,113 +549,76 @@ onMounted(() => {
           </div>
         </AccordionItem>
 
+
         <!-- Seção de Conversa Vinculada -->
         <AccordionItem
           v-if="conversationInfo"
-          :title="
-            t('KANBAN.BASIC_DATA_PANEL.CONVERSATION') || 'Conversa Vinculada'
-          "
+          :title="t('KANBAN.BASIC_DATA_PANEL.CONVERSATION') || 'Conversa Vinculada'"
           :is-open="isConversationOpen"
           compact
           @toggle="isConversationOpen = !isConversationOpen"
         >
           <div class="p-2">
-            <div
-              class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200/30 dark:border-slate-700/30 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-              @click="
-                $emit(
-                  'navigate-to-conversation',
-                  $event,
-                  conversationInfo.display_id
-                )
-              "
-              @contextmenu="$emit('context-menu', $event, conversationInfo.id)"
-            >
-              <!-- Contato -->
-              <div
-                v-if="conversationInfo.contact"
-                class="flex items-center gap-3 mb-2"
-              >
-                <img
-                  v-if="conversationInfo.contact.thumbnail"
-                  :src="conversationInfo.contact.thumbnail"
-                  :alt="conversationInfo.contact.name"
-                  class="w-8 h-8 rounded-full object-cover"
-                />
-                <div
-                  v-else
-                  class="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center"
-                >
-                  <span
-                    class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                  >
-                    {{
-                      conversationInfo.contact.name?.charAt(0)?.toUpperCase() ||
-                      '?'
-                    }}
-                  </span>
-                </div>
-                <div class="flex-1">
-                  <div class="flex items-center justify-between">
-                    <div
-                      class="font-semibold text-sm text-slate-900 dark:text-slate-100"
-                    >
-                      <span
-                        class="text-xs text-slate-500 dark:text-slate-400 mr-1"
-                        >#{{ conversationInfo.display_id }}</span>
-                      {{
-                        conversationInfo.contact.name ||
-                        t('KANBAN.CONTACT_UNKNOWN')
-                      }}
-                    </div>
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200/30 dark:border-slate-700/30 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+               @click="$emit('navigate-to-conversation', $event, conversationInfo.display_id)"
+               @contextmenu="$emit('context-menu', $event, conversationInfo.id)">
+            <!-- Contato -->
+            <div v-if="conversationInfo.contact" class="flex items-center gap-3 mb-2">
+              <img
+                v-if="conversationInfo.contact.thumbnail"
+                :src="conversationInfo.contact.thumbnail"
+                :alt="conversationInfo.contact.name"
+                class="w-8 h-8 rounded-full object-cover"
+              />
+              <div v-else class="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  {{ conversationInfo.contact.name?.charAt(0)?.toUpperCase() || '?' }}
+                </span>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <div class="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 mr-1">#{{ conversationInfo.display_id }}</span>
+                    {{ conversationInfo.contact.name || t('KANBAN.CONTACT_UNKNOWN') }}
                   </div>
                 </div>
-                <div class="flex items-center gap-1">
-                  <!-- Status -->
-                  <span
-                    class="text-xs px-2 py-0.5 rounded-full font-medium"
-                    :class="{
-                      'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300':
-                        conversationInfo.status === 'open',
-                      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300':
-                        conversationInfo.status === 'pending',
-                      'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300':
-                        conversationInfo.status === 'resolved',
-                    }"
-                  >
-                    {{ conversationInfo.status }}
-                  </span>
-                  <!-- Unread count -->
-                  <span
-                    v-if="conversationInfo.unread_count > 0"
-                    class="flex items-center justify-center h-5 min-w-[1rem] px-1.5 text-xs font-medium bg-red-500 text-white rounded-full shadow-sm"
-                  >
-                    {{
-                      conversationInfo.unread_count > 9
-                        ? '9+'
-                        : conversationInfo.unread_count
-                    }}
-                  </span>
-                </div>
               </div>
-
-              <!-- Labels -->
-              <div
-                v-if="
-                  conversationInfo.label_list &&
-                  conversationInfo.label_list.length > 0
-                "
-                class="flex flex-wrap gap-1"
-              >
+              <div class="flex items-center gap-1">
+                <!-- Status -->
                 <span
-                  v-for="label in conversationInfo.label_list"
-                  :key="label"
-                  class="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full"
+                  class="text-xs px-2 py-0.5 rounded-full font-medium"
+                  :class="{
+                    'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300':
+                      conversationInfo.status === 'open',
+                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300':
+                      conversationInfo.status === 'pending',
+                    'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300':
+                      conversationInfo.status === 'resolved',
+                  }"
                 >
-                  {{ label }}
+                  {{ conversationInfo.status }}
+                </span>
+                <!-- Unread count -->
+                <span
+                  v-if="conversationInfo.unread_count > 0"
+                  class="flex items-center justify-center h-5 min-w-[1rem] px-1.5 text-xs font-medium bg-red-500 text-white rounded-full shadow-sm"
+                >
+                  {{ conversationInfo.unread_count > 9 ? '9+' : conversationInfo.unread_count }}
                 </span>
               </div>
             </div>
+
+            <!-- Labels -->
+            <div v-if="conversationInfo.label_list && conversationInfo.label_list.length > 0" class="flex flex-wrap gap-1">
+              <span
+                v-for="label in conversationInfo.label_list"
+                :key="label"
+                class="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full"
+              >
+                {{ label }}
+              </span>
+            </div>
+          </div>
           </div>
         </AccordionItem>
 

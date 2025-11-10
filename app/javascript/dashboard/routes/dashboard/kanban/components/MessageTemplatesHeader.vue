@@ -5,8 +5,9 @@ import Modal from '../../../../components/Modal.vue';
 import MessageTemplateForm from './MessageTemplateForm.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 
-const emit = defineEmits(['switch-view', 'template-created']);
 const { t } = useI18n();
+const emit = defineEmits(['switch-view', 'template-created']);
+
 const showNewTemplateModal = ref(false);
 
 const handleBack = () => {
@@ -30,12 +31,7 @@ const handleTemplateCreated = template => {
           {{ t('KANBAN.MESSAGE_TEMPLATES.TITLE') }}
         </h1>
       </div>
-      <Button
-        variant="solid"
-        color="blue"
-        size="sm"
-        @click="showNewTemplateModal = true"
-      >
+      <Button variant="solid" color="blue" size="sm" @click="showNewTemplateModal = true">
         <fluent-icon icon="add" size="16" class="mr-2" />
         {{ t('KANBAN.MESSAGE_TEMPLATES.ADD') }}
       </Button>

@@ -8,19 +8,20 @@ import KanbanAPI from '../../../../api/kanban';
 import { emitter } from 'shared/helpers/mitt';
 import Button from '../../../../components-next/button/Button.vue';
 
-const props = defineProps({
-  items: {
-    type: Array,
-    required: true,
-  },
-});
-const emit = defineEmits(['close', 'send']);
 const store = useStore();
 const accountId = computed(() => store.getters.getCurrentAccount?.id);
 const selectedFunnel = computed(
   () => store.getters['funnel/getSelectedFunnel']
 );
 
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['close', 'send']);
 const { t } = useI18n();
 
 const loading = ref(false);
@@ -406,7 +407,7 @@ onMounted(() => {
           </h4>
           <div class="flex items-center gap-4">
             <label class="flex items-center gap-2 text-sm">
-              <input v-model="showFilters" type="checkbox" class="toggle" />
+              <input type="checkbox" v-model="showFilters" class="toggle" />
               <span>{{ t('KANBAN.BULK_ACTIONS.FILTER_ITEMS') }}</span>
             </label>
             <Button
@@ -597,8 +598,8 @@ onMounted(() => {
             <div class="flex items-center gap-4">
               <label class="flex items-center gap-2">
                 <input
-                  v-model="selectedConditions.hasAttachments"
                   type="checkbox"
+                  v-model="selectedConditions.hasAttachments"
                   class="rounded"
                 />
                 <span class="text-sm">
@@ -611,8 +612,8 @@ onMounted(() => {
 
         <!-- Lista de Conversas -->
         <div
-          v-if="filteredItems.length > 0"
           class="max-h-60 overflow-y-auto border rounded-lg divide-y"
+          v-if="filteredItems.length > 0"
         >
           <div
             v-for="item in filteredItems"
@@ -698,7 +699,7 @@ onMounted(() => {
           variant="solid"
           color="blue"
           size="sm"
-          :is-loading="sendingMessage"
+          :isLoading="sendingMessage"
           :disabled="!selectedTemplate || selectedConversations.size === 0"
           @click="handleSend"
         >

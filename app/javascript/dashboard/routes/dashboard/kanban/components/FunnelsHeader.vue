@@ -8,6 +8,9 @@ import dashboardIcons from 'shared/components/FluentIcon/dashboard-icons.json';
 import { useConfig } from 'dashboard/composables/useConfig';
 import Button from 'dashboard/components-next/button/Button.vue';
 
+const { t } = useI18n();
+const emit = defineEmits(['switch-view', 'back', 'funnel-created', 'save-funnel', 'discard-changes', 'create-new-funnel', 'create-from-template']);
+
 const props = defineProps({
   editingFunnel: {
     type: Object,
@@ -25,16 +28,7 @@ const props = defineProps({
     default: false,
   },
 });
-const emit = defineEmits([
-  'switch-view',
-  'back',
-  'funnel-created',
-  'save-funnel',
-  'discard-changes',
-  'create-new-funnel',
-  'create-from-template',
-]);
-const { t } = useI18n();
+
 const showNewFunnelModal = ref(false);
 const showTemplatesModal = ref(false);
 const selectedTemplate = ref(null);
@@ -275,6 +269,7 @@ const handleDiscardChanges = () => {
   emit('discard-changes');
 };
 
+
 const copyFunnelId = async () => {
   if (props.editingFunnel?.id) {
     await navigator.clipboard.writeText(props.editingFunnel.id.toString());
@@ -290,84 +285,29 @@ const copyFunnelId = async () => {
   <header class="funnels-header">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-chevron-left-icon lucide-chevron-left cursor-pointer text-slate-600 dark:text-slate-400"
-          @click="handleBack"
-        >
-          <path d="m15 18-6-6 6-6" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left cursor-pointer text-slate-600 dark:text-slate-400" @click="handleBack">
+          <path d="m15 18-6-6 6-6"/>
         </svg>
         <div class="flex items-center gap-4">
           <h1 class="text-base font-medium flex items-center gap-2">
-            <span class="hidden md:inline">{{
-              editingFunnel
-                ? 'Editando:'
-                : isCreating
-                  ? 'Criando:'
-                  : t('KANBAN.FUNNELS.TITLE')
-            }}</span>
+            <span class="hidden md:inline">{{ editingFunnel ? 'Editando:' : isCreating ? 'Criando:' : t('KANBAN.FUNNELS.TITLE') }}</span>
             <span v-if="editingFunnel">{{ editingFunnel.name }}</span>
             <span v-if="isCreating">Novo Funil</span>
-            <span
-              v-if="editingFunnel"
-              class="hidden md:flex px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded flex items-center gap-2 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-              title="Clique para copiar"
-              @click="copyFunnelId"
-            >
+            <span v-if="editingFunnel" class="hidden md:flex px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded flex items-center gap-2 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" @click="copyFunnelId" title="Clique para copiar">
               <span class="text-[10px] text-slate-500 dark:text-slate-400 mr-1">ID:</span>{{ editingFunnel.id }}
-              <svg
-                v-if="!copiedId"
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-copy-icon lucide-copy"
-              >
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                <path
-                  d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
-                />
+              <svg v-if="!copiedId" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy-icon lucide-copy">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
               </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-circle-check-big-icon lucide-circle-check-big"
-              >
-                <path d="M21.801 10A10 10 0 1 1 17 3.335" />
-                <path d="m9 11 3 3L22 4" />
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big-icon lucide-circle-check-big">
+                <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
+                <path d="m9 11 3 3L22 4"/>
               </svg>
-              <span class="text-[10px] text-slate-500 dark:text-slate-400">{{
-                copiedId ? 'Copiado' : 'Copiar'
-              }}</span>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400">{{ copiedId ? 'Copiado' : 'Copiar' }}</span>
             </span>
           </h1>
-          <div
-            v-if="editingFunnel && funnelMetadata.updated_at"
-            class="hidden md:block text-xs text-slate-500 dark:text-slate-400"
-          >
-            Atualizado em:
-            {{ new Date(funnelMetadata.updated_at).toLocaleString() }}
+          <div v-if="editingFunnel && funnelMetadata.updated_at" class="hidden md:block text-xs text-slate-500 dark:text-slate-400">
+            Atualizado em: {{ new Date(funnelMetadata.updated_at).toLocaleString() }}
           </div>
         </div>
       </div>
@@ -441,7 +381,7 @@ const copyFunnelId = async () => {
             @click="handleTemplateSelect(template)"
           >
             <div class="flex items-center gap-2 mb-2">
-              <FluentIcon
+              <fluent-icon
                 :icon="template.icon"
                 size="20"
                 :icons="dashboardIcons"
@@ -469,6 +409,7 @@ const copyFunnelId = async () => {
         </div>
       </div>
     </Modal>
+
   </header>
 </template>
 
@@ -495,4 +436,5 @@ const copyFunnelId = async () => {
     }
   }
 }
+
 </style>

@@ -1,3 +1,49 @@
+<template>
+  <div class="agent-tooltip-wrapper" ref="containerRef">
+    <div
+      class="relative"
+      ref="triggerRef"
+      @mouseenter="show = true"
+      @mouseleave="show = false"
+      @focus="show = true"
+      @blur="show = false"
+      tabindex="0"
+    >
+      <slot />
+      <teleport to="body">
+        <transition :name="animation">
+          <div
+            v-if="show && coords"
+            class="agent-tooltip-content"
+            :class="{
+              'with-title': title,
+              'with-subtitle': subtitle,
+              [`placement-${placement}`]: true,
+            }"
+            :style="tooltipPortalStyle"
+            ref="tooltipRef"
+          >
+            <template v-if="title || subtitle">
+              <div v-if="title" class="agent-tooltip-title">{{ title }}</div>
+              <transition name="fade-subtitle">
+                <div
+                  v-if="showSubtitle && subtitle"
+                  class="agent-tooltip-subtitle"
+                >
+                  {{ subtitle }}
+                </div>
+              </transition>
+            </template>
+            <template v-else>
+              {{ text }}
+            </template>
+          </div>
+        </transition>
+      </teleport>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 const props = defineProps({
@@ -146,52 +192,6 @@ const tooltipPortalStyle = computed(() => {
 });
 </script>
 
-<template>
-  <div ref="containerRef" class="agent-tooltip-wrapper">
-    <div
-      ref="triggerRef"
-      class="relative"
-      tabindex="0"
-      @mouseenter="show = true"
-      @mouseleave="show = false"
-      @focus="show = true"
-      @blur="show = false"
-    >
-      <slot />
-      <teleport to="body">
-        <transition :name="animation">
-          <div
-            v-if="show && coords"
-            ref="tooltipRef"
-            class="agent-tooltip-content"
-            :class="{
-              'with-title': title,
-              'with-subtitle': subtitle,
-              [`placement-${placement}`]: true,
-            }"
-            :style="tooltipPortalStyle"
-          >
-            <template v-if="title || subtitle">
-              <div v-if="title" class="agent-tooltip-title">{{ title }}</div>
-              <transition name="fade-subtitle">
-                <div
-                  v-if="showSubtitle && subtitle"
-                  class="agent-tooltip-subtitle"
-                >
-                  {{ subtitle }}
-                </div>
-              </transition>
-            </template>
-            <template v-else>
-              {{ text }}
-            </template>
-          </div>
-        </transition>
-      </teleport>
-    </div>
-  </div>
-</template>
-
 <style scoped>
 .agent-tooltip-wrapper {
   position: relative;
@@ -204,9 +204,7 @@ const tooltipPortalStyle = computed(() => {
   padding: 7px 12px;
   font-size: 12px;
   font-weight: 500;
-  box-shadow:
-    0 4px 24px 0 rgba(0, 0, 0, 0.25),
-    0 1.5px 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25), 0 1.5px 4px 0 rgba(0, 0, 0, 0.1);
   pointer-events: none;
   white-space: normal;
   max-width: min(320px, 90vw);
@@ -257,8 +255,7 @@ const tooltipPortalStyle = computed(() => {
 }
 .scale-enter-active,
 .scale-leave-active {
-  transition:
-    opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .scale-enter-from,
@@ -268,8 +265,7 @@ const tooltipPortalStyle = computed(() => {
 }
 .slide-enter-active,
 .slide-leave-active {
-  transition:
-    opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .slide-enter-from,
@@ -277,4 +273,4 @@ const tooltipPortalStyle = computed(() => {
   opacity: 0;
   transform: translate(-50%, -120%);
 }
-</style>
+</style> 

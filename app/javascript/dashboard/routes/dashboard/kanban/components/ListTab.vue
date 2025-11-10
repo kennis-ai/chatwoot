@@ -9,31 +9,6 @@ import Modal from 'dashboard/components/Modal.vue';
 import SendMessageTemplate from './SendMessageTemplate.vue';
 import KanbanItemForm from './KanbanItemForm.vue';
 
-const props = defineProps({
-  currentView: {
-    type: String,
-    default: 'list',
-  },
-  // A propriedade 'kanbanItems' não é mais necessária, mas a mantive para evitar erros se ainda for passada
-  kanbanItems: {
-    type: Array,
-    required: false,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  labelsMap: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-const emit = defineEmits([
-  'switch-view',
-  'itemClick',
-  'force-update',
-  'itemsUpdated',
-]);
 const { t } = useI18n();
 const store = useStore();
 const router = useRouter();
@@ -49,6 +24,13 @@ const isLoadingItems = ref(false);
 const currentPage = ref(1);
 const hasMoreItems = ref(true);
 const isLoadingMore = ref(false);
+
+const emit = defineEmits([
+  'switch-view',
+  'itemClick',
+  'force-update',
+  'itemsUpdated',
+]);
 
 const selectedFunnel = computed(
   () => store.getters['funnel/getSelectedFunnel']
@@ -69,6 +51,26 @@ const isDeleting = ref(false);
 const expandedStages = ref(new Set());
 const showEditModal = ref(false);
 const itemToEdit = ref(null);
+
+const props = defineProps({
+  currentView: {
+    type: String,
+    default: 'list',
+  },
+  // A propriedade 'kanbanItems' não é mais necessária, mas a mantive para evitar erros se ainda for passada
+  kanbanItems: {
+    type: Array,
+    required: false,
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  labelsMap: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const funnelsCache = computed(() => {
   const allFunnels = store.getters['funnel/getFunnels'] || [];
@@ -197,9 +199,7 @@ watch(
   selectedFunnel,
   async (newFunnel, oldFunnel) => {
     if (newFunnel && newFunnel.id !== oldFunnel?.id) {
-      console.log(
-        `[ListTab] Funil mudou para ${newFunnel.id}, recarregando itens`
-      );
+      console.log(`[ListTab] Funil mudou para ${newFunnel.id}, recarregando itens`);
       await fetchKanbanItems(1, true);
     }
   },

@@ -10,21 +10,6 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import OffersHeader from './OffersHeader.vue';
 import offersAPI from '../../../../api/offers';
 
-// Prop para detectar modo de criação
-const props = defineProps({
-  createMode: {
-    type: Boolean,
-    default: false,
-  },
-});
-const emit = defineEmits([
-  'switch-view',
-  'back',
-  'offer-created',
-  'save-offer',
-  'discard-changes',
-  'create-new-offer',
-]);
 const { t } = useI18n();
 const router = useRouter();
 const { isStacklab } = useConfig();
@@ -47,33 +32,38 @@ const isCreatingMode = ref(false);
 const selectedImage = ref(null);
 const imagePreview = ref(null);
 
+// Prop para detectar modo de criação
+const props = defineProps({
+  createMode: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 // Watcher para detectar quando deve iniciar o modo de criação
-watch(
-  () => props.createMode,
-  newValue => {
-    if (newValue) {
-      startCreate();
-    }
+watch(() => props.createMode, (newValue) => {
+  if (newValue) {
+    startCreate();
   }
-);
+});
 
 // Função para mapear dados da API para o formato esperado pelo componente
-const mapOfferFromAPI = offer => ({
+const mapOfferFromAPI = (offer) => ({
   id: offer.id,
   name: offer.title,
   discount_percentage: offer.value,
   currency: offer.currency,
   type: offer.type,
   created_at: offer.created_at,
-  image_url: offer.image_url,
+  image_url: offer.image_url
 });
 
 // Função para mapear dados do componente para a API
-const mapOfferToAPI = offer => ({
+const mapOfferToAPI = (offer) => ({
   title: offer.name,
   value: offer.discount_percentage,
   currency: offer.currency,
-  type: offer.type,
+  type: offer.type
 });
 
 const refreshOfferData = async () => {
@@ -142,7 +132,7 @@ const startCreate = () => {
     name: '',
     discount_percentage: 0,
     currency: 'BRL',
-    type: 'product',
+    type: 'product'
   };
   isEditingMode.value = false;
   isCreatingMode.value = true;
@@ -160,10 +150,10 @@ const handleEdit = async updatedOffer => {
     loading.value = true;
 
     let offerData;
-
+    
     // Se há uma imagem selecionada, usar FormData
     if (selectedImage.value) {
-      offerData = new FormData();
+            offerData = new FormData();
       offerData.append('offer[title]', updatedOffer.name);
       offerData.append('offer[value]', updatedOffer.discount_percentage);
       offerData.append('offer[currency]', updatedOffer.currency);
@@ -187,9 +177,7 @@ const handleEdit = async updatedOffer => {
       }
     }
 
-    const message = isCreatingMode.value
-      ? t('KANBAN.OFFERS.MANAGER.SUCCESS_CREATED')
-      : t('KANBAN.OFFERS.MANAGER.SUCCESS_UPDATED');
+    const message = isCreatingMode.value ? t('KANBAN.OFFERS.MANAGER.SUCCESS_CREATED') : t('KANBAN.OFFERS.MANAGER.SUCCESS_UPDATED');
     emitter.emit('newToastMessage', {
       message,
       action: { type: 'success' },
@@ -207,9 +195,7 @@ const handleEdit = async updatedOffer => {
     router.replace({ query: currentQuery });
   } catch (error) {
     console.error('Erro ao salvar oferta:', error);
-    const message = isCreatingMode.value
-      ? t('KANBAN.OFFERS.MANAGER.ERROR_CREATE')
-      : t('KANBAN.OFFERS.MANAGER.ERROR_UPDATE');
+    const message = isCreatingMode.value ? t('KANBAN.OFFERS.MANAGER.ERROR_CREATE') : t('KANBAN.OFFERS.MANAGER.ERROR_UPDATE');
     emitter.emit('newToastMessage', {
       message,
       action: { type: 'error' },
@@ -225,7 +211,7 @@ const duplicateOffer = async offer => {
 
     const duplicatedData = mapOfferToAPI({
       ...offer,
-      name: `${offer.name} (cópia)`,
+      name: `${offer.name} (cópia)`
     });
 
     const response = await offersAPI.createOffer(duplicatedData);
@@ -245,6 +231,8 @@ const duplicateOffer = async offer => {
     loading.value = false;
   }
 };
+
+const emit = defineEmits(['switch-view', 'back', 'offer-created', 'save-offer', 'discard-changes', 'create-new-offer']);
 
 // Handlers para o OffersHeader
 const handleBack = () => {
@@ -271,14 +259,14 @@ const handleDiscardChanges = () => {
   router.replace({ query: currentQuery });
 };
 
-const handleImageSelect = event => {
+const handleImageSelect = (event) => {
   const file = event.target.files[0];
   if (file && file.type.startsWith('image/')) {
     selectedImage.value = file;
-
+    
     // Criar preview da imagem
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       imagePreview.value = e.target.result;
     };
     reader.readAsDataURL(file);
@@ -309,14 +297,7 @@ onMounted(async () => {
     <!-- Offers Header -->
     <OffersHeader
       :editing-offer="offerBeingEdited"
-      :offer-metadata="
-        offerBeingEdited
-          ? {
-              updated_at: offerBeingEdited.created_at,
-              name: offerBeingEdited.name,
-            }
-          : {}
-      "
+      :offer-metadata="offerBeingEdited ? { updated_at: offerBeingEdited.created_at, name: offerBeingEdited.name } : {}"
       :is-creating="isCreatingMode"
       @switch-view="emit('switch-view', $event)"
       @back="handleBack"
@@ -328,30 +309,17 @@ onMounted(async () => {
 
     <div class="offers-content flex-1 overflow-y-auto">
       <!-- Renderiza formulário quando estiver editando ou criando -->
-      <div
-        v-if="(isEditingMode || isCreatingMode) && offerBeingEdited"
-        class="mb-6"
-      >
-        <div
-          class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6"
-        >
+      <div v-if="(isEditingMode || isCreatingMode) && offerBeingEdited" class="mb-6">
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-medium">
-              {{
-                isCreatingMode
-                  ? t('KANBAN.OFFERS.MANAGER.CREATE_NEW_OFFER')
-                  : t('KANBAN.OFFERS.MANAGER.EDIT_OFFER')
-              }}
+              {{ isCreatingMode ? t('KANBAN.OFFERS.MANAGER.CREATE_NEW_OFFER') : t('KANBAN.OFFERS.MANAGER.EDIT_OFFER') }}
             </h3>
             <Button
               variant="ghost"
               color="slate"
               size="sm"
-              @click="
-                isEditingMode = false;
-                isCreatingMode = false;
-                offerBeingEdited = null;
-              "
+              @click="isEditingMode = false; isCreatingMode = false; offerBeingEdited = null"
             >
               <template #icon>
                 <fluent-icon icon="dismiss" size="16" />
@@ -363,9 +331,7 @@ onMounted(async () => {
           <!-- Formulário simples de oferta -->
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium mb-1">{{
-                t('KANBAN.OFFERS.MANAGER.TITLE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-1">{{ t('KANBAN.OFFERS.MANAGER.TITLE_LABEL') }}</label>
               <input
                 v-model="offerBeingEdited.name"
                 type="text"
@@ -376,28 +342,20 @@ onMounted(async () => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-1">{{
-                t('KANBAN.OFFERS.MANAGER.TYPE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-1">{{ t('KANBAN.OFFERS.MANAGER.TYPE_LABEL') }}</label>
               <select
                 v-model="offerBeingEdited.type"
                 class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700"
                 required
               >
-                <option value="product">
-                  {{ t('KANBAN.OFFERS.MANAGER.TYPE_PRODUCT') }}
-                </option>
-                <option value="service">
-                  {{ t('KANBAN.OFFERS.MANAGER.TYPE_SERVICE') }}
-                </option>
+                <option value="product">{{ t('KANBAN.OFFERS.MANAGER.TYPE_PRODUCT') }}</option>
+                <option value="service">{{ t('KANBAN.OFFERS.MANAGER.TYPE_SERVICE') }}</option>
               </select>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium mb-1">{{
-                  t('KANBAN.OFFERS.MANAGER.VALUE_LABEL')
-                }}</label>
+                <label class="block text-sm font-medium mb-1">{{ t('KANBAN.OFFERS.MANAGER.VALUE_LABEL') }}</label>
                 <input
                   v-model.number="offerBeingEdited.discount_percentage"
                   type="number"
@@ -410,34 +368,22 @@ onMounted(async () => {
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-1">{{
-                  t('KANBAN.OFFERS.MANAGER.CURRENCY_LABEL')
-                }}</label>
+                <label class="block text-sm font-medium mb-1">{{ t('KANBAN.OFFERS.MANAGER.CURRENCY_LABEL') }}</label>
                 <select
                   v-model="offerBeingEdited.currency"
                   class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700"
                   required
                 >
-                  <option value="BRL">
-                    {{ t('KANBAN.OFFERS.MANAGER.CURRENCY_BRL') }}
-                  </option>
-                  <option value="USD">
-                    {{ t('KANBAN.OFFERS.MANAGER.CURRENCY_USD') }}
-                  </option>
-                  <option value="EUR">
-                    {{ t('KANBAN.OFFERS.MANAGER.CURRENCY_EUR') }}
-                  </option>
-                  <option value="GBP">
-                    {{ t('KANBAN.OFFERS.MANAGER.CURRENCY_GBP') }}
-                  </option>
+                  <option value="BRL">{{ t('KANBAN.OFFERS.MANAGER.CURRENCY_BRL') }}</option>
+                  <option value="USD">{{ t('KANBAN.OFFERS.MANAGER.CURRENCY_USD') }}</option>
+                  <option value="EUR">{{ t('KANBAN.OFFERS.MANAGER.CURRENCY_EUR') }}</option>
+                  <option value="GBP">{{ t('KANBAN.OFFERS.MANAGER.CURRENCY_GBP') }}</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-1">{{
-                t('KANBAN.OFFERS.MANAGER.IMAGE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-1">{{ t('KANBAN.OFFERS.MANAGER.IMAGE_LABEL') }}</label>
               <div class="flex items-center gap-4">
                 <input
                   type="file"
@@ -459,25 +405,17 @@ onMounted(async () => {
               <Button
                 variant="ghost"
                 color="slate"
-                @click="
-                  isEditingMode = false;
-                  isCreatingMode = false;
-                  offerBeingEdited = null;
-                "
+                @click="isEditingMode = false; isCreatingMode = false; offerBeingEdited = null"
               >
                 {{ t('KANBAN.OFFERS.MANAGER.CANCEL') }}
               </Button>
               <Button
                 variant="solid"
                 color="blue"
-                :is-loading="loading"
                 @click="handleEdit(offerBeingEdited)"
+                :isLoading="loading"
               >
-                {{
-                  isCreatingMode
-                    ? t('KANBAN.OFFERS.MANAGER.CREATE_BUTTON')
-                    : t('KANBAN.OFFERS.MANAGER.SAVE_CHANGES')
-                }}
+                {{ isCreatingMode ? t('KANBAN.OFFERS.MANAGER.CREATE_BUTTON') : t('KANBAN.OFFERS.MANAGER.SAVE_CHANGES') }}
               </Button>
             </div>
           </div>
@@ -521,19 +459,14 @@ onMounted(async () => {
           class="flex flex-col items-center justify-center py-12 text-slate-600"
         >
           <fluent-icon icon="task" size="48" class="mb-4 text-slate-400" />
-          <p class="text-lg">
-            {{ t('KANBAN.OFFERS.MANAGER.EMPTY_STATE_TITLE') }}
-          </p>
+          <p class="text-lg">{{ t('KANBAN.OFFERS.MANAGER.EMPTY_STATE_TITLE') }}</p>
           <p class="text-sm">
             {{ t('KANBAN.OFFERS.MANAGER.EMPTY_STATE_MESSAGE') }}
           </p>
         </div>
 
         <!-- Offers List -->
-        <div
-          v-else
-          class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <div v-else class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           <div
             v-for="offer in offers"
             :key="offer.id"
@@ -548,15 +481,8 @@ onMounted(async () => {
               />
             </div>
             <!-- Placeholder quando não há imagem -->
-            <div
-              v-else
-              class="w-full h-40 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center"
-            >
-              <fluent-icon
-                icon="image"
-                size="56"
-                class="text-slate-300 dark:text-slate-700"
-              />
+            <div v-else class="w-full h-40 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+              <fluent-icon icon="image" size="56" class="text-slate-300 dark:text-slate-700" />
             </div>
 
             <!-- Conteúdo do card -->
@@ -564,59 +490,39 @@ onMounted(async () => {
               <!-- Informações básicas -->
               <div class="mb-4">
                 <div class="flex items-center gap-2 mb-2">
-                  <span
-                    class="inline-block px-2 py-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded"
-                  >
+                  <span class="inline-block px-2 py-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded">
                     #{{ offer.id }}
                   </span>
                   <span
-                    class="inline-block px-2 py-0.5 text-xs font-medium rounded"
                     :class="[
-                      offer.type === 'service'
-                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300',
+                      'inline-block px-2 py-0.5 text-xs font-medium rounded',
+                      offer.type === 'service' 
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                        : 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
                     ]"
                   >
-                    {{
-                      offer.type === 'service'
-                        ? t('KANBAN.OFFERS.MANAGER.TYPE_SERVICE')
-                        : t('KANBAN.OFFERS.MANAGER.TYPE_PRODUCT')
-                    }}
+                    {{ offer.type === 'service' ? t('KANBAN.OFFERS.MANAGER.TYPE_SERVICE') : t('KANBAN.OFFERS.MANAGER.TYPE_PRODUCT') }}
                   </span>
                 </div>
-                <h3
-                  class="text-lg font-semibold text-slate-900 dark:text-white"
-                >
-                  {{ offer.name }}
-                </h3>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ offer.name }}</h3>
               </div>
 
               <!-- Valor e moeda -->
               <div class="mb-4">
-                <div
-                  class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg"
-                >
-                  <fluent-icon
-                    icon="tag"
-                    size="16"
-                    class="text-green-600 dark:text-green-400"
-                  />
-                  <span
-                    class="text-base font-bold text-green-700 dark:text-green-300"
-                  >
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <fluent-icon icon="tag" size="16" class="text-green-600 dark:text-green-400" />
+                  <span class="text-base font-bold text-green-700 dark:text-green-300">
                     {{ offer.discount_percentage }} {{ offer.currency }}
                   </span>
                 </div>
               </div>
 
               <!-- Rodapé com data e ações -->
-              <div
-                class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700"
-              >
+              <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
                 <p class="text-xs text-slate-500 dark:text-slate-400">
                   {{ new Date(offer.created_at).toLocaleDateString() }}
                 </p>
-
+                
                 <!-- Botões de Ação -->
                 <div class="flex items-center gap-1">
                   <Button
@@ -667,9 +573,7 @@ onMounted(async () => {
           {{ t('KANBAN.OFFERS.MANAGER.DELETE_MODAL_TITLE') }}
         </h3>
         <p class="text-sm text-slate-600 mb-6">
-          {{ t('KANBAN.OFFERS.MANAGER.DELETE_MODAL_MESSAGE') }} "{{
-            offerToDelete?.name
-          }}"?
+          {{ t('KANBAN.OFFERS.MANAGER.DELETE_MODAL_MESSAGE') }} "{{ offerToDelete?.name }}"?
           {{ t('KANBAN.OFFERS.MANAGER.DELETE_MODAL_WARNING') }}
         </p>
         <div class="flex justify-end gap-2">
@@ -685,7 +589,7 @@ onMounted(async () => {
             variant="solid"
             color="ruby"
             size="sm"
-            :is-loading="loading"
+            :isLoading="loading"
             @click="handleDelete"
           >
             {{ t('KANBAN.OFFERS.MANAGER.DELETE_BUTTON') }}

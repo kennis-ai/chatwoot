@@ -24,6 +24,40 @@ import AgentTooltip from './AgentTooltip.vue';
 import agents from '../../../../api/agents';
 import inboxes from '../../../../api/inboxes';
 
+// Função utilitária de debounce
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
+
+const { t } = useI18n();
+const store = useStore();
+const { isStacklab } = useConfig();
+
+// Adicionar um watcher para monitorar mudanças
+watch(
+  () => isStacklab,
+  newValue => {
+    // Watcher vazio mantido para possível uso futuro
+  }
+);
+
+const emit = defineEmits([
+  'openFilterModal',
+  'itemCreated',
+  'search',
+  'itemsUpdated',
+  'switchView',
+  'newToastMessage',
+  'globalStatusFilterChange',
+  'filterApplied',
+  'globalFilterChange',
+  'searchResults',
+]);
+
 const props = defineProps({
   currentStage: {
     type: String,
@@ -58,40 +92,6 @@ const props = defineProps({
     default: null,
   },
 });
-
-const emit = defineEmits([
-  'openFilterModal',
-  'itemCreated',
-  'search',
-  'itemsUpdated',
-  'switchView',
-  'newToastMessage',
-  'globalStatusFilterChange',
-  'filterApplied',
-  'globalFilterChange',
-  'searchResults',
-]);
-
-// Função utilitária de debounce
-const debounce = (fn, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-};
-
-const { t } = useI18n();
-const store = useStore();
-const { isStacklab } = useConfig();
-
-// Adicionar um watcher para monitorar mudanças
-watch(
-  () => isStacklab,
-  newValue => {
-    // Watcher vazio mantido para possível uso futuro
-  }
-);
 
 const showAddModal = ref(false);
 const selectedFunnel = computed(
@@ -287,18 +287,20 @@ const selectBulkAction = action => {
     showBulkMoveModal.value = true;
   } else if (action.id === 'add') {
     showBulkAddModal.value = true;
-  } else if (action.id === 'send_message') {
+      } else if (action.id === 'send_message') {
     showSendMessageModal.value = true;
   }
   showBulkActions.value = false;
 };
 
+
+
 const handleFilter = () => {
   showFilterModal.value = true;
 };
 
-const handleFilterApply = filters => {
-  console.log('[KanbanHeader] handleFilterApply - Filtros recebidos:', filters);
+const handleFilterApply = (filters) => {
+  console.log('[KanbanHeader] handleFilterApply - Filtros recebidos:', filters)
 
   // Mapear filtros do KanbanFilter para o formato esperado pelo sistema
   const mappedFilters = {
@@ -320,28 +322,18 @@ const handleFilterApply = filters => {
     },
   };
 
-  console.log(
-    '[KanbanHeader] handleFilterApply - Filtros mapeados:',
-    mappedFilters
-  );
+  console.log('[KanbanHeader] handleFilterApply - Filtros mapeados:', mappedFilters)
   emit('filterApplied', mappedFilters);
-  console.log(
-    '[KanbanHeader] handleFilterApply - Emit filterApplied realizado'
-  );
+  console.log('[KanbanHeader] handleFilterApply - Emit filterApplied realizado')
   showFilterModal.value = false;
 };
 
-const handleFilterResults = results => {
-  console.log(
-    '[KanbanHeader] handleFilterResults - Resultados recebidos:',
-    results
-  );
-
+const handleFilterResults = (results) => {
+  console.log('[KanbanHeader] handleFilterResults - Resultados recebidos:', results)
+  
   // Emitir resultados para o componente pai (similar ao searchResults)
-  emit('searchResults', results);
-  console.log(
-    '[KanbanHeader] handleFilterResults - Emit searchResults realizado'
-  );
+  emit('searchResults', results)
+  console.log('[KanbanHeader] handleFilterResults - Emit searchResults realizado')
 };
 
 const handleSettings = () => {
@@ -351,6 +343,7 @@ const handleSettings = () => {
 const handleCloseSettings = () => {
   showSettingsModal.value = false;
 };
+
 
 const handleAdd = () => {
   showAddDropdown.value = !showAddDropdown.value;
@@ -367,6 +360,8 @@ const handleNewItem = () => {
   showAddModal.value = true;
   showAddDropdown.value = false;
 };
+
+
 
 const handleItemCreated = async item => {
   emit('itemCreated', item);
@@ -389,7 +384,7 @@ const handleSearch = () => {
 };
 
 // Função para executar busca via API
-const performSearch = async query => {
+const performSearch = async (query) => {
   if (!query || query.trim().length < 2) {
     searchResults.value = null;
     emit('searchResults', null);
@@ -429,7 +424,7 @@ watch(searchQuery, (newValue, oldValue) => {
 const handleBulkDelete = async selectedIds => {
   try {
     // Processar cada item individualmente para emitir eventos corretos
-    const deletePromises = selectedIds.map(async itemId => {
+    const deletePromises = selectedIds.map(async (itemId) => {
       // Executar exclusão via API
       await KanbanAPI.deleteItem(itemId);
 
@@ -455,7 +450,7 @@ const handleBulkDelete = async selectedIds => {
 const handleBulkMove = async ({ itemIds, stageId }) => {
   try {
     // Processar cada item individualmente para emitir eventos corretos
-    const movePromises = itemIds.map(async itemId => {
+    const movePromises = itemIds.map(async (itemId) => {
       // Obter dados do item antes do movimento
       const { data: currentItem } = await KanbanAPI.getItem(itemId);
       const fromStage = currentItem.funnel_stage;
@@ -471,7 +466,7 @@ const handleBulkMove = async ({ itemIds, stageId }) => {
         itemId: parseInt(itemId, 10),
         fromStage: fromStage,
         toStage: stageId,
-        itemData: updatedItem,
+        itemData: updatedItem
       });
 
       // Emitir evento para atualizar stats das colunas
@@ -479,7 +474,7 @@ const handleBulkMove = async ({ itemIds, stageId }) => {
         itemId: parseInt(itemId, 10),
         fromStage: fromStage,
         toStage: stageId,
-        funnelId: selectedFunnel.value?.id,
+        funnelId: selectedFunnel.value?.id
       });
 
       return updatedItem;
@@ -498,7 +493,7 @@ const handleBulkMove = async ({ itemIds, stageId }) => {
   }
 };
 
-const handleBulkItemsCreated = async createdItems => {
+const handleBulkItemsCreated = async (createdItems) => {
   try {
     // Processar cada item criado para emitir eventos corretos
     if (createdItems && Array.isArray(createdItems)) {
@@ -548,13 +543,13 @@ const emitFilters = () => {
 };
 
 // +++ Custom dropdown selection functions +++
-const selectAgent = agentId => {
+const selectAgent = (agentId) => {
   selectedAgentFilter.value = agentId;
   showAgentDropdown.value = false;
   emitFilters();
 };
 
-const selectChannel = channelValue => {
+const selectChannel = (channelValue) => {
   selectedChannelFilter.value = channelValue;
   showChannelDropdown.value = false;
   emitFilters();
@@ -570,11 +565,7 @@ const activeFiltersCount = computed(() => {
   if (props.activeFilters.agent_id || props.activeFilters.agent) count++;
   if (props.activeFilters.channel) count++;
   if (props.activeFilters.date?.start || props.activeFilters.date?.end) count++;
-  if (
-    props.activeFilters.scheduledDate?.start ||
-    props.activeFilters.scheduledDate?.end
-  )
-    count++;
+  if (props.activeFilters.scheduledDate?.start || props.activeFilters.scheduledDate?.end) count++;
 
   return count;
 });
@@ -611,11 +602,9 @@ const filteredAgents = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return agentsFromFunnel.filter(
     agent =>
-      agent &&
-      agent.name &&
-      agent.email &&
+      agent && agent.name && agent.email &&
       (agent.name.toLowerCase().includes(query) ||
-        agent.email.toLowerCase().includes(query))
+       agent.email.toLowerCase().includes(query))
   );
 });
 
@@ -633,12 +622,10 @@ const filterAgents = computed(() => {
 });
 
 const filterChannels = computed(() => {
-  return availableInboxes.value
-    .map(inbox => ({
-      value: inbox.channel_type?.replace('Channel::', '') || '',
-      label: inbox.name || inbox.channel_type?.replace('Channel::', '') || '',
-    }))
-    .filter(channel => channel.value); // Remove entries with empty values
+  return availableInboxes.value.map(inbox => ({
+    value: inbox.channel_type?.replace('Channel::', '') || '',
+    label: inbox.name || inbox.channel_type?.replace('Channel::', '') || ''
+  })).filter(channel => channel.value); // Remove entries with empty values
 });
 
 const handleAIClick = () => {
@@ -783,6 +770,7 @@ const viewOptions = [
   { id: 'agenda', label: 'Agenda', icon: 'calendar' },
 ];
 
+
 // --- AGENTES PARA MODAL DE COMPARTILHAMENTO ---
 const shareAgentsList = ref([]);
 const shareAgentSearch = ref('');
@@ -888,8 +876,8 @@ const toggleShareAgent = async agent => {
             currentView === 'kanban'
               ? 'task'
               : currentView === 'list'
-                ? 'list'
-                : 'calendar'
+              ? 'list'
+              : 'calendar'
           "
           size="16"
         />
@@ -906,28 +894,18 @@ const toggleShareAgent = async agent => {
             variant="outline"
             color="slate"
             size="sm"
-            class="view-button"
-            :class="{
-              active: currentView === option.id,
-              inactive: currentView !== option.id,
-            }"
+            :class="{ 'view-button': true, 'active': currentView === option.id, 'inactive': currentView !== option.id }"
             @click="emit('switchView', option.id)"
           >
             <template #icon>
-              <fluent-icon
-                v-if="
-                  typeof option.icon === 'string' && option.icon.trim() !== ''
-                "
-                :icon="option.icon"
-                size="16"
-              />
+              <fluent-icon v-if="typeof option.icon === 'string' && option.icon.trim() !== ''" :icon="option.icon" size="16" />
             </template>
             <span class="view-text">{{ option.label }}</span>
           </Button>
         </div>
       </div>
       <!-- Fim do seletor customizado -->
-      <FunnelSelector class="md:block hidden ml-1" />
+      <funnel-selector class="md:block hidden ml-1" />
 
       <!-- Filtros globais (Ganhos e Perdidos) -->
       <div class="flex items-center gap-1">
@@ -937,19 +915,16 @@ const toggleShareAgent = async agent => {
           color="slate"
           size="sm"
           class="group"
-          :class="
-            globalStatusFilters.won
-              ? 'bg-green-50 border-green-200 text-green-700'
-              : ''
-          "
           @click="toggleGlobalStatusFilter('won')"
+          :class="globalStatusFilters.won ? 'bg-green-50 border-green-200 text-green-700' : ''"
         >
           <template #icon>
-            <fluent-icon icon="checkmark-circle" size="16" />
+            <fluent-icon
+              icon="checkmark-circle"
+              size="16"
+            />
           </template>
-          <span class="hidden group-hover:inline text-[12px]">{{
-            $t('KANBAN.FILTERS.WON')
-          }}</span>
+          <span class="hidden group-hover:inline text-[12px]">{{ $t('KANBAN.FILTERS.WON') }}</span>
         </Button>
         <Button
           type="button"
@@ -957,19 +932,16 @@ const toggleShareAgent = async agent => {
           color="slate"
           size="sm"
           class="group"
-          :class="
-            globalStatusFilters.lost
-              ? 'bg-red-50 border-red-200 text-red-700'
-              : ''
-          "
           @click="toggleGlobalStatusFilter('lost')"
+          :class="globalStatusFilters.lost ? 'bg-red-50 border-red-200 text-red-700' : ''"
         >
           <template #icon>
-            <fluent-icon icon="dismiss-circle" size="16" />
+            <fluent-icon
+              icon="dismiss-circle"
+              size="16"
+            />
           </template>
-          <span class="hidden group-hover:inline text-[12px]">{{
-            $t('KANBAN.FILTERS.LOST')
-          }}</span>
+          <span class="hidden group-hover:inline text-[12px]">{{ $t('KANBAN.FILTERS.LOST') }}</span>
         </Button>
       </div>
       <div
@@ -981,10 +953,7 @@ const toggleShareAgent = async agent => {
             <fluent-icon icon="search" size="16" />
           </template>
         </Button>
-        <div
-          v-show="showSearchInput || searchQuery"
-          class="search-input-wrapper"
-        >
+        <div v-show="showSearchInput || searchQuery" class="search-input-wrapper">
           <input
             id="kanban-search"
             v-model="searchQuery"
@@ -1022,50 +991,24 @@ const toggleShareAgent = async agent => {
         <!-- Custom Agent Filter -->
         <div class="relative agent-filter-dropdown">
           <div
+            @click="showAgentDropdown = !showAgentDropdown"
             class="px-3 py-1.5 text-[12px] border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer opacity-50 hover:opacity-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 flex items-center justify-between"
             :class="[
               { 'ring-2 ring-blue-500 border-transparent': showAgentDropdown },
-              selectedAgentFilter ? 'min-w-[140px]' : 'w-auto',
+              selectedAgentFilter ? 'min-w-[140px]' : 'w-auto'
             ]"
-            @click="showAgentDropdown = !showAgentDropdown"
           >
             <div class="flex items-center gap-2 min-w-0 flex-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-user-icon lucide-user flex-shrink-0"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user flex-shrink-0">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
               </svg>
               <span v-if="selectedAgentFilter" class="truncate">
-                {{
-                  filterAgents.find(a => a.id === selectedAgentFilter)?.name ||
-                  'Agente não encontrado'
-                }}
+                {{ filterAgents.find(a => a.id === selectedAgentFilter)?.name || 'Agente não encontrado' }}
               </span>
             </div>
-            <svg
-              v-if="selectedAgentFilter"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-down-icon lucide-chevron-down ml-2 text-black/70 dark:text-slate-400 flex-shrink-0"
-            >
-              <path d="m6 9 6 6 6-6" />
+            <svg v-if="selectedAgentFilter" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down ml-2 text-black/70 dark:text-slate-400 flex-shrink-0">
+              <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
           <div
@@ -1073,50 +1016,25 @@ const toggleShareAgent = async agent => {
             class="absolute top-full left-0 mt-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg z-50 min-w-[140px] max-h-48 overflow-y-auto"
           >
             <div
-              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer first:rounded-t-lg flex items-center gap-2"
               @click="selectAgent('')"
+              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer first:rounded-t-lg flex items-center gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-user-icon lucide-user flex-shrink-0"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user flex-shrink-0">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
               </svg>
               {{ $t('KANBAN.FILTER.ALL_AGENTS') }}
             </div>
             <div
               v-for="agent in filterAgents"
               :key="agent.id"
-              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer flex items-center gap-2"
-              :class="{
-                'bg-slate-100 dark:bg-slate-600':
-                  selectedAgentFilter === agent.id,
-              }"
               @click="selectAgent(agent.id)"
+              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer flex items-center gap-2"
+              :class="{ 'bg-slate-100 dark:bg-slate-600': selectedAgentFilter === agent.id }"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-user-icon lucide-user flex-shrink-0"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user flex-shrink-0">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
               </svg>
               {{ agent.name }}
             </div>
@@ -1126,54 +1044,24 @@ const toggleShareAgent = async agent => {
         <!-- Custom Channel Filter -->
         <div class="relative channel-filter-dropdown">
           <div
+            @click="showChannelDropdown = !showChannelDropdown"
             class="px-3 py-1.5 text-[12px] border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer opacity-50 hover:opacity-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 flex items-center justify-between"
             :class="[
-              {
-                'ring-2 ring-blue-500 border-transparent': showChannelDropdown,
-              },
-              selectedChannelFilter ? 'min-w-[140px]' : 'w-auto',
+              { 'ring-2 ring-blue-500 border-transparent': showChannelDropdown },
+              selectedChannelFilter ? 'min-w-[140px]' : 'w-auto'
             ]"
-            @click="showChannelDropdown = !showChannelDropdown"
           >
             <div class="flex items-center gap-2 min-w-0 flex-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0"
-              >
-                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-                <path
-                  d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
               </svg>
               <span v-if="selectedChannelFilter" class="truncate">
-                {{
-                  filterChannels.find(c => c.value === selectedChannelFilter)
-                    ?.label || 'Canal não encontrado'
-                }}
+                {{ filterChannels.find(c => c.value === selectedChannelFilter)?.label || 'Canal não encontrado' }}
               </span>
             </div>
-            <svg
-              v-if="selectedChannelFilter"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-down-icon lucide-chevron-down ml-2 text-black/70 dark:text-slate-400 flex-shrink-0"
-            >
-              <path d="m6 9 6 6 6-6" />
+            <svg v-if="selectedChannelFilter" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down ml-2 text-black/70 dark:text-slate-400 flex-shrink-0">
+              <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
           <div
@@ -1181,54 +1069,25 @@ const toggleShareAgent = async agent => {
             class="absolute top-full left-0 mt-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg z-50 min-w-[140px] max-h-48 overflow-y-auto"
           >
             <div
-              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer first:rounded-t-lg flex items-center gap-2"
               @click="selectChannel('')"
+              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer first:rounded-t-lg flex items-center gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0"
-              >
-                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-                <path
-                  d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
               </svg>
               {{ $t('KANBAN.FILTER.ALL_CHANNELS') }}
             </div>
             <div
               v-for="channel in filterChannels"
               :key="channel.value"
-              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer flex items-center gap-2"
-              :class="{
-                'bg-slate-100 dark:bg-slate-600':
-                  selectedChannelFilter === channel.value,
-              }"
               @click="selectChannel(channel.value)"
+              class="px-3 py-2 text-[12px] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer flex items-center gap-2"
+              :class="{ 'bg-slate-100 dark:bg-slate-600': selectedChannelFilter === channel.value }"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0"
-              >
-                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-                <path
-                  d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox-icon lucide-inbox flex-shrink-0">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
               </svg>
               {{ channel.label }}
             </div>
@@ -1244,30 +1103,22 @@ const toggleShareAgent = async agent => {
           color="slate"
           size="sm"
           class="group"
-          :style="
-            isQuickMessageActive
-              ? {
-                  backgroundColor: '#ff6b35',
-                  borderColor: '#ff6b35',
-                  color: 'white',
-                }
-              : {}
-          "
           @click="handleQuickMessageClick"
+          :style="isQuickMessageActive ? { backgroundColor: '#ff6b35', borderColor: '#ff6b35', color: 'white' } : {}"
         >
           <template #icon>
-            <fluent-icon icon="flame" size="16" />
+            <fluent-icon
+              icon="flame"
+              size="16"
+            />
           </template>
           <span class="text-[12px]">{{ $t('KANBAN.QUICK_CHAT') }}</span>
         </Button>
       </div>
 
       <div class="bulk-actions-selector md:block hidden">
-        <AgentTooltip :text="$t('KANBAN.TOOLTIPS.BULK_ACTIONS')" align="left">
-          <div
-            class="relative cursor-pointer p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
-            @click="handleBulkActions"
-          >
+        <AgentTooltip :text="$t('KANBAN.TOOLTIPS.BULK_ACTIONS')" :align="'left'">
+          <div class="relative cursor-pointer p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded" @click="handleBulkActions">
             <svg
               width="18"
               height="18"
@@ -1281,10 +1132,10 @@ const toggleShareAgent = async agent => {
               aria-hidden="true"
               class="text-slate-500"
             >
-              <path d="M16 5H3" />
-              <path d="M16 12H3" />
-              <path d="M11 19H3" />
-              <path d="m15 18 2 2 4-4" />
+              <path d="M16 5H3"/>
+              <path d="M16 12H3"/>
+              <path d="M11 19H3"/>
+              <path d="m15 18 2 2 4-4"/>
             </svg>
           </div>
         </AgentTooltip>
@@ -1296,14 +1147,7 @@ const toggleShareAgent = async agent => {
             class="dropdown-item"
             @click="selectBulkAction(action)"
           >
-            <fluent-icon
-              v-if="
-                typeof action.icon === 'string' && action.icon.trim() !== ''
-              "
-              :icon="action.icon"
-              size="16"
-              class="mr-2"
-            />
+            <fluent-icon v-if="typeof action.icon === 'string' && action.icon.trim() !== ''" :icon="action.icon" size="16" class="mr-2" />
             <span>{{ action.label }}</span>
             <span
               v-if="action.id === 'show_hidden'"
@@ -1319,11 +1163,8 @@ const toggleShareAgent = async agent => {
         </div>
       </div>
 
-      <AgentTooltip :text="$t('KANBAN.TOOLTIPS.FILTER')" align="left">
-        <div
-          class="relative cursor-pointer p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
-          @click="handleFilter"
-        >
+      <AgentTooltip :text="$t('KANBAN.TOOLTIPS.FILTER')" :align="'left'">
+        <div class="relative cursor-pointer p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded" @click="handleFilter">
           <svg
             width="18"
             height="18"
@@ -1335,15 +1176,15 @@ const toggleShareAgent = async agent => {
             aria-hidden="true"
             class="text-slate-500"
           >
-            <path d="M10 5H3" />
-            <path d="M12 19H3" />
-            <path d="M14 3v4" />
-            <path d="M16 17v4" />
-            <path d="M21 12h-9" />
-            <path d="M21 19h-5" />
-            <path d="M21 5h-7" />
-            <path d="M8 10v4" />
-            <path d="M8 12H3" />
+            <path d="M10 5H3"/>
+            <path d="M12 19H3"/>
+            <path d="M14 3v4"/>
+            <path d="M16 17v4"/>
+            <path d="M21 12h-9"/>
+            <path d="M21 19h-5"/>
+            <path d="M21 5h-7"/>
+            <path d="M8 10v4"/>
+            <path d="M8 12H3"/>
           </svg>
           <span v-if="activeFiltersCount > 0" class="filter-badge">
             {{ activeFiltersCount }}
@@ -1388,10 +1229,7 @@ const toggleShareAgent = async agent => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d="M13 3L4 14H12L11 21L20 10H12L13 3Z"
-                fill="currentColor"
-              />
+              <path d="M13 3L4 14H12L11 21L20 10H12L13 3Z" fill="currentColor" />
             </svg>
             <span>Criar com IA</span>
           </div>
@@ -1402,10 +1240,10 @@ const toggleShareAgent = async agent => {
           variant="ghost"
           color="slate"
           size="sm"
+          @click="handleSettingsClick"
           :title="
             !userIsAdmin ? 'Apenas administradores podem gerenciar funis' : ''
           "
-          @click="handleSettingsClick"
         >
           <template #icon>
             <fluent-icon icon="more-vertical" size="16" />
@@ -1424,43 +1262,21 @@ const toggleShareAgent = async agent => {
             class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer rounded-none transition-colors"
             @click="handleSettingsOption(option)"
           >
-            <fluent-icon
-              v-if="
-                typeof option.icon === 'string' &&
-                option.icon.trim() !== '' &&
-                !option.customSvg
-              "
-              :icon="option.icon"
-              size="16"
-              class="mr-2"
-            />
-            <svg
-              v-else-if="option.customSvg && option.id === 'offers'"
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="mr-2"
-            >
-              <path
-                d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"
-              />
-              <path d="m7.5 4.27 9 5.15" />
-              <polyline points="3.29 7 12 12 20.71 7" />
-              <line x1="12" x2="12" y1="22" y2="12" />
-              <circle cx="18.5" cy="15.5" r="2.5" />
-              <path d="M20.27 17.27 22 19" />
+            <fluent-icon v-if="typeof option.icon === 'string' && option.icon.trim() !== '' && !option.customSvg" :icon="option.icon" size="16" class="mr-2" />
+            <svg v-else-if="option.customSvg && option.id === 'offers'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+              <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+              <path d="m7.5 4.27 9 5.15"/>
+              <polyline points="3.29 7 12 12 20.71 7"/>
+              <line x1="12" x2="12" y1="22" y2="12"/>
+              <circle cx="18.5" cy="15.5" r="2.5"/>
+              <path d="M20.27 17.27 22 19"/>
             </svg>
             <span>{{ option.label }}</span>
           </div>
         </div>
       </div>
     </div>
+
 
     <!-- Menu móvel para elementos ocultos -->
     <!-- Navbar inferior removida conforme solicitado -->
@@ -1965,9 +1781,7 @@ select {
 
   .ai-button-text {
     display: none;
-    transition:
-      opacity 0.5s ease,
-      visibility 0.5s ease;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
     opacity: 0;
     visibility: hidden;
   }
@@ -2059,7 +1873,7 @@ select {
 
     .view-button {
       gap: 0.25rem;
-
+      
       .view-text {
         display: inline;
         transition: all 0.2s ease;

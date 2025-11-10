@@ -15,6 +15,7 @@ import KanbanStageReport from './KanbanStageReport.vue';
 import AgentTooltip from './AgentTooltip.vue';
 import PriorityCircle from './PriorityCircle.vue';
 
+
 const props = defineProps({
   id: {
     type: String,
@@ -129,7 +130,7 @@ const columnSort = ref({
 // Garantir valores padrão para ordenação
 const defaultSort = {
   type: 'created_at',
-  direction: 'desc',
+  direction: 'desc'
 };
 
 // Nova ref para controlar o estado de colapso em massa
@@ -155,6 +156,7 @@ const sortOptions = [
   { id: 'priority', label: 'Prioridade' },
   { id: 'value', label: 'Valor' },
 ];
+
 
 // Context menu customizado para o header
 const showHeaderContextMenu = ref(false);
@@ -223,7 +225,7 @@ const truncatedTitle = computed(() => {
 // Função para buscar itens da API
 const fetchColumnItems = async (page = 1, reset = false) => {
   if (isLoadingColumn.value) return;
-
+  
   try {
     isLoadingColumn.value = true;
     if (page > 1) {
@@ -245,14 +247,11 @@ const fetchColumnItems = async (page = 1, reset = false) => {
     } else {
       columnItems.value = [...columnItems.value, ...items];
     }
-
+    
     currentPage.value = page;
     hasMoreItems.value = pagination ? pagination.has_more : items.length === 50;
   } catch (error) {
-    console.error(
-      `[KANBAN-COLUMN] Erro ao buscar itens da coluna ${props.id}:`,
-      error
-    );
+    console.error(`[KANBAN-COLUMN] Erro ao buscar itens da coluna ${props.id}:`, error);
   } finally {
     isLoadingColumn.value = false;
     isLoadingMore.value = false;
@@ -260,7 +259,7 @@ const fetchColumnItems = async (page = 1, reset = false) => {
 };
 
 // Funções de redimensionamento
-const startResize = e => {
+const startResize = (e) => {
   if (props.isExpanded) return;
   columnRef.value = e.target.closest('.kanban-column-root');
   isResizing.value = true;
@@ -269,7 +268,7 @@ const startResize = e => {
   e.preventDefault();
 };
 
-const handleResize = e => {
+const handleResize = (e) => {
   if (!isResizing.value || !columnRef.value) return;
   const rect = columnRef.value.getBoundingClientRect();
   const newWidth = e.clientX - rect.left;
@@ -285,10 +284,7 @@ const stopResize = () => {
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
     if (customWidth.value) {
-      localStorage.setItem(
-        `kanban_column_${props.id}_width`,
-        customWidth.value
-      );
+      localStorage.setItem(`kanban_column_${props.id}_width`, customWidth.value);
     }
   }
 };
@@ -320,7 +316,7 @@ onMounted(async () => {
     // Garantir valores padrão mesmo quando não há configuração salva
     columnSort.value = { ...defaultSort };
   }
-
+  
   // Carregar largura customizada
   const savedWidth = localStorage.getItem(`kanban_column_${props.id}_width`);
   if (savedWidth) {
@@ -330,7 +326,7 @@ onMounted(async () => {
   // Fechar menu ao clicar fora
   document.addEventListener('click', closeOptionsMenuOnClickOutside);
   document.addEventListener('click', closeHeaderContextMenu);
-
+  
   // Event listeners para redimensionamento
   document.addEventListener('mousemove', handleResize);
   document.addEventListener('mouseup', stopResize);
@@ -345,29 +341,24 @@ onMounted(async () => {
   // ✅ NOVO: Ouvir evento de delete
   emitter.on('kanbanItemDeleted', ({ itemId }) => {
     const initialCount = columnItems.value.length;
-    columnItems.value = columnItems.value.filter(
-      item => Number(item.id) !== Number(itemId)
-    );
+    columnItems.value = columnItems.value.filter(item => Number(item.id) !== Number(itemId));
     const finalCount = columnItems.value.length;
   });
 
   // ✅ NOVO: Ouvir evento de movimento entre etapas
-  emitter.on(
-    'kanbanItemMovedBetweenStages',
-    ({ itemId, fromStage, toStage, funnelId }) => {
-      // Só reagir se esta coluna estiver envolvida no movimento
-      if (props.id === fromStage || props.id === toStage) {
-        // Buscar novamente os stats da API para esta coluna
-        fetchStageStatsFromAPI(itemId);
-      }
+  emitter.on('kanbanItemMovedBetweenStages', ({ itemId, fromStage, toStage, funnelId }) => {
+    // Só reagir se esta coluna estiver envolvida no movimento
+    if (props.id === fromStage || props.id === toStage) {
+      // Buscar novamente os stats da API para esta coluna
+      fetchStageStatsFromAPI(itemId);
     }
-  );
+  });
 
   // Buscar stats ao montar ou ao trocar de funil
   if (selectedFunnel.value) {
-    store.dispatch('funnel/fetchStageStats', {
+    store.dispatch('funnel/fetchStageStats', { 
       funnelId: selectedFunnel.value.id,
-      filterParams: {},
+      filterParams: {}
     });
     // Buscar itens da coluna
     await fetchColumnItems(1, true);
@@ -399,9 +390,7 @@ const handleItemMoved = ({ itemId, fromStage, toStage, itemData }) => {
   // ✅ REMOVER DA COLUNA DE ORIGEM (se conhecida)
   if (fromStage && props.id === fromStage) {
     const initialCount = columnItems.value.length;
-    columnItems.value = columnItems.value.filter(
-      item => Number(item.id) !== numericItemId
-    );
+    columnItems.value = columnItems.value.filter(item => Number(item.id) !== numericItemId);
     const finalCount = columnItems.value.length;
   }
 
@@ -412,9 +401,7 @@ const handleItemMoved = ({ itemId, fromStage, toStage, itemData }) => {
       return;
     }
 
-    const existingIndex = columnItems.value.findIndex(
-      item => Number(item.id) === numericItemId
-    );
+    const existingIndex = columnItems.value.findIndex(item => Number(item.id) === numericItemId);
     const initialCount = columnItems.value.length;
 
     if (existingIndex >= 0) {
@@ -433,13 +420,9 @@ const handleItemMoved = ({ itemId, fromStage, toStage, itemData }) => {
 
   // ✅ FALLBACK: Se fromStage é undefined, tentar remover de qualquer coluna que tenha o item
   if (!fromStage && props.id !== toStage) {
-    const hasItem = columnItems.value.some(
-      item => Number(item.id) === numericItemId
-    );
+    const hasItem = columnItems.value.some(item => Number(item.id) === numericItemId);
     if (hasItem) {
-      columnItems.value = columnItems.value.filter(
-        item => Number(item.id) !== numericItemId
-      );
+      columnItems.value = columnItems.value.filter(item => Number(item.id) !== numericItemId);
     }
   }
 };
@@ -461,18 +444,9 @@ const saveSortSettings = () => {
 };
 
 const filteredItems = computed(() => {
-  console.log(
-    '[KanbanColumn] filteredItems computed - activeFilters recebidos:',
-    props.activeFilters
-  );
-  console.log(
-    '[KanbanColumn] filteredItems computed - columnItems length:',
-    columnItems.value.length
-  );
-  console.log(
-    '[KanbanColumn] filteredItems computed - searchResults:',
-    props.searchResults
-  );
+  console.log('[KanbanColumn] filteredItems computed - activeFilters recebidos:', props.activeFilters)
+  console.log('[KanbanColumn] filteredItems computed - columnItems length:', columnItems.value.length)
+  console.log('[KanbanColumn] filteredItems computed - searchResults:', props.searchResults)
 
   if (columnSettings.value.hideColumn) {
     return [];
@@ -480,8 +454,8 @@ const filteredItems = computed(() => {
 
   // 1. If we have search results, use only items from search that belong to this stage
   if (props.searchResults && props.searchResults.items) {
-    const searchItems = props.searchResults.items.filter(
-      item => item.funnel_stage === props.id
+    const searchItems = props.searchResults.items.filter(item =>
+      item.funnel_stage === props.id
     );
 
     // Apply additional filters to search results
@@ -489,9 +463,7 @@ const filteredItems = computed(() => {
 
     // Apply active filters to search results
     if (props.activeFilters) {
-      console.log(
-        '[KanbanColumn] Aplicando filtros aos resultados da busca...'
-      );
+      console.log('[KanbanColumn] Aplicando filtros aos resultados da busca...')
       items = items.filter(item => {
         // Filter by priority
         if (
@@ -499,21 +471,15 @@ const filteredItems = computed(() => {
           props.activeFilters.priorities.length > 0
         ) {
           const itemPriority = item.item_details?.priority || 'none';
-          if (!props.activeFilters.priorities.includes(itemPriority))
-            return false;
+          if (!props.activeFilters.priorities.includes(itemPriority)) return false;
         }
 
         // Filter by agent
-        const agentFilter =
-          props.activeFilters.agent_id || props.activeFilters.agent;
+        const agentFilter = props.activeFilters.agent_id || props.activeFilters.agent;
         if (agentFilter && agentFilter !== '') {
           let itemAgentId = null;
 
-          if (
-            item.assigned_agents &&
-            Array.isArray(item.assigned_agents) &&
-            item.assigned_agents.length > 0
-          ) {
+          if (item.assigned_agents && Array.isArray(item.assigned_agents) && item.assigned_agents.length > 0) {
             itemAgentId = item.assigned_agents[0].id;
           } else {
             itemAgentId =
@@ -564,8 +530,7 @@ const filteredItems = computed(() => {
       const direction = columnSort.value.direction === 'asc' ? 1 : -1;
       const type = columnSort.value.type || 'created_at';
 
-      let valueA;
-      let valueB;
+      let valueA, valueB;
 
       switch (type) {
         case 'title':
@@ -586,30 +551,30 @@ const filteredItems = computed(() => {
           return direction * (valueA - valueB);
         }
 
-        case 'value':
-          valueA = parseFloat(a.item_details?.value) || 0;
-          valueB = parseFloat(b.item_details?.value) || 0;
-          return direction * (valueA - valueB);
+      case 'value':
+        valueA = parseFloat(a.item_details?.value) || 0;
+        valueB = parseFloat(b.item_details?.value) || 0;
+        return direction * (valueA - valueB);
 
-        case 'updated_at':
-          valueA = new Date(a.updated_at);
-          valueB = new Date(b.updated_at);
+      case 'updated_at':
+        valueA = new Date(a.updated_at);
+        valueB = new Date(b.updated_at);
 
-          if (isNaN(valueA.getTime())) return direction;
-          if (isNaN(valueB.getTime())) return -direction;
+        if (isNaN(valueA.getTime())) return direction;
+        if (isNaN(valueB.getTime())) return -direction;
 
-          return direction * (valueA - valueB);
+        return direction * (valueA - valueB);
 
-        case 'created_at':
-        default:
-          valueA = new Date(a.created_at);
-          valueB = new Date(b.created_at);
+      case 'created_at':
+      default:
+        valueA = new Date(a.created_at);
+        valueB = new Date(b.created_at);
 
-          if (isNaN(valueA.getTime())) return direction;
-          if (isNaN(valueB.getTime())) return -direction;
+        if (isNaN(valueA.getTime())) return direction;
+        if (isNaN(valueB.getTime())) return -direction;
 
-          const result = direction * (valueA - valueB);
-          return result;
+        const result = direction * (valueA - valueB);
+        return result;
       }
     });
   }
@@ -626,30 +591,22 @@ const filteredItems = computed(() => {
 
       const title = (item.item_details.title || '').toLowerCase();
       const description = (item.item_details.description || '').toLowerCase();
-      const customerName = (
-        item.item_details.customer_name || ''
-      ).toLowerCase();
-      const customerEmail = (
-        item.item_details.customer_email || ''
-      ).toLowerCase();
+      const customerName = (item.item_details.customer_name || '').toLowerCase();
+      const customerEmail = (item.item_details.customer_email || '').toLowerCase();
 
-      const matches =
-        title.includes(query) ||
-        description.includes(query) ||
-        customerName.includes(query) ||
-        customerEmail.includes(query);
+      const matches = title.includes(query) ||
+             description.includes(query) ||
+             customerName.includes(query) ||
+             customerEmail.includes(query);
 
       return matches;
     });
   }
 
   // 2. Apply active filters from KanbanTab
-  console.log(
-    '[KanbanColumn] Aplicando filtros ativos - items antes do filtro:',
-    items.length
-  );
+  console.log('[KanbanColumn] Aplicando filtros ativos - items antes do filtro:', items.length)
   if (props.activeFilters) {
-    console.log('[KanbanColumn] Filtros ativos encontrados, aplicando...');
+    console.log('[KanbanColumn] Filtros ativos encontrados, aplicando...')
     items = items.filter(item => {
       // Filter by priority
       if (
@@ -657,16 +614,13 @@ const filteredItems = computed(() => {
         props.activeFilters.priorities.length > 0
       ) {
         const itemPriority = item.item_details?.priority || 'none'; // Default to 'none' if undefined
-        if (!props.activeFilters.priorities.includes(itemPriority))
-          return false;
+        if (!props.activeFilters.priorities.includes(itemPriority)) return false;
       }
 
       // Filter by value
       if (
-        (props.activeFilters.valueMin !== undefined &&
-          props.activeFilters.valueMin !== null) ||
-        (props.activeFilters.valueMax !== undefined &&
-          props.activeFilters.valueMax !== null)
+        (props.activeFilters.valueMin !== undefined && props.activeFilters.valueMin !== null) ||
+        (props.activeFilters.valueMax !== undefined && props.activeFilters.valueMax !== null)
       ) {
         const itemValue = parseFloat(item.item_details?.value) || 0;
         const min = props.activeFilters.valueMin;
@@ -677,18 +631,13 @@ const filteredItems = computed(() => {
       }
 
       // Filter by agent (from KanbanHeader or KanbanFilter)
-      const agentFilter =
-        props.activeFilters.agent_id || props.activeFilters.agent;
+      const agentFilter = props.activeFilters.agent_id || props.activeFilters.agent;
       if (agentFilter && agentFilter !== '') {
         // Verificar várias possíveis propriedades onde o ID do agente pode estar armazenado
         let itemAgentId = null;
 
         // Primeiro, verificar se tem assigned_agents como array
-        if (
-          item.assigned_agents &&
-          Array.isArray(item.assigned_agents) &&
-          item.assigned_agents.length > 0
-        ) {
+        if (item.assigned_agents && Array.isArray(item.assigned_agents) && item.assigned_agents.length > 0) {
           itemAgentId = item.assigned_agents[0].id; // Pegar o primeiro agente do array
         } else {
           // Fallback para outras propriedades
@@ -721,20 +670,15 @@ const filteredItems = computed(() => {
         let itemChannel = '';
 
         // Primeiro, tentar pegar do conversation.inbox.channel_type
-        if (
-          item.conversation &&
-          item.conversation.inbox &&
-          item.conversation.inbox.channel_type
-        ) {
+        if (item.conversation && item.conversation.inbox && item.conversation.inbox.channel_type) {
           itemChannel = item.conversation.inbox.channel_type;
         } else {
           // Fallback para outras propriedades
-          itemChannel =
-            item.channel_type ||
-            (item.item_details && item.item_details.channel_type) ||
-            (item.conversation && item.conversation.channel_type) ||
-            (item.inbox && item.inbox.channel_type) ||
-            '';
+          itemChannel = item.channel_type ||
+                       (item.item_details && item.item_details.channel_type) ||
+                       (item.conversation && item.conversation.channel_type) ||
+                       (item.inbox && item.inbox.channel_type) ||
+                       '';
         }
 
         const channelType = itemChannel.replace('Channel::', '');
@@ -744,7 +688,7 @@ const filteredItems = computed(() => {
           itemChannel,
           channelType,
           filterChannel: props.activeFilters.channel,
-          match: channelType === props.activeFilters.channel,
+          match: channelType === props.activeFilters.channel
         });
 
         if (channelType !== props.activeFilters.channel) {
@@ -754,17 +698,13 @@ const filteredItems = computed(() => {
 
       // Filter by date
       if (
-        (props.activeFilters.dateStart &&
-          props.activeFilters.dateStart !== '') ||
+        (props.activeFilters.dateStart && props.activeFilters.dateStart !== '') ||
         (props.activeFilters.dateEnd && props.activeFilters.dateEnd !== '')
       ) {
         const itemDate = new Date(item.created_at);
         if (isNaN(itemDate.getTime())) return false; // Skip invalid dates
 
-        if (
-          props.activeFilters.dateStart &&
-          props.activeFilters.dateStart !== ''
-        ) {
+        if (props.activeFilters.dateStart && props.activeFilters.dateStart !== '') {
           const startDate = new Date(props.activeFilters.dateStart);
           startDate.setHours(0, 0, 0, 0); // Compare from the beginning of the day
           if (itemDate < startDate) return false;
@@ -807,8 +747,7 @@ const filteredItems = computed(() => {
     const direction = columnSort.value.direction === 'asc' ? 1 : -1;
     const type = columnSort.value.type || 'created_at'; // Garantir valor padrão
 
-    let valueA;
-    let valueB;
+    let valueA, valueB;
 
     switch (type) {
       case 'title':
@@ -859,10 +798,7 @@ const filteredItems = computed(() => {
     }
   });
 
-  console.log(
-    '[KanbanColumn] filteredItems computed - items após todos os filtros:',
-    items.length
-  );
+  console.log('[KanbanColumn] filteredItems computed - items após todos os filtros:', items.length)
   return items;
 });
 
@@ -871,28 +807,29 @@ const displayedItems = computed(() => {
   return filteredItems.value;
 });
 
+
 // Computed para obter moeda padrão baseada no i18n (reativo)
 const defaultCurrency = computed(() => {
   const i18nLocale = locale.value || 'pt-BR';
   const currencyMap = {
     'pt-BR': { code: 'BRL', locale: 'pt-BR', symbol: 'R$' },
-    pt_BR: { code: 'BRL', locale: 'pt-BR', symbol: 'R$' },
+    'pt_BR': { code: 'BRL', locale: 'pt-BR', symbol: 'R$' },
     'en-US': { code: 'USD', locale: 'en-US', symbol: '$' },
-    en_US: { code: 'USD', locale: 'en-US', symbol: '$' },
-    en: { code: 'USD', locale: 'en-US', symbol: '$' },
+    'en_US': { code: 'USD', locale: 'en-US', symbol: '$' },
+    'en': { code: 'USD', locale: 'en-US', symbol: '$' },
     'de-DE': { code: 'EUR', locale: 'de-DE', symbol: '€' },
-    de_DE: { code: 'EUR', locale: 'de-DE', symbol: '€' },
-    de: { code: 'EUR', locale: 'de-DE', symbol: '€' },
+    'de_DE': { code: 'EUR', locale: 'de-DE', symbol: '€' },
+    'de': { code: 'EUR', locale: 'de-DE', symbol: '€' },
     'es-ES': { code: 'EUR', locale: 'es-ES', symbol: '€' },
-    es_ES: { code: 'EUR', locale: 'es-ES', symbol: '€' },
-    es: { code: 'EUR', locale: 'es-ES', symbol: '€' },
+    'es_ES': { code: 'EUR', locale: 'es-ES', symbol: '€' },
+    'es': { code: 'EUR', locale: 'es-ES', symbol: '€' },
     'fr-FR': { code: 'EUR', locale: 'fr-FR', symbol: '€' },
-    fr_FR: { code: 'EUR', locale: 'fr-FR', symbol: '€' },
-    fr: { code: 'EUR', locale: 'fr-FR', symbol: '€' },
+    'fr_FR': { code: 'EUR', locale: 'fr-FR', symbol: '€' },
+    'fr': { code: 'EUR', locale: 'fr-FR', symbol: '€' },
     'pt-PT': { code: 'EUR', locale: 'pt-PT', symbol: '€' },
-    pt_PT: { code: 'EUR', locale: 'pt-PT', symbol: '€' },
+    'pt_PT': { code: 'EUR', locale: 'pt-PT', symbol: '€' },
   };
-
+  
   return currencyMap[i18nLocale] || currencyMap['pt-BR'];
 });
 
@@ -900,35 +837,35 @@ const defaultCurrency = computed(() => {
 const totalsByCurrency = computed(() => {
   const totals = {};
   const defCurrency = defaultCurrency.value;
-
+  
   console.log('[KanbanColumn] Processando itens para totalsByCurrency:', {
     itemCount: filteredItems.value.length,
-    defaultCurrency: defCurrency,
+    defaultCurrency: defCurrency
   });
-
+  
   filteredItems.value.forEach((item, idx) => {
     const value = parseFloat(item.item_details?.value) || 0;
-
+    
     // Obter informação de moeda do item ou usar padrão do i18n
     let currencyCode = defCurrency.code;
     let currencyLocale = defCurrency.locale;
     let currencySymbol = defCurrency.symbol;
-
+    
     if (item.item_details?.currency) {
       currencyCode = item.item_details.currency.code || defCurrency.code;
       currencyLocale = item.item_details.currency.locale || defCurrency.locale;
       currencySymbol = item.item_details.currency.symbol || defCurrency.symbol;
-
+      
       console.log(`[KanbanColumn] Item ${idx} (${item.id}):`, {
         value,
         hasCurrency: !!item.item_details.currency,
         currencyCode,
         currencyLocale,
         currencySymbol,
-        itemCurrency: item.item_details.currency,
+        itemCurrency: item.item_details.currency
       });
     }
-
+    
     // Inicializar moeda se não existir
     if (!totals[currencyCode]) {
       totals[currencyCode] = {
@@ -939,12 +876,12 @@ const totalsByCurrency = computed(() => {
         count: 0,
       };
     }
-
+    
     // Somar valor
     totals[currencyCode].total += value;
     totals[currencyCode].count += 1;
   });
-
+  
   console.log('[KanbanColumn] Totals by currency final:', totals);
   return totals;
 });
@@ -953,43 +890,29 @@ const totalsByCurrency = computed(() => {
 const primaryCurrency = computed(() => {
   const currencies = Object.values(totalsByCurrency.value);
   const defCurrency = defaultCurrency.value;
-
+  
   console.log('[KanbanColumn] primaryCurrency - currencies:', currencies);
-  console.log(
-    '[KanbanColumn] primaryCurrency - defaultCurrency (i18n):',
-    defCurrency
-  );
-
+  console.log('[KanbanColumn] primaryCurrency - defaultCurrency (i18n):', defCurrency);
+  
   if (currencies.length === 0) {
     // Fallback: usar locale do i18n
-    console.log(
-      '[KanbanColumn] primaryCurrency - usando fallback:',
-      defCurrency
-    );
+    console.log('[KanbanColumn] primaryCurrency - usando fallback:', defCurrency);
     return defCurrency;
   }
-
+  
   // Prioridade 1: Se existe a moeda do locale atual (i18n), usar ela
-  const localeCurrency = currencies.find(
-    curr => curr.code === defCurrency.code
-  );
+  const localeCurrency = currencies.find(curr => curr.code === defCurrency.code);
   if (localeCurrency) {
-    console.log(
-      '[KanbanColumn] primaryCurrency - usando moeda do locale:',
-      localeCurrency
-    );
+    console.log('[KanbanColumn] primaryCurrency - usando moeda do locale:', localeCurrency);
     return localeCurrency;
   }
-
+  
   // Prioridade 2: Retornar a moeda com mais itens
-  const primary = currencies.reduce((prev, current) =>
+  const primary = currencies.reduce((prev, current) => 
     current.count > prev.count ? current : prev
   );
-
-  console.log(
-    '[KanbanColumn] primaryCurrency - usando moeda predominante:',
-    primary
-  );
+  
+  console.log('[KanbanColumn] primaryCurrency - usando moeda predominante:', primary);
   return primary;
 });
 
@@ -1001,13 +924,13 @@ const columnTotal = computed(() => {
 const formattedTotal = computed(() => {
   if (!columnTotal.value) return '';
   const currency = primaryCurrency.value;
-
+  
   console.log('[KanbanColumn] formattedTotal:', {
     columnTotal: columnTotal.value,
     currency,
-    primaryCurrency: primaryCurrency.value,
+    primaryCurrency: primaryCurrency.value
   });
-
+  
   try {
     const formatted = new Intl.NumberFormat(currency.locale, {
       style: 'currency',
@@ -1027,31 +950,30 @@ const formattedTotalAbbreviated = computed(() => {
   if (!value) return '';
   const abs = Math.abs(value);
   const currency = primaryCurrency.value;
-
+  
   if (abs >= 1_000_000_000) {
     const short = (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
     return currency.symbol + ' ' + short;
-  }
-  if (abs >= 1_000_000) {
+  } else if (abs >= 1_000_000) {
     const short = (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     return currency.symbol + ' ' + short;
-  }
-  if (abs >= 1_000) {
+  } else if (abs >= 1_000) {
     const short = (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
     return currency.symbol + ' ' + short;
+  } else {
+    return formattedTotal.value;
   }
-  return formattedTotal.value;
 });
 
 // Tooltip com todas as moedas
 const allCurrenciesTooltip = computed(() => {
   const currencies = Object.values(totalsByCurrency.value);
-
+  
   console.log('[KanbanColumn] allCurrenciesTooltip - currencies:', currencies);
-
+  
   if (currencies.length === 0) return '';
   if (currencies.length === 1) return formattedTotal.value;
-
+  
   // Montar tooltip com todas as moedas
   const tooltip = currencies
     .sort((a, b) => b.count - a.count) // Ordenar por quantidade de itens
@@ -1067,18 +989,14 @@ const allCurrenciesTooltip = computed(() => {
       }
     })
     .join('\n');
-
+  
   console.log('[KanbanColumn] allCurrenciesTooltip result:', tooltip);
   return tooltip;
 });
 
 const columnCount = computed(() => {
   // Se há filtros aplicados, usar filteredItems para count correto
-  if (
-    props.activeFilters ||
-    (props.globalStatusFilters &&
-      (!props.globalStatusFilters.won || !props.globalStatusFilters.lost))
-  ) {
+  if (props.activeFilters || (props.globalStatusFilters && (!props.globalStatusFilters.won || !props.globalStatusFilters.lost))) {
     return filteredItems.value.length;
   }
   // Se stats agregados disponíveis e sem filtros, usar
@@ -1132,7 +1050,7 @@ const countStyle = computed(() => ({
 }));
 
 // Função para buscar stats da etapa diretamente da API
-const fetchStageStatsFromAPI = async itemId => {
+const fetchStageStatsFromAPI = async (itemId) => {
   if (!selectedFunnel.value) return;
 
   try {
@@ -1143,48 +1061,35 @@ const fetchStageStatsFromAPI = async itemId => {
     if (itemId) {
       // Buscar o item na API para obter sua etapa original
       try {
-        const itemResponse = await KanbanAPI.getItem(
-          selectedFunnel.value.id,
-          itemId
-        );
+        const itemResponse = await KanbanAPI.getItem(selectedFunnel.value.id, itemId);
         if (itemResponse.data && itemResponse.data.funnel_stage) {
           originalStage = itemResponse.data.funnel_stage;
         }
       } catch (itemError) {
-        console.warn(
-          `[KANBAN-COLUMN] Não foi possível obter etapa original do item ${itemId}:`,
-          itemError
-        );
+        console.warn(`[KANBAN-COLUMN] Não foi possível obter etapa original do item ${itemId}:`, itemError);
       }
     }
 
     // Preparar parâmetros de filtro
     const filterParams = {};
-
+    
     if (props.activeFilters) {
       if (props.activeFilters.priorities?.length > 0) {
         filterParams.priorities = props.activeFilters.priorities;
       }
-
-      const agentFilter =
-        props.activeFilters.agent_id || props.activeFilters.agent;
+      
+      const agentFilter = props.activeFilters.agent_id || props.activeFilters.agent;
       if (agentFilter && agentFilter !== '') {
         filterParams.agent_id = agentFilter;
       }
-
-      if (
-        props.activeFilters.valueMin !== undefined &&
-        props.activeFilters.valueMin !== null
-      ) {
+      
+      if (props.activeFilters.valueMin !== undefined && props.activeFilters.valueMin !== null) {
         filterParams.value_min = props.activeFilters.valueMin;
       }
-      if (
-        props.activeFilters.valueMax !== undefined &&
-        props.activeFilters.valueMax !== null
-      ) {
+      if (props.activeFilters.valueMax !== undefined && props.activeFilters.valueMax !== null) {
         filterParams.value_max = props.activeFilters.valueMax;
       }
-
+      
       if (props.activeFilters.dateStart) {
         filterParams.date_start = props.activeFilters.dateStart;
       }
@@ -1192,7 +1097,7 @@ const fetchStageStatsFromAPI = async itemId => {
         filterParams.date_end = props.activeFilters.dateEnd;
       }
     }
-
+    
     // Aplicar filtros globais de status
     if (props.globalStatusFilters) {
       filterParams.show_won = props.globalStatusFilters.won;
@@ -1200,30 +1105,24 @@ const fetchStageStatsFromAPI = async itemId => {
     }
 
     // Fazer chamada direta para a API de stats do funil (retorna stats de todas as etapas)
-    const response = await FunnelAPI.getStageStats(
-      selectedFunnel.value.id,
-      filterParams
-    );
+    const response = await FunnelAPI.getStageStats(selectedFunnel.value.id, filterParams);
 
     if (response.data) {
       // Commit direto no store para atualizar os stats
       store.commit('funnel/SET_STAGE_STATS', {
         funnelId: selectedFunnel.value.id,
-        stats: response.data.stages || response.data,
+        stats: response.data.stages || response.data
       });
     }
   } catch (error) {
-    console.error(
-      `[KANBAN-COLUMN] Erro ao buscar stats do funil da API:`,
-      error
-    );
+    console.error(`[KANBAN-COLUMN] Erro ao buscar stats do funil da API:`, error);
   }
 };
 
 const handleDrop = event => {
   isDraggingOver.value = false;
   dragPlaceholderIndex.value = -1;
-
+  
   const itemID = event.dataTransfer.getData('text/plain');
 
   if (itemID) {
@@ -1244,27 +1143,27 @@ const handleDrop = event => {
 const handleDragOver = event => {
   event.preventDefault();
   isDraggingOver.value = true;
-
+  
   // Calcular a posição do placeholder baseado na posição Y do mouse
   const container = scrollContainer.value;
   if (!container || props.isExpanded) return;
-
+  
   const mouseY = event.clientY;
-
+  
   // Encontrar a posição correta para inserir o placeholder
   const items = container.querySelectorAll('.kanban-item-wrapper');
   let insertIndex = displayedItems.value.length;
-
+  
   for (let i = 0; i < items.length; i++) {
     const itemRect = items[i].getBoundingClientRect();
     const itemMiddle = itemRect.top + itemRect.height / 2;
-
+    
     if (mouseY < itemMiddle) {
       insertIndex = i;
       break;
     }
   }
-
+  
   dragPlaceholderIndex.value = insertIndex;
 };
 
@@ -1310,6 +1209,9 @@ const columnWidth = computed(() => {
     width: '390px',
   };
 });
+
+
+
 
 // Função removida - agora usa paginação simples
 
@@ -1363,13 +1265,11 @@ onMounted(() => {
 });
 
 // Handler para eventos de atualização de itens
-const handleItemUpdated = updatedItem => {
+const handleItemUpdated = (updatedItem) => {
   if (!updatedItem || updatedItem.funnel_stage !== props.id) return;
 
   // Verificar se o item já existe na coluna
-  const existingIndex = columnItems.value.findIndex(
-    item => item.id === updatedItem.id
-  );
+  const existingIndex = columnItems.value.findIndex(item => item.id === updatedItem.id);
 
   if (existingIndex >= 0) {
     // Atualizar item existente
@@ -1398,20 +1298,15 @@ onUnmounted(() => {
 
   // ✅ NOVO: Remover listener de delete
   emitter.off('kanbanItemDeleted', ({ itemId }) => {
-    columnItems.value = columnItems.value.filter(
-      item => Number(item.id) !== Number(itemId)
-    );
+    columnItems.value = columnItems.value.filter(item => Number(item.id) !== Number(itemId));
   });
 
   // ✅ NOVO: Remover listener de movimento entre etapas
-  emitter.off(
-    'kanbanItemMovedBetweenStages',
-    ({ itemId, fromStage, toStage, funnelId }) => {
-      if (props.id === fromStage || props.id === toStage) {
-        fetchStageStatsFromAPI(itemId);
-      }
+  emitter.off('kanbanItemMovedBetweenStages', ({ itemId, fromStage, toStage, funnelId }) => {
+    if (props.id === fromStage || props.id === toStage) {
+      fetchStageStatsFromAPI(itemId);
     }
-  );
+  });
 });
 
 // Atualizar o watch para sincronizar as opções
@@ -1575,8 +1470,8 @@ const handleItemsUpdated = async () => {
 <template>
   <div
     v-show="!columnSettings.hideColumn"
-    class="kanban-column-root"
     :class="[
+      'kanban-column-root',
       props.isExpanded ? 'kanban-column-expanded' : '',
       props.isExpanded ? 'bg-slate-100 dark:bg-slate-800' : '',
     ]"
@@ -1600,9 +1495,9 @@ const handleItemsUpdated = async () => {
             {{ props.title }}
           </h3>
           <span
-            :key="`count-${props.id}-${columnCount}`"
             class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full"
             :style="countStyle"
+            :key="`count-${props.id}-${columnCount}`"
           >
             {{ columnCount }}
           </span>
@@ -1612,15 +1507,17 @@ const handleItemsUpdated = async () => {
             variant="faded"
             size="xs"
             :is-loading="isLoadingMore"
+            @click="loadMoreItems"
             :style="{
-              '--button-bg-color': props.color ? `${props.color}15` : '#FFF4E5',
+              '--button-bg-color': props.color
+                ? `${props.color}15`
+                : '#FFF4E5',
               '--button-text-color': textColor,
               '--button-hover-bg-color': props.color
                 ? `${props.color}25`
                 : '#FFE4B3',
             }"
             class="custom-colored-button ml-2"
-            @click="loadMoreItems"
           >
             {{ t('KANBAN.LOAD_MORE') }}
           </Button>
@@ -1657,12 +1554,7 @@ const handleItemsUpdated = async () => {
             <span
               v-if="showTotalTooltip"
               class="absolute left-1/2 -translate-x-1/2 mt-2 px-3 py-2 rounded bg-slate-900 text-white text-xs font-medium shadow-lg z-50"
-              style="
-                top: 100%;
-                min-width: max-content;
-                pointer-events: none;
-                white-space: pre-line;
-              "
+              style="top: 100%; min-width: max-content; pointer-events: none; white-space: pre-line"
             >
               {{ allCurrenciesTooltip || formattedTotal }}
             </span>
@@ -1699,7 +1591,7 @@ const handleItemsUpdated = async () => {
               </div>
               <div
                 class="border-t border-slate-100 dark:border-slate-700 my-1"
-              />
+              ></div>
               <div class="px-4 py-2">
                 <label
                   class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"
@@ -1763,7 +1655,7 @@ const handleItemsUpdated = async () => {
               </div>
               <div
                 class="border-t border-slate-100 dark:border-slate-700 my-1"
-              />
+              ></div>
               <div class="px-4 py-2">
                 <button
                   class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 w-full hover:text-woot-500"
@@ -1855,7 +1747,7 @@ const handleItemsUpdated = async () => {
                     $emit('itemDragstart', item);
                   }
                 "
-                @item-dragend="handleItemDragEndInColumn(item)"
+                @itemDragend="handleItemDragEndInColumn(item)"
                 @click="
                   modifiedItem => {
                     $emit('itemClick', modifiedItem);
@@ -1881,8 +1773,8 @@ const handleItemsUpdated = async () => {
                 <div
                   v-if="isDraggingOver && dragPlaceholderIndex === index"
                   class="drag-placeholder"
-                />
-
+                ></div>
+                
                 <div class="kanban-item-wrapper">
                   <KanbanItem
                     :item="item"
@@ -1890,14 +1782,11 @@ const handleItemsUpdated = async () => {
                     draggable
                     @dragstart="
                       e => {
-                        e.dataTransfer.setData(
-                          'text/plain',
-                          item.id.toString()
-                        );
+                        e.dataTransfer.setData('text/plain', item.id.toString());
                         $emit('itemDragstart', item);
                       }
                     "
-                    @item-dragend="handleItemDragEndInColumn(item)"
+                    @itemDragend="handleItemDragEndInColumn(item)"
                     @click="
                       modifiedItem => {
                         $emit('itemClick', modifiedItem);
@@ -1912,15 +1801,12 @@ const handleItemsUpdated = async () => {
                   />
                 </div>
               </template>
-
+              
               <!-- Placeholder no final da lista -->
               <div
-                v-if="
-                  isDraggingOver &&
-                  dragPlaceholderIndex === displayedItems.length
-                "
+                v-if="isDraggingOver && dragPlaceholderIndex === displayedItems.length"
                 class="drag-placeholder"
-              />
+              ></div>
 
               <!-- Botão Carregar Mais -->
               <div v-if="hasMorePages" class="flex justify-center py-3">
@@ -1928,6 +1814,7 @@ const handleItemsUpdated = async () => {
                   variant="faded"
                   size="sm"
                   :is-loading="isLoadingMore"
+                  @click="loadMoreItems"
                   :style="{
                     '--button-bg-color': props.color
                       ? `${props.color}15`
@@ -1938,19 +1825,18 @@ const handleItemsUpdated = async () => {
                       : '#FFE4B3',
                   }"
                   class="custom-colored-button"
-                  @click="loadMoreItems"
                 >
                   {{ t('KANBAN.LOAD_MORE') }}
                 </Button>
               </div>
             </template>
-
+            
             <!-- Placeholder quando a coluna está vazia -->
             <div
               v-if="!displayedItems.length && isDraggingOver"
               class="drag-placeholder"
-            />
-
+            ></div>
+            
             <div
               v-else-if="!displayedItems.length"
               class="flex items-center justify-center h-24 text-sm text-slate-500 dark:text-slate-400"
@@ -1961,6 +1847,7 @@ const handleItemsUpdated = async () => {
         </div>
       </template>
     </div>
+
 
     <!-- Modal de Edição de Etapa -->
     <Modal
@@ -2070,8 +1957,8 @@ const handleItemsUpdated = async () => {
             <div class="flex gap-4">
               <label class="flex items-center gap-2">
                 <input
-                  v-model="columnSort.direction"
                   type="radio"
+                  v-model="columnSort.direction"
                   value="asc"
                   @change="saveSortSettings"
                 />
@@ -2081,8 +1968,8 @@ const handleItemsUpdated = async () => {
               </label>
               <label class="flex items-center gap-2">
                 <input
-                  v-model="columnSort.direction"
                   type="radio"
+                  v-model="columnSort.direction"
                   value="desc"
                   @change="saveSortSettings"
                 />
@@ -2144,18 +2031,17 @@ const handleItemsUpdated = async () => {
       :color="props.color"
       :description="props.description"
       :items="filteredItems"
-      :on-close="() => (showStageReportModal = false)"
+      :onClose="() => (showStageReportModal = false)"
     />
-
+    
     <!-- Borda de redimensionamento -->
     <div
       v-if="!props.isExpanded"
-      class="resize-handle"
-      :class="[{ resizing: isResizing }]"
+      :class="['resize-handle', { 'resizing': isResizing }]"
       :title="t('KANBAN.COLUMN_RESIZE_TOOLTIP')"
       @mousedown="startResize"
       @dblclick="resetWidth"
-    />
+    ></div>
   </div>
 </template>
 
@@ -2375,8 +2261,7 @@ const handleItemsUpdated = async () => {
 }
 
 @keyframes pulse {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
   50% {

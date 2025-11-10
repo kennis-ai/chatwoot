@@ -2,17 +2,17 @@
   <div class="kanban-column-skeleton">
     <!-- Header skeleton -->
     <div class="skeleton-header">
-      <div class="skeleton-title" />
-      <div class="skeleton-count" />
+      <div class="skeleton-title"></div>
+      <div class="skeleton-count"></div>
       <div class="skeleton-actions">
-        <div class="skeleton-button" />
-        <div class="skeleton-button" />
+        <div class="skeleton-button"></div>
+        <div class="skeleton-button"></div>
       </div>
     </div>
 
     <!-- Items skeleton -->
     <div class="skeleton-items">
-      <div v-for="i in 3" :key="i" class="skeleton-item" />
+      <div v-for="i in 3" :key="i" class="skeleton-item"></div>
     </div>
   </div>
 </template>

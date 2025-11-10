@@ -52,7 +52,7 @@ const statusInfo = computed(() => {
       const symbol = currency?.symbol || 'R$';
       const formattedValue = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
-        currency: currency?.code || 'BRL',
+        currency: currency?.code || 'BRL'
       }).format(value);
 
       label = `${label} - Oferta fechada: ${formattedValue}`;
@@ -92,8 +92,7 @@ const priorityInfo = computed(() => {
     },
     medium: {
       label: t('KANBAN.PRIORITY_LABELS.MEDIUM'),
-      class:
-        'bg-yellow-50 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-50',
+      class: 'bg-yellow-50 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-50',
     },
     low: {
       label: t('KANBAN.PRIORITY_LABELS.LOW'),
@@ -127,12 +126,10 @@ const itemStatusInfo = computed(() => {
     };
   }
 
-  return (
-    statusMap[status] || {
-      label: 'Aberto',
-      class: 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
-    }
-  );
+  return statusMap[status] || {
+    label: 'Aberto',
+    class: 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+  };
 });
 
 // Computed para custom_attributes da conversa
@@ -190,9 +187,7 @@ const openMoveFunnelModal = async () => {
     const { data } = await FunnelAPI.get();
 
     // Filtrar para não incluir o funil atual do item
-    availableFunnels.value = data.filter(
-      funnel => funnel.id !== item.value?.funnel_id
-    );
+    availableFunnels.value = data.filter(funnel => funnel.id !== item.value?.funnel_id);
 
     // Não pré-selecionar nenhum funil, deixar o usuário escolher
     selectedFunnelId.value = null;
@@ -237,9 +232,7 @@ const moveItemToFunnel = async () => {
 
     // Atualizar o funil selecionado no store se necessário
     if (selectedFunnelId.value !== item.value.funnel_id) {
-      const newFunnel = availableFunnels.value.find(
-        f => f.id === selectedFunnelId.value
-      );
+      const newFunnel = availableFunnels.value.find(f => f.id === selectedFunnelId.value);
       if (newFunnel) {
         await store.dispatch('funnel/setSelectedFunnel', newFunnel);
       }
@@ -290,13 +283,10 @@ const fetchItemDetails = async () => {
     // Isso é importante quando o item é acessado diretamente pela URL
     if (item.value && item.value.funnel_id) {
       const currentSelectedFunnel = store.getters['funnel/getSelectedFunnel'];
-      if (
-        !currentSelectedFunnel ||
-        currentSelectedFunnel.id !== item.value.funnel_id
-      ) {
+      if (!currentSelectedFunnel || currentSelectedFunnel.id !== item.value.funnel_id) {
         // Garantir que os funis estão carregados primeiro
         await store.dispatch('funnel/fetch');
-
+        
         // Buscar o funil pelos funis disponíveis no store
         const funnels = store.getters['funnel/getFunnels'];
         const itemFunnel = funnels.find(f => f.id === item.value.funnel_id);
@@ -365,7 +355,7 @@ const handleDetailsDeleted = () => {
   emit('back');
 };
 
-const handleQuickAction = actionId => {
+const handleQuickAction = (actionId) => {
   // Emitir evento para o componente pai lidar com a ação
   emit('quick-action', actionId);
 };
@@ -374,13 +364,13 @@ const selectedFunnel = computed(() => {
   // First try to get from store
   const storeFunnel = store.getters['funnel/getSelectedFunnel'];
   if (storeFunnel) return storeFunnel;
-
+  
   // If no funnel in store but we have item data, try to find the funnel by item's funnel_id
   if (item.value?.funnel_id) {
     const funnels = store.getters['funnel/getFunnels'];
     return funnels.find(f => f.id === item.value.funnel_id) || null;
   }
-
+  
   return null;
 });
 </script>
@@ -394,20 +384,8 @@ const selectedFunnel = computed(() => {
       class="border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-chevron-left-icon lucide-chevron-left cursor-pointer text-slate-600 dark:text-slate-400"
-          @click="handleBack"
-        >
-          <path d="m15 18-6-6 6-6" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left cursor-pointer text-slate-600 dark:text-slate-400" @click="handleBack">
+          <path d="m15 18-6-6 6-6"/>
         </svg>
         <div class="flex items-center gap-3">
           <h2 class="text-base font-medium">
@@ -434,9 +412,7 @@ const selectedFunnel = computed(() => {
           </span>
           <!-- Custom Attributes da Conversa -->
           <div
-            v-if="
-              !isLoading && Object.keys(conversationCustomAttributes).length > 0
-            "
+            v-if="!isLoading && Object.keys(conversationCustomAttributes).length > 0"
             class="flex items-center gap-2"
           >
             <span
@@ -453,8 +429,7 @@ const selectedFunnel = computed(() => {
             v-if="!isLoading && formattedUpdatedAt"
             class="text-[10px] text-slate-500 dark:text-slate-400 ml-2 hidden md:block"
           >
-            {{ t('KANBAN.UPDATED_AT') || 'Atualizado em' }}:
-            {{ formattedUpdatedAt }}
+            {{ t('KANBAN.UPDATED_AT') || 'Atualizado em' }}: {{ formattedUpdatedAt }}
           </div>
         </div>
       </div>
@@ -465,12 +440,7 @@ const selectedFunnel = computed(() => {
           v-if="formattedDeadlineAt"
           class="flex items-center gap-1.5 px-3 py-1.5"
           :style="{ backgroundColor: '#fef3c7', borderColor: '#d97706' }"
-          style="
-            border-width: 1px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            transition: all 200ms;
-          "
+          style="border-width: 1px; border-radius: 8px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: all 200ms;"
         >
           <fluent-icon
             icon="calendar-clock"
@@ -478,10 +448,7 @@ const selectedFunnel = computed(() => {
             :style="{ color: '#d97706' }"
             class="drop-shadow-sm"
           />
-          <span
-            class="text-xs font-medium tracking-wide"
-            :style="{ color: '#d97706' }"
-          >
+          <span class="text-xs font-medium tracking-wide" :style="{ color: '#d97706' }">
             {{ t('KANBAN.DEADLINE') || 'Prazo' }}: {{ formattedDeadlineAt }}
           </span>
         </div>
@@ -489,26 +456,15 @@ const selectedFunnel = computed(() => {
         <!-- Botão de mover funil -->
         <button
           class="p-1.5 rounded-md"
-          :style="{
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            borderColor: '#2563eb',
-          }"
-          style="
-            border-width: 1px;
-            border-radius: 6px;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            transition: all 200ms;
-          "
-          @mouseover="$event.target.style.backgroundColor = '#2563eb'"
-          @mouseleave="$event.target.style.backgroundColor = '#3b82f6'"
+          :style="{ backgroundColor: '#3b82f6', color: 'white', borderColor: '#2563eb' }"
+          style="border-width: 1px; border-radius: 6px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: all 200ms;"
+          @mouseover="($event.target.style.backgroundColor = '#2563eb')"
+          @mouseleave="($event.target.style.backgroundColor = '#3b82f6')"
           @click="openMoveFunnelModal"
         >
           <span class="flex items-center gap-1">
             <fluent-icon icon="arrow-right" size="14" />
-            <span class="text-xs">{{
-              t('KANBAN.MOVE_TO_FUNNEL') || 'Mover Funil'
-            }}</span>
+            <span class="text-xs">{{ t('KANBAN.MOVE_TO_FUNNEL') || 'Mover Funil' }}</span>
           </span>
         </button>
 
@@ -528,8 +484,10 @@ const selectedFunnel = computed(() => {
     <!-- Status Header -->
     <div
       v-if="statusInfo && !isLoading"
-      class="px-4 py-1.5 flex items-center gap-2 text-xs font-medium"
-      :class="[statusInfo.class]"
+      :class="[
+        'px-4 py-1.5 flex items-center gap-2 text-xs font-medium',
+        statusInfo.class,
+      ]"
     >
       <fluent-icon :icon="statusInfo.icon" size="14" />
       <span>{{ statusInfo.label }}</span>
@@ -582,24 +540,20 @@ const selectedFunnel = computed(() => {
         @click.stop
       >
         <!-- Header do modal -->
-        <div
-          class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700"
-        >
+        <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div class="flex items-center gap-3">
             <div
               class="flex items-center justify-center w-8 h-8 rounded-lg bg-woot-50 dark:bg-woot-900/20"
             >
               <fluent-icon icon="arrow-right" size="18" class="text-woot-500" />
             </div>
-            <h3
-              class="text-lg font-semibold text-slate-900 dark:text-slate-100"
-            >
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {{ t('KANBAN.MOVE_TO_FUNNEL') || 'Mover para Funil' }}
             </h3>
           </div>
           <button
-            class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             @click="closeMoveFunnelModal"
+            class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
           >
             <fluent-icon icon="dismiss" size="20" />
           </button>
@@ -609,18 +563,14 @@ const selectedFunnel = computed(() => {
         <div class="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           <!-- Seleção de funil -->
           <div class="space-y-2">
-            <label
-              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
               {{ t('KANBAN.FUNNEL') || 'Funil' }}
             </label>
             <select
               v-model="selectedFunnelId"
               class="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
             >
-              <option value="">
-                {{ t('KANBAN.SELECT_FUNNEL') || 'Selecionar funil...' }}
-              </option>
+              <option value="">{{ t('KANBAN.SELECT_FUNNEL') || 'Selecionar funil...' }}</option>
               <option
                 v-for="funnel in availableFunnels"
                 :key="funnel.id"
@@ -633,22 +583,16 @@ const selectedFunnel = computed(() => {
 
           <!-- Seleção de etapa -->
           <div v-if="selectedFunnelForModal" class="space-y-2">
-            <label
-              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
               {{ t('KANBAN.STAGE') || 'Etapa' }}
             </label>
             <select
               v-model="selectedStage"
               class="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
             >
-              <option value="">
-                {{ t('KANBAN.SELECT_STAGE') || 'Selecionar etapa...' }}
-              </option>
+              <option value="">{{ t('KANBAN.SELECT_STAGE') || 'Selecionar etapa...' }}</option>
               <option
-                v-for="[stageId, stage] in Object.entries(
-                  selectedFunnelForModal.stages
-                )"
+                v-for="[stageId, stage] in Object.entries(selectedFunnelForModal.stages)"
                 :key="stageId"
                 :value="stageId"
               >
@@ -659,29 +603,23 @@ const selectedFunnel = computed(() => {
         </div>
 
         <!-- Footer do modal -->
-        <div
-          class="flex justify-end space-x-2 pt-4 p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
-        >
+        <div class="flex justify-end space-x-2 pt-4 p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
           <button
             type="button"
-            class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors"
             @click="closeMoveFunnelModal"
+            class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors"
           >
             {{ t('KANBAN.CANCEL') || 'Cancelar' }}
           </button>
           <button
             type="button"
+            @click="moveItemToFunnel"
             :disabled="!selectedFunnelId || isMovingItem"
             class="px-4 py-2 text-sm font-medium text-white bg-woot-500 hover:bg-woot-600 disabled:bg-woot-400 disabled:cursor-not-allowed rounded-lg flex items-center gap-2 transition-colors"
-            @click="moveItemToFunnel"
           >
-            <span v-if="isMovingItem" class="loading-spinner" />
+            <span v-if="isMovingItem" class="loading-spinner"></span>
             <fluent-icon v-else icon="arrow-right" size="14" />
-            {{
-              isMovingItem
-                ? t('KANBAN.MOVING') || 'Movendo...'
-                : t('KANBAN.MOVE') || 'Mover'
-            }}
+            {{ isMovingItem ? (t('KANBAN.MOVING') || 'Movendo...') : (t('KANBAN.MOVE') || 'Mover') }}
           </button>
         </div>
       </div>

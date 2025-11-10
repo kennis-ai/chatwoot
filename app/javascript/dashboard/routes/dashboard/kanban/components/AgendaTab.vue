@@ -14,17 +14,6 @@ import CalendarWeekLabel from '../../../../components/ui/DatePicker/components/C
 import { CALENDAR_PERIODS } from '../../../../components/ui/DatePicker/helpers/DatePickerHelper';
 import Button from 'dashboard/components-next/button/Button.vue';
 
-const props = defineProps({
-  currentView: {
-    type: String,
-    default: 'agenda',
-  },
-  columns: {
-    type: Array,
-    default: () => [],
-  },
-});
-const emit = defineEmits(['switch-view']);
 const { t } = useI18n();
 const store = useStore();
 const isLoading = ref(false);
@@ -52,6 +41,7 @@ const selectedItem = ref(null);
 // Adicionar ref para controlar o estado de drag & drop
 const dragOverCell = ref(null);
 
+
 // Adicionar nova ref para controlar a data selecionada no mini calendário
 const selectedMiniDate = ref(new Date());
 
@@ -61,21 +51,30 @@ const selectedItemToEdit = ref(null);
 // Ref para controlar o estado do painel lateral
 const isPanelOpen = ref(true);
 
+const props = defineProps({
+  currentView: {
+    type: String,
+    default: 'agenda',
+  },
+  columns: {
+    type: Array,
+    default: () => [],
+  },
+});
+
 // Computed para converter stages do funil para o formato columns esperado
 const funnelColumns = computed(() => {
   const selectedFunnel = store.getters['funnel/getSelectedFunnel'];
   if (!selectedFunnel?.stages) return [];
 
   // Converte o objeto stages para array de columns
-  const columns = Object.entries(selectedFunnel.stages)
-    .map(([stageId, stageData]) => ({
-      id: stageId,
-      title: stageData.name,
-      color: stageData.color,
-      position: stageData.position,
-      description: stageData.description,
-    }))
-    .sort((a, b) => a.position - b.position);
+  const columns = Object.entries(selectedFunnel.stages).map(([stageId, stageData]) => ({
+    id: stageId,
+    title: stageData.name,
+    color: stageData.color,
+    position: stageData.position,
+    description: stageData.description,
+  })).sort((a, b) => a.position - b.position);
 
   // Debug: verificar se as cores estão sendo extraídas corretamente
   console.log('[AgendaTab] Columns convertidas:', columns);
@@ -87,6 +86,8 @@ const funnelColumns = computed(() => {
 const columnsToUse = computed(() => {
   return funnelColumns.value.length > 0 ? funnelColumns.value : props.columns;
 });
+
+const emit = defineEmits(['switch-view']);
 
 // Computed para dias do mês atual
 const daysInMonth = computed(() => {
@@ -374,6 +375,7 @@ const formatEventTime = date => {
 
 // Removido: lógica de posicionamento por horário
 
+
 // Adicionar computed para formatar valor
 const formatValue = value => {
   if (!value) return null;
@@ -436,7 +438,7 @@ const fetchKanbanItems = async ({ showLoading = true } = {}) => {
     while (hasMore) {
       const response = await KanbanAPI.getItems(selectedFunnel.id, page);
       const responseData = response.data;
-
+      
       if (responseData && responseData.items) {
         // Nova estrutura paginada
         allItems = allItems.concat(responseData.items);
@@ -449,9 +451,9 @@ const fetchKanbanItems = async ({ showLoading = true } = {}) => {
         // Resposta vazia ou inválida
         hasMore = false;
       }
-
+      
       page++;
-
+      
       // Proteção contra loop infinito
       if (page > 100) {
         console.warn('Limite de páginas atingido, interrompendo busca');
@@ -466,7 +468,7 @@ const fetchKanbanItems = async ({ showLoading = true } = {}) => {
       apiData.map(async item => {
         const agentId = item.item_details?.agent_id;
         const agent = agentId ? agents.value[agentId] : null;
-
+        
         // Estruturar assigned_agents como KanbanItem.vue espera
         let assignedAgents = [];
         if (item.assigned_agents && item.assigned_agents.length > 0) {
@@ -474,15 +476,13 @@ const fetchKanbanItems = async ({ showLoading = true } = {}) => {
           assignedAgents = item.assigned_agents;
         } else if (agent) {
           // Criar assigned_agents baseado no agente único (compatibilidade)
-          assignedAgents = [
-            {
-              id: agent.id,
-              name: agent.name,
-              avatar_url: agent.avatar_url || agent.thumbnail || '',
-              assigned_at: null,
-              assigned_by: null,
-            },
-          ];
+          assignedAgents = [{
+            id: agent.id,
+            name: agent.name,
+            avatar_url: agent.avatar_url || agent.thumbnail || '',
+            assigned_at: null,
+            assigned_by: null,
+          }];
         }
 
         return {
@@ -493,34 +493,30 @@ const fetchKanbanItems = async ({ showLoading = true } = {}) => {
           funnel_id: item.funnel_id,
           funnel_stage: item.funnel_stage,
           position: item.position,
-
+          
           // Dados importantes que podem ser perdidos
           stage_entered_at: item.stage_entered_at || null,
           conversation_display_id: item.conversation_display_id || null,
           assigned_agents: assignedAgents,
           checklist: item.checklist || [],
           conversation: item.conversation || null,
-
+          
           item_details: {
             ...item.item_details,
             _agent: agent,
           },
-
+          
           stageName:
-            columnsToUse.value.find(col => col.id === item.funnel_stage)
-              ?.title || '',
+            columnsToUse.value.find(col => col.id === item.funnel_stage)?.title ||
+            '',
           stageColor: (() => {
-            const color =
-              columnsToUse.value.find(col => col.id === item.funnel_stage)
-                ?.color || '#64748B';
-            console.log(
-              `[AgendaTab] Item ${item.id} - Stage: ${item.funnel_stage}, Color: ${color}`
-            );
+            const color = columnsToUse.value.find(col => col.id === item.funnel_stage)?.color || '#64748B';
+            console.log(`[AgendaTab] Item ${item.id} - Stage: ${item.funnel_stage}, Color: ${color}`);
             return color;
           })(),
           created_at: item.created_at,
           custom_attributes: item.custom_attributes || {},
-
+          
           // Dados do agente para compatibilidade
           agent: agent || null,
         };
@@ -563,33 +559,30 @@ const handleItemCreated = async item => {
 const prepareItemForDetails = item => {
   // Buscar dados completos do item original
   const fullItem = items.value.find(i => i.id === item.id) || item;
-
+  
   // Usar as novas funções de agente para garantir compatibilidade total com KanbanItem
   const agentInfo = getAgentInfo(fullItem);
   const primaryAgent = getPrimaryAgent(fullItem);
-
+  
   return {
     id: fullItem.id || null,
     title: fullItem.item_details?.title || fullItem.title || '',
-    description:
-      fullItem.item_details?.description || fullItem.description || '',
+    description: fullItem.item_details?.description || fullItem.description || '',
     priority: fullItem.item_details?.priority || fullItem.priority || 'none',
     funnel_id: fullItem.funnel_id || null,
     funnel_stage: fullItem.funnel_stage || null,
     position: fullItem.position || 0,
-
+    
     // Dados importantes que estavam sendo perdidos
     stage_entered_at: fullItem.stage_entered_at || null,
     conversation_display_id: fullItem.conversation_display_id || null,
     assigned_agents: fullItem.assigned_agents || [],
-
+    
     item_details: {
       ...{
         title: fullItem.item_details?.title || fullItem.title || '',
-        description:
-          fullItem.item_details?.description || fullItem.description || '',
-        priority:
-          fullItem.item_details?.priority || fullItem.priority || 'none',
+        description: fullItem.item_details?.description || fullItem.description || '',
+        priority: fullItem.item_details?.priority || fullItem.priority || 'none',
         value: null,
         currency: 'BRL',
         deadline_at: null,
@@ -605,22 +598,16 @@ const prepareItemForDetails = item => {
       ...(fullItem.item_details || {}),
       _agent: primaryAgent, // Usar primaryAgent das novas funções
     },
-
-    stageName:
-      fullItem.stageName ||
-      columnsToUse.value.find(col => col.id === fullItem.funnel_stage)?.title ||
-      '',
-    stageColor:
-      fullItem.stageColor ||
-      columnsToUse.value.find(col => col.id === fullItem.funnel_stage)?.color ||
-      '#64748B',
+    
+    stageName: fullItem.stageName || columnsToUse.value.find(col => col.id === fullItem.funnel_stage)?.title || '',
+    stageColor: fullItem.stageColor || columnsToUse.value.find(col => col.id === fullItem.funnel_stage)?.color || '#64748B',
     created_at: fullItem.created_at || new Date().toISOString(),
     custom_attributes: fullItem.custom_attributes || {},
     checklist: fullItem.checklist || [],
-
+    
     // Dados do agente - usar primaryAgent para garantir compatibilidade com KanbanItem
     agent: primaryAgent || fullItem.agent || null,
-
+    
     // Dados da conversa se disponível
     conversation: fullItem.conversation || null,
   };
@@ -631,7 +618,7 @@ const handleEventClick = event => {
   if (!event || !event.id) {
     return;
   }
-
+  
   selectedItem.value = prepareItemForDetails(event);
   showItemDetails.value = true;
 };
@@ -707,6 +694,7 @@ const handleDrop = async (e, date) => {
   await handleCardDrop(itemId, date, isReschedule);
 };
 
+
 // Adicione esta função para lidar com a edição
 const handleItemEdit = item => {
   selectedItemToEdit.value = {
@@ -745,6 +733,7 @@ watch(viewMode, newMode => {
     selectedDate.value = new Date(); // Reset para a semana atual
   }
 });
+
 
 // Adicionar computed para eventos do dia selecionado
 const selectedDayEvents = computed(() => {
@@ -834,7 +823,7 @@ const handleMiniCalendarNext = () => {
 };
 
 // Computed para informações do agente - replicando funcionalidade do KanbanItem
-const getAgentInfo = item => {
+const getAgentInfo = (item) => {
   // Prioriza assigned_agents se existir e tiver conteúdo
   if (item.assigned_agents && item.assigned_agents.length > 0) {
     return item.assigned_agents.map(agent => ({
@@ -845,27 +834,25 @@ const getAgentInfo = item => {
       assigned_by: agent.assigned_by || null,
     }));
   }
-
+  
   // Fallback para agente único se disponível
   if (item.agent || item.item_details?._agent) {
     const agent = item.agent || item.item_details._agent;
-    return [
-      {
-        id: agent.id,
-        name: agent.name,
-        avatar_url: agent.avatar_url || agent.thumbnail || '',
-        assigned_at: null,
-        assigned_by: null,
-      },
-    ];
+    return [{
+      id: agent.id,
+      name: agent.name,
+      avatar_url: agent.avatar_url || agent.thumbnail || '',
+      assigned_at: null,
+      assigned_by: null,
+    }];
   }
-
+  
   // Retorna array vazio se não houver agente
   return [];
 };
 
 // Computed para obter o agente principal - replicando funcionalidade do KanbanItem
-const getPrimaryAgent = item => {
+const getPrimaryAgent = (item) => {
   const agentInfo = getAgentInfo(item);
   return agentInfo.length > 0 ? agentInfo[0] : null;
 };
@@ -880,9 +867,7 @@ const debugLog = (message, ...args) => {
 const inspectElement = (element, name) => {
   if (element) {
     const rect = element.getBoundingClientRect();
-    console.log(
-      `[INSPECT] ${name} - Top: ${rect.top}, Height: ${rect.height}, Padding: ${getComputedStyle(element).padding}`
-    );
+    console.log(`[INSPECT] ${name} - Top: ${rect.top}, Height: ${rect.height}, Padding: ${getComputedStyle(element).padding}`);
   }
   return '';
 };
@@ -918,9 +903,7 @@ const togglePanel = () => {
           <div class="p-4 flex-shrink-0 flex flex-col h-full">
             <!-- Mini Calendar Label -->
             <div class="mb-2">
-              <span
-                class="text-xs font-medium text-slate-500 dark:text-slate-400"
-              >
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {{ t('KANBAN.AGENDA.SELECT_MONTH') }}
               </span>
             </div>
@@ -936,10 +919,18 @@ const togglePanel = () => {
                 {{ formatDate(currentMonth) }}
               </span>
               <div class="flex items-center gap-1">
-                <Button variant="ghost" size="sm" @click="changeMonth(-1)">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="changeMonth(-1)"
+                >
                   <fluent-icon icon="chevron-left" size="12" />
                 </Button>
-                <Button variant="ghost" size="sm" @click="changeMonth(1)">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="changeMonth(1)"
+                >
                   <fluent-icon icon="chevron-right" size="12" />
                 </Button>
               </div>
@@ -1017,49 +1008,27 @@ const togglePanel = () => {
           <div class="flex-shrink-0 bg-white dark:bg-slate-900">
             <div class="flex items-center justify-between px-4 py-4">
               <div class="flex items-center gap-2">
-                <Button variant="ghost" size="sm" @click="togglePanel">
-                  <svg
-                    v-if="isPanelOpen"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-panel-right-open-icon lucide-panel-right-open opacity-50 text-slate-500"
-                  >
-                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                    <path d="M15 3v18" />
-                    <path d="m10 15-3-3 3-3" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="togglePanel"
+                >
+                  <svg v-if="isPanelOpen" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right-open-icon lucide-panel-right-open opacity-50 text-slate-500">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M15 3v18"/>
+                    <path d="m10 15-3-3 3-3"/>
                   </svg>
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-panel-right-close-icon lucide-panel-right-close opacity-50 text-slate-500"
-                  >
-                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                    <path d="M15 3v18" />
-                    <path d="m8 9 3 3-3 3" />
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right-close-icon lucide-panel-right-close opacity-50 text-slate-500">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M15 3v18"/>
+                    <path d="m8 9 3 3-3 3"/>
                   </svg>
                 </Button>
                 <h2
                   class="text-xl font-semibold text-slate-800 dark:text-slate-200"
                 >
                   {{
-                    formatDate(
-                      viewMode === 'week' ? selectedDate : currentMonth
-                    )
+                    formatDate(viewMode === 'week' ? selectedDate : currentMonth)
                   }}
                 </h2>
               </div>
@@ -1137,6 +1106,7 @@ const togglePanel = () => {
               :key="week[0].date"
               :class="viewMode === 'week' ? 'flex' : 'grid grid-cols-7'"
             >
+
               <div
                 v-for="day in week"
                 :key="day.date"
@@ -1149,7 +1119,7 @@ const togglePanel = () => {
                     today: isToday(day.date),
                     'h-full': viewMode === 'week',
                     'flex flex-col h-full': viewMode === 'week',
-                  },
+                  }
                 ]"
                 @click="handleDateClick(day.date, day.events)"
                 @dragover="e => allowDrop(e, day.date)"
@@ -1160,16 +1130,14 @@ const togglePanel = () => {
                   <!-- Date number at the top -->
                   <div class="flex justify-start p-2 pb-1">
                     <span
-                      class="text-xs"
                       :class="[
+                        'text-xs',
                         {
-                          'text-slate-400 dark:text-slate-600':
-                            !day.isCurrentMonth,
-                          'text-slate-900 dark:text-slate-100':
-                            day.isCurrentMonth,
+                          'text-slate-400 dark:text-slate-600': !day.isCurrentMonth,
+                          'text-slate-900 dark:text-slate-100': day.isCurrentMonth,
                           'bg-woot-500 text-white rounded-full w-6 h-6 flex items-center justify-center':
                             isToday(day.date),
-                        },
+                        }
                       ]"
                     >
                       {{ day.date.getDate() }}
@@ -1186,12 +1154,8 @@ const togglePanel = () => {
                           :key="event.id"
                           class="event-item text-xs px-2 py-1 rounded truncate cursor-pointer hover:opacity-90"
                           :style="{
-                            backgroundColor: event.isFromChecklist
-                              ? '#f1f5f9'
-                              : event.stageColor + '40',
-                            color: event.isFromChecklist
-                              ? '#64748b'
-                              : event.stageColor,
+                            backgroundColor: event.isFromChecklist ? '#f1f5f9' : event.stageColor + '40',
+                            color: event.isFromChecklist ? '#64748b' : event.stageColor,
                             borderLeft: `2px solid ${event.isFromChecklist ? '#cbd5e1' : event.stageColor}`,
                           }"
                           @click.stop="handleEventClick(event)"
@@ -1210,16 +1174,12 @@ const togglePanel = () => {
                               stroke-linejoin="round"
                               class="lucide lucide-list-check-icon lucide-list-check flex-shrink-0 opacity-80"
                             >
-                              <path d="M16 5H3" />
-                              <path d="M16 12H3" />
-                              <path d="M11 19H3" />
-                              <path d="m15 18 2 2 4-4" />
+                              <path d="M16 5H3"/>
+                              <path d="M16 12H3"/>
+                              <path d="M11 19H3"/>
+                              <path d="m15 18 2 2 4-4"/>
                             </svg>
-                            <span class="truncate">{{
-                              event.isFromChecklist
-                                ? event.checklistItem?.text || 'Checklist Item'
-                                : event.title
-                            }}</span>
+                            <span class="truncate">{{ event.isFromChecklist ? event.checklistItem?.text || 'Checklist Item' : event.title }}</span>
                           </div>
                         </div>
                       </div>
@@ -1233,12 +1193,8 @@ const togglePanel = () => {
                           :key="event.id"
                           class="event-item text-xs p-1 rounded truncate cursor-pointer hover:opacity-90"
                           :style="{
-                            backgroundColor: event.isFromChecklist
-                              ? '#f1f5f9'
-                              : event.stageColor + '40',
-                            color: event.isFromChecklist
-                              ? '#64748b'
-                              : event.stageColor,
+                            backgroundColor: event.isFromChecklist ? '#f1f5f9' : event.stageColor + '40',
+                            color: event.isFromChecklist ? '#64748b' : event.stageColor,
                             borderLeft: `2px solid ${event.isFromChecklist ? '#cbd5e1' : event.stageColor}`,
                           }"
                           @click.stop="handleEventClick(event)"
@@ -1257,16 +1213,12 @@ const togglePanel = () => {
                               stroke-linejoin="round"
                               class="lucide lucide-list-check-icon lucide-list-check flex-shrink-0 opacity-80"
                             >
-                              <path d="M16 5H3" />
-                              <path d="M16 12H3" />
-                              <path d="M11 19H3" />
-                              <path d="m15 18 2 2 4-4" />
+                              <path d="M16 5H3"/>
+                              <path d="M16 12H3"/>
+                              <path d="M11 19H3"/>
+                              <path d="m15 18 2 2 4-4"/>
                             </svg>
-                            <span class="truncate">{{
-                              event.isFromChecklist
-                                ? event.checklistItem?.text || 'Checklist Item'
-                                : event.title
-                            }}</span>
+                            <span class="truncate">{{ event.isFromChecklist ? event.checklistItem?.text || 'Checklist Item' : event.title }}</span>
                           </div>
                         </div>
                         <div
@@ -1282,8 +1234,10 @@ const togglePanel = () => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
+
     </div>
 
     <!-- Substituir o Event Details Modal pelo KanbanItemDetails -->
@@ -1404,6 +1358,7 @@ const togglePanel = () => {
       height: 100%;
       min-height: 600px;
     }
+
   }
 
   &[data-view-mode='month'] {
@@ -1546,6 +1501,8 @@ const togglePanel = () => {
   }
 }
 
+
+
 // Eventos de hoje
 .today-events-section {
   @apply relative;
@@ -1592,4 +1549,5 @@ const togglePanel = () => {
     min-width: 0; // Allow flex item to shrink below content size
   }
 }
+
 </style>

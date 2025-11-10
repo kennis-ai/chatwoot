@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
-import KanbanItemHeader from './KanbanItemHeader.vue';
 import KanbanNotesTab from './KanbanNotesTab.vue';
 import KanbanChecklistTab from './KanbanChecklistTab.vue';
 import KanbanAttachmentsTab from './KanbanAttachmentsTab.vue';
@@ -82,7 +81,7 @@ const hasConversation = computed(() => {
 });
 
 // Watcher para emitir mudança de aba
-watch(activeTab, newTab => {
+watch(activeTab, (newTab) => {
   emit('tab-changed', newTab);
 
   // Buscar mensagens agendadas quando a aba for ativada
@@ -186,7 +185,8 @@ const tabs = computed(() => {
       id: 'scheduled-messages',
       icon: 'custom-calendar-sync',
       label: 'Mensagens Agendadas',
-      customSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-sync-icon lucide-calendar-sync"><path d="M11 10v4h4"/><path d="m11 14 1.535-1.605a5 5 0 0 1 8 1.5"/><path d="M16 2v4"/><path d="m21 18-1.535 1.605a5 5 0 0 1-8-1.5"/><path d="M21 22v-4h-4"/><path d="M21 8.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4.3"/><path d="M3 10h4"/><path d="M8 2v4"/></svg>`,
+      customSvg:
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-sync-icon lucide-calendar-sync"><path d="M11 10v4h4"/><path d="m11 14 1.535-1.605a5 5 0 0 1 8 1.5"/><path d="M16 2v4"/><path d="m21 18-1.535 1.605a5 5 0 0 1-8-1.5"/><path d="M21 22v-4h-4"/><path d="M21 8.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4.3"/><path d="M3 10h4"/><path d="M8 2v4"/></svg>`,
     });
   }
 
@@ -214,8 +214,7 @@ const handleItemUpdated = () => {
 // Função para buscar mensagens agendadas da conversa
 const fetchScheduledMessages = async () => {
   // Só buscar se houver conversa vinculada
-  const conversationId =
-    props.item?.conversation?.id || props.item?.item_details?.conversation?.id;
+  const conversationId = props.item?.conversation?.id || props.item?.item_details?.conversation?.id;
 
   if (!conversationId) {
     scheduledMessages.value = [];
@@ -239,9 +238,7 @@ const fetchScheduledMessages = async () => {
 
 // Função para pré-carregar nomes das inboxes
 const preloadInboxNames = async () => {
-  const inboxIds = [
-    ...new Set(scheduledMessages.value.map(msg => msg.inbox_id)),
-  ];
+  const inboxIds = [...new Set(scheduledMessages.value.map(msg => msg.inbox_id))];
 
   // Remove IDs que já estão no cache
   const uncachedIds = inboxIds.filter(id => !inboxesCache.value.has(id));
@@ -254,7 +251,7 @@ const preloadInboxNames = async () => {
 };
 
 // Função para formatar data das mensagens agendadas
-const formatScheduledDate = timestamp => {
+const formatScheduledDate = (timestamp) => {
   return new Date(timestamp * 1000).toLocaleString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -265,7 +262,7 @@ const formatScheduledDate = timestamp => {
 };
 
 // Função para obter nome do inbox usando API com cache
-const getInboxName = async inboxId => {
+const getInboxName = async (inboxId) => {
   if (!inboxId) return 'Inbox não encontrado';
 
   // Verifica se já está no cache
@@ -296,12 +293,12 @@ const getInboxName = async inboxId => {
 };
 
 // Função para obter texto do status
-const getStatusText = status => {
+const getStatusText = (status) => {
   return status === 'sent' ? 'Enviado' : 'Pendente';
 };
 
 // Função para obter nome da inbox de forma síncrona (do cache)
-const getInboxNameSync = inboxId => {
+const getInboxNameSync = (inboxId) => {
   if (!inboxId) return 'Inbox não encontrado';
 
   // Retorna do cache se disponível
@@ -333,20 +330,19 @@ const closeScheduleModal = () => {
 };
 
 // Função para editar mensagem agendada
-const editScheduledMessage = message => {
+const editScheduledMessage = (message) => {
   messageBeingEdited.value = message;
   showScheduleModal.value = true;
 };
 
 // Função para deletar mensagem agendada
-const deleteScheduledMessage = async messageId => {
+const deleteScheduledMessage = async (messageId) => {
   if (!confirm('Tem certeza que deseja excluir esta mensagem agendada?')) {
     return;
   }
 
-  const conversationId =
-    props.item?.conversation?.id || props.item?.item_details?.conversation?.id;
-
+  const conversationId = props.item?.conversation?.id || props.item?.item_details?.conversation?.id;
+  
   try {
     await conversationAPI.deleteScheduledMessage(conversationId, messageId);
     await fetchScheduledMessages();
@@ -361,7 +357,9 @@ const deleteScheduledMessage = async messageId => {
 <template>
   <div class="space-y-4">
     <!-- Tabs -->
-    <div class="tabs-container mb-6">
+    <div
+      class="tabs-container mb-6"
+    >
       <div class="tabs-scroll-wrapper">
         <button
           v-for="tab in tabs"
@@ -372,7 +370,7 @@ const deleteScheduledMessage = async messageId => {
         >
           <div class="flex items-center gap-2">
             <fluent-icon v-if="!tab.customSvg" :icon="tab.icon" size="16" />
-            <span v-else class="w-4 h-4 flex-shrink-0" v-html="tab.customSvg" />
+            <span v-else v-html="tab.customSvg" class="w-4 h-4 flex-shrink-0"></span>
             {{ tab.label }}
           </div>
         </button>
@@ -381,6 +379,7 @@ const deleteScheduledMessage = async messageId => {
 
     <!-- Conteúdo das Tabs -->
     <div class="space-y-6">
+
       <!-- Tab de Notas -->
       <div v-if="activeTab === 'notes'">
         <KanbanNotesTab
@@ -420,7 +419,10 @@ const deleteScheduledMessage = async messageId => {
 
       <!-- Tab de Anexos -->
       <div v-if="activeTab === 'attachments'">
-        <KanbanAttachmentsTab :item="item" :is-stacklab="isStacklab" />
+        <KanbanAttachmentsTab
+          :item="item"
+          :is-stacklab="isStacklab"
+        />
       </div>
 
       <!-- Tab de Mensagens Agendadas -->
@@ -428,19 +430,17 @@ const deleteScheduledMessage = async messageId => {
         <div class="scheduled-messages-container">
           <!-- Header com botão de agendar -->
           <div class="scheduled-messages-header">
-            <button class="schedule-button" @click="openScheduleModal">
+            <button
+              class="schedule-button"
+              @click="openScheduleModal"
+            >
               <fluent-icon icon="add" size="16" />
               Agendar Mensagem
             </button>
           </div>
           <!-- Estado de carregamento -->
-          <div
-            v-if="loadingScheduledMessages"
-            class="flex justify-center items-center py-8"
-          >
-            <span
-              class="w-6 h-6 border-2 border-t-woot-500 border-r-woot-500 border-b-transparent border-l-transparent rounded-full animate-spin"
-            />
+          <div v-if="loadingScheduledMessages" class="flex justify-center items-center py-8">
+            <span class="w-6 h-6 border-2 border-t-woot-500 border-r-woot-500 border-b-transparent border-l-transparent rounded-full animate-spin" />
           </div>
 
           <!-- Estado vazio -->
@@ -474,9 +474,7 @@ const deleteScheduledMessage = async messageId => {
               class="scheduled-message-card"
             >
               <!-- Card principal com design refinado -->
-              <div
-                class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-              >
+              <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
                 <!-- Header com indicador visual -->
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
@@ -486,19 +484,17 @@ const deleteScheduledMessage = async messageId => {
                         class="w-3 h-3 rounded-full animate-pulse"
                         :class="{
                           'bg-woot-500': message.status === 'pending',
-                          'bg-green-500': message.status === 'sent',
+                          'bg-green-500': message.status === 'sent'
                         }"
-                      />
+                      ></div>
                       <!-- Animação de pulso adicional para mensagens pendentes -->
                       <div
                         v-if="message.status === 'pending'"
                         class="absolute inset-0 w-3 h-3 bg-woot-500 rounded-full animate-ping opacity-20"
-                      />
+                      ></div>
                     </div>
                     <div>
-                      <h3
-                        class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight"
-                      >
+                      <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
                         {{ message.title }}
                       </h3>
                       <div class="flex items-center gap-2 mt-1">
@@ -509,13 +505,10 @@ const deleteScheduledMessage = async messageId => {
                             'bg-woot-50 text-woot-700 border-woot-200 dark:bg-woot-900/30 dark:text-woot-300 dark:border-woot-800':
                               message.status === 'pending',
                             'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800':
-                              message.status === 'sent',
+                              message.status === 'sent'
                           }"
                         >
-                          <span
-                            v-if="message.status === 'pending'"
-                            class="w-1.5 h-1.5 bg-current rounded-full mr-1.5 animate-pulse"
-                          />
+                          <span class="w-1.5 h-1.5 bg-current rounded-full mr-1.5 animate-pulse" v-if="message.status === 'pending'"></span>
                           {{ getStatusText(message.status) }}
                         </span>
 
@@ -524,11 +517,7 @@ const deleteScheduledMessage = async messageId => {
                           v-if="message.is_recurrent"
                           class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-full dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
                         >
-                          <fluent-icon
-                            icon="arrow-clockwise"
-                            size="10"
-                            class="mr-1"
-                          />
+                          <fluent-icon icon="arrow-clockwise" size="10" class="mr-1" />
                           Recorrente
                         </span>
                       </div>
@@ -539,58 +528,30 @@ const deleteScheduledMessage = async messageId => {
                 <!-- Metadados organizados -->
                 <div class="grid grid-cols-1 gap-3 mb-4">
                   <!-- Data e hora -->
-                  <div
-                    class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
-                  >
-                    <div
-                      class="flex items-center justify-center w-5 h-5 bg-slate-100 dark:bg-slate-700 rounded-md"
-                    >
-                      <fluent-icon
-                        icon="calendar"
-                        size="12"
-                        class="text-slate-500 dark:text-slate-400"
-                      />
+                  <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                    <div class="flex items-center justify-center w-5 h-5 bg-slate-100 dark:bg-slate-700 rounded-md">
+                      <fluent-icon icon="calendar" size="12" class="text-slate-500 dark:text-slate-400" />
                     </div>
-                    <span class="font-medium">{{
-                      formatScheduledDate(message.scheduled_at)
-                    }}</span>
+                    <span class="font-medium">{{ formatScheduledDate(message.scheduled_at) }}</span>
                   </div>
 
                   <!-- Canal/Inbox -->
-                  <div
-                    class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
-                  >
-                    <div
-                      class="flex items-center justify-center w-5 h-5 bg-slate-100 dark:bg-slate-700 rounded-md"
-                    >
-                      <fluent-icon
-                        icon="chat"
-                        size="12"
-                        class="text-slate-500 dark:text-slate-400"
-                      />
+                  <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                    <div class="flex items-center justify-center w-5 h-5 bg-slate-100 dark:bg-slate-700 rounded-md">
+                      <fluent-icon icon="chat" size="12" class="text-slate-500 dark:text-slate-400" />
                     </div>
-                    <span class="font-medium">{{
-                      getInboxNameSync(message.inbox_id)
-                    }}</span>
+                    <span class="font-medium">{{ getInboxNameSync(message.inbox_id) }}</span>
                   </div>
                 </div>
 
                 <!-- Conteúdo da mensagem -->
                 <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
                   <div class="flex items-start gap-3">
-                    <div
-                      class="flex items-center justify-center w-6 h-6 bg-woot-100 dark:bg-woot-900/50 rounded-md flex-shrink-0 mt-0.5"
-                    >
-                      <fluent-icon
-                        icon="chat"
-                        size="14"
-                        class="text-woot-600 dark:text-woot-400"
-                      />
+                    <div class="flex items-center justify-center w-6 h-6 bg-woot-100 dark:bg-woot-900/50 rounded-md flex-shrink-0 mt-0.5">
+                      <fluent-icon icon="chat" size="14" class="text-woot-600 dark:text-woot-400" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div
-                        class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap"
-                      >
+                      <div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {{ message.message }}
                       </div>
                     </div>
@@ -598,9 +559,7 @@ const deleteScheduledMessage = async messageId => {
                 </div>
 
                 <!-- Ações sutis no footer -->
-                <div
-                  class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700"
-                >
+                <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                   <button
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-md transition-colors"
                     @click="editScheduledMessage(message)"
@@ -621,6 +580,7 @@ const deleteScheduledMessage = async messageId => {
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -628,9 +588,7 @@ const deleteScheduledMessage = async messageId => {
   <ScheduleMessageModal
     v-if="hasConversation"
     :show="showScheduleModal"
-    :conversation-id="
-      item?.conversation?.id || item?.item_details?.conversation?.id
-    "
+    :conversation-id="item?.conversation?.id || item?.item_details?.conversation?.id"
     :editing-message="messageBeingEdited"
     @close="closeScheduleModal"
   />
@@ -745,21 +703,16 @@ const deleteScheduledMessage = async messageId => {
 @keyframes card-hover-lift {
   from {
     transform: translateY(0);
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.1),
-      0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   }
   to {
     transform: translateY(-2px);
-    box-shadow:
-      0 10px 15px rgba(0, 0, 0, 0.1),
-      0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
   }
 }
 
 @keyframes status-pulse {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
     opacity: 0.8;
   }

@@ -17,7 +17,10 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['update:item', 'item-updated']);
+const emit = defineEmits([
+  'update:item',
+  'item-updated'
+]);
 
 const { t } = useI18n();
 
@@ -27,37 +30,31 @@ const activities = computed(() => {
 });
 
 // Helper functions para buscar dados
-const findNoteByActivity = activity => {
+const findNoteByActivity = (activity) => {
   const notes = props.item?.item_details?.notes;
   if (!Array.isArray(notes)) return null;
-  return notes.find(
-    note =>
-      new Date(note.created_at).getTime() ===
-      new Date(activity.created_at).getTime()
+  return notes.find(note =>
+    new Date(note.created_at).getTime() === new Date(activity.created_at).getTime()
   );
 };
 
-const findChecklistItemByActivity = activity => {
+const findChecklistItemByActivity = (activity) => {
   const checklist = props.item?.item_details?.checklist;
   if (!Array.isArray(checklist)) return null;
-  return checklist.find(
-    item =>
-      new Date(item.created_at).getTime() ===
-      new Date(activity.created_at).getTime()
+  return checklist.find(item =>
+    new Date(item.created_at).getTime() === new Date(activity.created_at).getTime()
   );
 };
 
-const findAttachmentByActivity = activity => {
+const findAttachmentByActivity = (activity) => {
   const attachments = props.item?.item_details?.attachments;
   if (!Array.isArray(attachments)) return null;
-  return attachments.find(
-    att =>
-      new Date(att.created_at).getTime() ===
-      new Date(activity.created_at).getTime()
+  return attachments.find(att =>
+    new Date(att.created_at).getTime() === new Date(activity.created_at).getTime()
   );
 };
 
-const getStageName = stageId => {
+const getStageName = (stageId) => {
   if (!stageId) return '-';
 
   const stages = props.item?.item_details?.funnel?.stages;
@@ -70,9 +67,7 @@ const getStageName = stageId => {
 const history = computed(() => {
   return activities.value
     .map(activity => {
-      let icon;
-      let title;
-      let details;
+      let icon, title, details;
 
       switch (activity.type) {
         case 'attachment_added':
@@ -88,27 +83,21 @@ const history = computed(() => {
           icon = 'comment-add';
           title = t('KANBAN.HISTORY.NOTE_ADDED');
           const note = findNoteByActivity(activity);
-          details = note
-            ? note.text
-            : activity.details.note_text || 'Nota adicionada';
+          details = note ? note.text : activity.details.note_text || 'Nota adicionada';
           break;
 
         case 'checklist_item_added':
           icon = 'add-circle';
           title = t('KANBAN.HISTORY.CHECKLIST_ITEM_ADDED');
           const checklistItem = findChecklistItemByActivity(activity);
-          details = checklistItem
-            ? checklistItem.text
-            : activity.details.item_text || 'Item adicionado';
+          details = checklistItem ? checklistItem.text : activity.details.item_text || 'Item adicionado';
           break;
 
         case 'checklist_item_toggled':
           icon = activity.details.completed ? 'checkmark' : 'dismiss';
           title = t('KANBAN.HISTORY.CHECKLIST_ITEM_UPDATED');
           const toggledItem = findChecklistItemByActivity(activity);
-          const itemText = toggledItem
-            ? toggledItem.text
-            : activity.details.item_text || 'Item';
+          const itemText = toggledItem ? toggledItem.text : activity.details.item_text || 'Item';
           details = `${itemText} - ${
             activity.details.completed
               ? t('KANBAN.HISTORY.COMPLETED')
@@ -136,9 +125,9 @@ const history = computed(() => {
           icon = 'arrow-right';
           title = t('KANBAN.HISTORY.STAGE_CHANGED');
           const stageUser = activity.details.user || activity.user;
-          details = `${getStageName(activity.details.old_stage)} → ${getStageName(
-            activity.details.new_stage
-          )}${stageUser ? ` (${stageUser.name})` : ''}`;
+          details = `${getStageName(activity.details.old_stage)} → ${
+            getStageName(activity.details.new_stage)
+          }${stageUser ? ` (${stageUser.name})` : ''}`;
           break;
 
         case 'value_changed':
@@ -162,13 +151,8 @@ const history = computed(() => {
           icon = 'chat';
           title = t('KANBAN.HISTORY.CONVERSATION_LINKED');
           const convUser = activity.details.user || activity.user;
-          const convId =
-            activity.details.conversation_id ||
-            props.item?.item_details?.conversation?.display_id;
-          const convTitle =
-            activity.details.conversation_title ||
-            props.item?.item_details?.conversation?.last_message?.content ||
-            'Conversa';
+          const convId = activity.details.conversation_id || props.item?.item_details?.conversation?.display_id;
+          const convTitle = activity.details.conversation_title || props.item?.item_details?.conversation?.last_message?.content || 'Conversa';
           details = `${convUser?.name || t('KANBAN.SYSTEM')} ${t(
             'KANBAN.HISTORY.LINKED_CONVERSATION'
           )} #${convId} - ${convTitle}`;
@@ -233,21 +217,17 @@ const formatDate = dateString => {
 
 <template>
   <!-- Container principal com estilo consistente -->
-  <div
-    class="activities-container bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm"
-  >
+  <div class="activities-container bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
     <!-- Cabeçalho da aba com indicador de pulso -->
     <div class="activities-header flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse" />
+        <div class="w-2 h-2 bg-woot-500 rounded-full animate-pulse"></div>
         <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
           {{ t('KANBAN.TABS.ACTIVITIES') }}
         </h3>
       </div>
       <div class="flex items-center gap-2">
-        <span
-          class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full font-medium"
-        >
+        <span class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full font-medium">
           {{ activities.length }} {{ t('KANBAN.HISTORY.ACTIVITIES') }}
         </span>
       </div>
@@ -258,11 +238,7 @@ const formatDate = dateString => {
       v-if="activities.length === 0"
       class="text-center py-8 text-slate-500 dark:text-slate-400"
     >
-      <fluent-icon
-        icon="calendar-clock"
-        size="32"
-        class="mx-auto mb-4 opacity-50"
-      />
+      <fluent-icon icon="calendar-clock" size="32" class="mx-auto mb-4 opacity-50" />
       <p class="text-sm">{{ t('KANBAN.HISTORY.NO_ACTIVITY') }}</p>
     </div>
 
@@ -279,7 +255,10 @@ const formatDate = dateString => {
             <fluent-icon :icon="event.icon" size="11" />
           </div>
           <!-- Linha de conexão (não mostrar na última atividade) -->
-          <div v-if="index < history.length - 1" class="activity-line" />
+          <div
+            v-if="index < history.length - 1"
+            class="activity-line"
+          ></div>
         </div>
 
         <!-- Conteúdo do evento -->
@@ -329,15 +308,8 @@ const formatDate = dateString => {
 }
 
 @keyframes activity-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
 
 /* Container principal */
@@ -383,8 +355,7 @@ const formatDate = dateString => {
 
 .activity-line {
   @apply w-px h-full bg-slate-200 dark:bg-slate-600 mt-2;
-  background: linear-gradient(
-    180deg,
+  background: linear-gradient(180deg,
     rgba(148, 163, 184, 0.3),
     rgba(148, 163, 184, 0.6),
     rgba(148, 163, 184, 0.3)
@@ -393,8 +364,7 @@ const formatDate = dateString => {
 
 /* Dark mode adjustments */
 .dark .activity-line {
-  background: linear-gradient(
-    180deg,
+  background: linear-gradient(180deg,
     rgba(71, 85, 105, 0.3),
     rgba(71, 85, 105, 0.6),
     rgba(71, 85, 105, 0.3)

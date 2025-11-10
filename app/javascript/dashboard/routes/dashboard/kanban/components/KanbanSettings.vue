@@ -5,14 +5,16 @@ import { useStore } from 'vuex';
 import Modal from '../../../../components/Modal.vue';
 import Button from '../../../../components-next/button/Button.vue';
 
+const { t } = useI18n();
+const emit = defineEmits(['close', 'dragbar-visibility-changed']);
+
 const props = defineProps({
   show: {
     type: Boolean,
     required: true,
   },
 });
-const emit = defineEmits(['close', 'dragbar-visibility-changed']);
-const { t } = useI18n();
+
 const store = useStore();
 
 const globalWebhookEnabled = ref(false);
@@ -190,8 +192,8 @@ const deselectAllEvents = () => {
           {{ t('KANBAN.SETTINGS.TITLE') }}
         </h3>
         <button
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           @click="handleClose"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
         >
           <svg
             class="w-5 h-5"
@@ -204,7 +206,7 @@ const deselectAllEvents = () => {
               stroke-linejoin="round"
               stroke-width="2"
               d="M6 18L18 6M6 6l12 12"
-            />
+            ></path>
           </svg>
         </button>
       </header>
@@ -216,24 +218,24 @@ const deselectAllEvents = () => {
         >
           <nav class="p-4 space-y-2">
             <button
-              class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors"
-:class="[
+              @click="switchTab('preferences')"
+              :class="[
+                'w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                 activeTab === 'preferences'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700',
               ]"
-              @click="switchTab('preferences')"
             >
               Preferências
             </button>
             <button
-              class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors"
-:class="[
+              @click="switchTab('webhook')"
+              :class="[
+                'w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                 activeTab === 'webhook'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700',
               ]"
-              @click="switchTab('webhook')"
             >
               Webhook
             </button>
@@ -261,8 +263,8 @@ const deselectAllEvents = () => {
                     {{ t('KANBAN.SETTINGS.KANBAN_TITLE') }}
                   </label>
                   <input
-                    id="kanban-title"
                     v-model="kanbanTitle"
+                    id="kanban-title"
                     type="text"
                     class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 text-sm"
                     :placeholder="t('KANBAN.SETTINGS.KANBAN_TITLE_PLACEHOLDER')"
@@ -284,17 +286,17 @@ const deselectAllEvents = () => {
                         class="relative inline-block w-11 align-middle select-none transition duration-200 ease-in"
                       >
                         <input
-                          id="dragbar-enabled"
                           v-model="dragbarEnabled"
                           type="checkbox"
+                          id="dragbar-enabled"
                           class="sr-only peer"
                         />
                         <span
                           class="block w-11 h-7 bg-slate-200 dark:bg-slate-700 rounded-full peer-checked:bg-blue-500 transition"
-                        />
+                        ></span>
                         <span
                           class="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition peer-checked:translate-x-4"
-                        />
+                        ></span>
                       </span>
                       <span
                         class="text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -333,17 +335,17 @@ const deselectAllEvents = () => {
                       class="relative inline-block w-11 align-middle select-none transition duration-200 ease-in"
                     >
                       <input
-                        id="webhook-enabled"
                         v-model="globalWebhookEnabled"
                         type="checkbox"
+                        id="webhook-enabled"
                         class="sr-only peer"
                       />
                       <span
                         class="block w-11 h-7 bg-slate-200 dark:bg-slate-700 rounded-full peer-checked:bg-blue-500 transition"
-                      />
+                      ></span>
                       <span
                         class="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition peer-checked:translate-x-4"
-                      />
+                      ></span>
                     </span>
                     <span
                       class="text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -362,8 +364,8 @@ const deselectAllEvents = () => {
                       {{ t('KANBAN.SETTINGS.WEBHOOK_URL') }}
                     </label>
                     <input
-                      id="webhook-url"
                       v-model="webhookUrl"
+                      id="webhook-url"
                       type="url"
                       class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 text-sm"
                       :placeholder="
@@ -417,8 +419,8 @@ const deselectAllEvents = () => {
                           :id="event.id"
                           type="checkbox"
                           :checked="selectedWebhookEvents.includes(event.id)"
-                          class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 focus:ring-2"
                           @change="toggleWebhookEvent(event.id)"
+                          class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 focus:ring-2"
                         />
                         <div class="flex-1">
                           <label
@@ -450,12 +452,14 @@ const deselectAllEvents = () => {
                     </Button>
 
                     <button
-                      class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                       @click="toggleWebhookDetails"
+                      class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                     >
                       <svg
-                        class="w-4 h-4 transition-transform"
-                        :class="[showWebhookDetails ? 'rotate-180' : '']"
+                        :class="[
+                          'w-4 h-4 transition-transform',
+                          showWebhookDetails ? 'rotate-180' : '',
+                        ]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -465,7 +469,7 @@ const deselectAllEvents = () => {
                           stroke-linejoin="round"
                           stroke-width="2"
                           d="M19 9l-7 7-7-7"
-                        />
+                        ></path>
                       </svg>
                       {{
                         showWebhookDetails
@@ -478,8 +482,8 @@ const deselectAllEvents = () => {
                   <!-- Status do teste -->
                   <div v-if="testStatus" class="pl-4">
                     <span
-                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                       :class="[
+                        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
                         testStatus.success
                           ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                           : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
@@ -516,8 +520,8 @@ const deselectAllEvents = () => {
                             class="flex items-center gap-2"
                           >
                             <span
-                              class="px-2 py-0.5 rounded text-xs font-medium"
                               :class="[
+                                'px-2 py-0.5 rounded text-xs font-medium',
                                 event.status === 'success'
                                   ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                                   : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
@@ -564,9 +568,7 @@ const deselectAllEvents = () => {
 <style lang="scss" scoped>
 // Switch custom
 .dot {
-  transition:
-    transform 0.2s,
-    background 0.2s;
+  transition: transform 0.2s, background 0.2s;
   background: #fff;
 }
 .peer:checked ~ .dot {

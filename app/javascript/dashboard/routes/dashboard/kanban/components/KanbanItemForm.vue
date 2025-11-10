@@ -11,39 +11,6 @@ import offersAPI from '../../../../api/offers';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Editor from 'dashboard/components-next/Editor/Editor.vue';
 
-const props = defineProps({
-  funnelId: {
-    type: [String, Number],
-    required: true,
-  },
-  stage: {
-    type: String,
-    required: true,
-  },
-  position: {
-    type: Number,
-    default: 0,
-  },
-  initialData: {
-    type: Object,
-    default: null,
-  },
-  isEditing: {
-    type: Boolean,
-    default: false,
-  },
-  currentConversation: {
-    type: Object,
-    default: null,
-  },
-  initialDate: {
-    type: Date,
-    default: null,
-  },
-});
-
-const emit = defineEmits(['saved', 'close']);
-
 // Modificar a função toLocalISOString para retornar o formato exato
 const toLocalISOString = (date, includeTime = true) => {
   if (!date) return null;
@@ -79,28 +46,25 @@ const toLocalISOString = (date, includeTime = true) => {
 };
 
 // Função para extrair IDs dos agentes do formato completo
-const extractAgentIds = assignedAgents => {
+const extractAgentIds = (assignedAgents) => {
   if (!assignedAgents || !Array.isArray(assignedAgents)) return [];
-
+  
   // Se é array de objetos completos (formato do JSON), extrair apenas os IDs
-  if (
-    assignedAgents.length > 0 &&
-    typeof assignedAgents[0] === 'object' &&
-    assignedAgents[0].id
-  ) {
+  if (assignedAgents.length > 0 && typeof assignedAgents[0] === 'object' && assignedAgents[0].id) {
     return assignedAgents.map(agent => agent.id);
   }
-
+  
   // Se já é array de IDs, retornar como está
   return assignedAgents;
 };
 
 const { t } = useI18n();
 const store = useStore();
+const emit = defineEmits(['saved', 'close']);
 const activeTab = ref('general');
 
 // Computed para tipos de campos traduzidos
-const getFieldTypeLabel = type => {
+const getFieldTypeLabel = (type) => {
   const typeMap = {
     string: t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_TEXT'),
     number: t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_NUMBER'),
@@ -109,6 +73,37 @@ const getFieldTypeLabel = type => {
   };
   return typeMap[type] || type;
 };
+
+const props = defineProps({
+  funnelId: {
+    type: [String, Number],
+    required: true,
+  },
+  stage: {
+    type: String,
+    required: true,
+  },
+  position: {
+    type: Number,
+    default: 0,
+  },
+  initialData: {
+    type: Object,
+    default: null,
+  },
+  isEditing: {
+    type: Boolean,
+    default: false,
+  },
+  currentConversation: {
+    type: Object,
+    default: null,
+  },
+  initialDate: {
+    type: Date,
+    default: null,
+  },
+});
 
 const loading = ref(false);
 const loadingAgents = ref(false);
@@ -160,7 +155,7 @@ const showManualOfferForm = ref(false);
 const manualOffer = ref({
   description: '',
   value: null,
-  currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' },
+  currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' }
 });
 // Busca e filtro de conversas
 const conversationSearch = ref('');
@@ -213,6 +208,7 @@ const schedulingType = ref(
     (props.initialData?.item_details?.scheduled_at ? 'schedule' : 'deadline')
 );
 
+
 // Atualizar o form.value para incluir as ofertas e datas
 const form = ref({
   title: props.initialData?.title || '',
@@ -244,6 +240,7 @@ const form = ref({
   custom_attributes: props.initialData?.item_details?.custom_attributes || [],
 });
 
+
 // Adicione estas refs
 const customAttributes = ref(
   Array.isArray(props.initialData?.item_details?.custom_attributes)
@@ -252,11 +249,11 @@ const customAttributes = ref(
         type: attr.type || '',
       }))
     : Array.isArray(props.initialData?.custom_attributes)
-      ? props.initialData.custom_attributes.map(attr => ({
-          name: attr.name || '',
-          type: attr.type || '',
-        }))
-      : []
+    ? props.initialData.custom_attributes.map(attr => ({
+        name: attr.name || '',
+        type: attr.type || '',
+      }))
+    : []
 );
 
 // Campos globais do funil
@@ -293,7 +290,7 @@ onMounted(async () => {
   loadingAgents.value = true;
   try {
     await store.dispatch('agents/get');
-
+    
     // Selecionar automaticamente o usuário atual ao criar novo item
     if (!props.isEditing && form.value.assigned_agents.length === 0) {
       const currentUser = store.getters.getCurrentUser;
@@ -451,7 +448,7 @@ const fetchOffers = async () => {
       currency: offer.currency,
       type: offer.type,
       created_at: offer.created_at,
-      image_url: offer.image_url,
+      image_url: offer.image_url
     }));
   } catch (error) {
     console.error('Erro ao carregar ofertas:', error);
@@ -462,7 +459,7 @@ const fetchOffers = async () => {
 };
 
 // Função para carregar atributos globais de um funil específico
-const loadGlobalAttributesForFunnel = async funnelId => {
+const loadGlobalAttributesForFunnel = async (funnelId) => {
   try {
     const response = await funnelAPI.get();
     const funnels = response.data || [];
@@ -470,13 +467,10 @@ const loadGlobalAttributesForFunnel = async funnelId => {
 
     // Inicializar campos globais do funil
     if (selectedFunnelData?.global_custom_attributes?.length > 0) {
-      globalCustomAttributes.value = [
-        ...selectedFunnelData.global_custom_attributes,
-      ];
+      globalCustomAttributes.value = [...selectedFunnelData.global_custom_attributes];
 
       // Buscar valores existentes dos custom_attributes (que é um array)
-      const existingCustomAttrs =
-        props.initialData?.item_details?.custom_attributes || [];
+      const existingCustomAttrs = props.initialData?.item_details?.custom_attributes || [];
 
       // Inicializar valores dos campos globais com dados existentes
       const existingGlobalValues = {};
@@ -509,6 +503,7 @@ const loadGlobalAttributesForFunnel = async funnelId => {
   }
 };
 
+
 watch(showConversationInput, newValue => {
   if (!newValue) {
     form.value.item_details.conversation_id = null;
@@ -525,7 +520,7 @@ watch(showOffersInput, newValue => {
 });
 
 // Funções para gerenciar ofertas
-const isOfferSelected = offerId => {
+const isOfferSelected = (offerId) => {
   return form.value.item_details.offers.some(offer => {
     // Verificar se a oferta tem ID e corresponde
     if (offer.id) {
@@ -539,7 +534,7 @@ const isOfferSelected = offerId => {
   });
 };
 
-const toggleOfferSelection = offer => {
+const toggleOfferSelection = (offer) => {
   const offerIndex = form.value.item_details.offers.findIndex(o => {
     // Verificar correspondência por ID ou offer_id
     if (o.id) return o.id === offer.id;
@@ -557,20 +552,10 @@ const toggleOfferSelection = offer => {
       description: offer.name,
       value: offer.discount_percentage,
       currency: {
-        symbol:
-          offer.currency === 'BRL'
-            ? 'R$'
-            : offer.currency === 'USD'
-              ? '$'
-              : '€',
+        symbol: offer.currency === 'BRL' ? 'R$' : offer.currency === 'USD' ? '$' : '€',
         code: offer.currency,
-        locale:
-          offer.currency === 'BRL'
-            ? 'pt-BR'
-            : offer.currency === 'USD'
-              ? 'en-US'
-              : 'de-DE',
-      },
+        locale: offer.currency === 'BRL' ? 'pt-BR' : offer.currency === 'USD' ? 'en-US' : 'de-DE'
+      }
     });
   }
 
@@ -596,7 +581,7 @@ const addManualOffer = () => {
     manual: true, // Marcar como oferta manual
     description: manualOffer.value.description,
     value: parseFloat(manualOffer.value.value),
-    currency: manualOffer.value.currency,
+    currency: manualOffer.value.currency
   });
 
   // Atualizar o valor principal (primeira oferta)
@@ -609,7 +594,7 @@ const addManualOffer = () => {
   manualOffer.value = {
     description: '',
     value: null,
-    currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' },
+    currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' }
   };
   showManualOfferForm.value = false;
 
@@ -623,14 +608,14 @@ const cancelManualOffer = () => {
   manualOffer.value = {
     description: '',
     value: null,
-    currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' },
+    currency: { symbol: 'R$', code: 'BRL', locale: 'pt-BR' }
   };
   showManualOfferForm.value = false;
 };
 
-const removeOffer = index => {
+const removeOffer = (index) => {
   form.value.item_details.offers.splice(index, 1);
-
+  
   // Atualizar o valor principal
   if (form.value.item_details.offers.length > 0) {
     const firstOffer = form.value.item_details.offers[0];
@@ -648,9 +633,7 @@ watchEffect(() => {
     funnel_stage: form.value.funnel_stage || props.stage,
     position: props.position,
     assigned_agents:
-      form.value.assigned_agents ||
-      extractAgentIds(props.initialData?.assigned_agents) ||
-      [],
+      form.value.assigned_agents || extractAgentIds(props.initialData?.assigned_agents) || [],
     title:
       form.value.title ||
       props.initialData?.title ||
@@ -718,7 +701,7 @@ watch(
 // Watch para sincronizar ofertas ao abrir para edição
 watch(
   () => props.initialData?.item_details?.offers,
-  newOffers => {
+  (newOffers) => {
     if (props.isEditing && newOffers?.length) {
       if (form.value.item_details.offers.length === 0) {
         form.value.item_details.offers = [...newOffers];
@@ -735,13 +718,9 @@ watch(
 // Adicionar watch para atualizar valores globais quando o funil mudar
 watch(
   () => selectedFunnel.value?.id,
-  async newFunnelId => {
+  async (newFunnelId) => {
     // Só atualizar se não estiver editando (quando editando, usamos o funnel_id do item)
-    if (
-      newFunnelId &&
-      activeTab.value === 'custom_fields' &&
-      !props.isEditing
-    ) {
+    if (newFunnelId && activeTab.value === 'custom_fields' && !props.isEditing) {
       try {
         const response = await funnelAPI.get();
         const funnels = response.data || [];
@@ -749,14 +728,10 @@ watch(
 
         // Atualizar campos globais quando o funil mudar
         if (selectedFunnelData?.global_custom_attributes?.length > 0) {
-          globalCustomAttributes.value = [
-            ...selectedFunnelData.global_custom_attributes,
-          ];
+          globalCustomAttributes.value = [...selectedFunnelData.global_custom_attributes];
 
           // Preservar valores existentes ou inicializar vazios
-          const existingGlobalValues = {
-            ...globalCustomAttributesValues.value,
-          };
+          const existingGlobalValues = { ...globalCustomAttributesValues.value };
           selectedFunnelData.global_custom_attributes.forEach(attr => {
             if (!(attr.name in existingGlobalValues)) {
               if (attr.is_list) {
@@ -817,9 +792,9 @@ const priorityOptions = [
 ];
 
 // Função para obter estilos de prioridade com cores hexadecimais
-const getPriorityStyle = optionId => {
+const getPriorityStyle = (optionId) => {
   const isSelected = optionId === form.value.item_details.priority;
-
+  
   const styles = {
     none: {
       selected: {
@@ -882,11 +857,9 @@ const getPriorityStyle = optionId => {
       },
     },
   };
-
-  const styleConfig =
-    styles[optionId]?.[isSelected ? 'selected' : 'unselected'] ||
-    styles.none.unselected;
-
+  
+  const styleConfig = styles[optionId]?.[isSelected ? 'selected' : 'unselected'] || styles.none.unselected;
+  
   return {
     borderColor: styleConfig.borderColor,
     backgroundColor: styleConfig.backgroundColor,
@@ -979,9 +952,7 @@ const handleSubmit = async e => {
     };
 
     // custom_attributes deve ser um array de objetos {name, type, value}
-    const existingCustomAttributes = Array.isArray(
-      finalItemDetails.custom_attributes
-    )
+    const existingCustomAttributes = Array.isArray(finalItemDetails.custom_attributes)
       ? finalItemDetails.custom_attributes
       : [];
 
@@ -990,19 +961,17 @@ const handleSubmit = async e => {
       // Se o campo global foi preenchido, atualizar seu valor
       if (globalCustomAttributesValues.value[attr.name] !== undefined) {
         const newValue = globalCustomAttributesValues.value[attr.name];
-
+        
         // Filtrar arrays vazios
         if (Array.isArray(newValue)) {
-          const filteredArray = newValue.filter(
-            v => v !== null && v !== undefined && v !== ''
-          );
+          const filteredArray = newValue.filter(v => v !== null && v !== undefined && v !== '');
           return { ...attr, value: filteredArray };
         }
-
+        
         // Para valores simples
         return { ...attr, value: newValue };
       }
-
+      
       // Manter o atributo sem alteração
       return attr;
     });
@@ -1035,6 +1004,8 @@ const handleSubmit = async e => {
   }
 };
 
+
+
 // Adicione esta função no script
 const formatCurrencyValue = (value, currency) => {
   if (!value) return '-';
@@ -1050,6 +1021,7 @@ const formatCurrencyValue = (value, currency) => {
     return value.toString();
   }
 };
+
 
 const { isStacklab } = useConfig();
 
@@ -1080,21 +1052,21 @@ const copyItemId = async () => {
 };
 
 // Funções para gerenciar agentes
-const addAgent = agent => {
+const addAgent = (agent) => {
   if (!form.value.assigned_agents.some(a => a === agent.id))
     form.value.assigned_agents.push(agent.id);
   agentDropdownOpen.value = false;
   agentSearch.value = '';
 };
 
-const removeAgent = agentId => {
+const removeAgent = (agentId) => {
   form.value.assigned_agents = form.value.assigned_agents.filter(
     a => a !== agentId
   );
 };
 
 // Funções para gerenciar campos globais de lista
-const addGlobalListItem = fieldName => {
+const addGlobalListItem = (fieldName) => {
   if (!globalCustomAttributesValues.value[fieldName]) {
     globalCustomAttributesValues.value[fieldName] = [];
   }
@@ -1102,15 +1074,13 @@ const addGlobalListItem = fieldName => {
 };
 
 const removeGlobalListItem = (fieldName, index) => {
-  if (
-    globalCustomAttributesValues.value[fieldName] &&
-    globalCustomAttributesValues.value[fieldName].length > 1
-  ) {
+  if (globalCustomAttributesValues.value[fieldName] &&
+      globalCustomAttributesValues.value[fieldName].length > 1) {
     globalCustomAttributesValues.value[fieldName].splice(index, 1);
   }
 };
 
-const getAgentById = agentId => {
+const getAgentById = (agentId) => {
   return store.getters['agents/getAgents'].find(a => a.id === agentId);
 };
 
@@ -1119,7 +1089,7 @@ const openAgentDropdown = () => {
   agentSearch.value = '';
 };
 
-const closeAgentDropdown = e => {
+const closeAgentDropdown = (e) => {
   if (!agentSelectorRef.value?.contains(e.target)) {
     agentDropdownOpen.value = false;
   }
@@ -1143,22 +1113,19 @@ watch(activeTab, async tab => {
 
       // Identificar o funil correto: usar o funnel_id do item original se estiver editando, senão usar o selectedFunnel
       const currentFunnelId = props.isEditing
-        ? props.initialData?.funnel_id || props.funnelId
-        : selectedFunnel.value?.id || props.funnelId;
+        ? (props.initialData?.funnel_id || props.funnelId)
+        : (selectedFunnel.value?.id || props.funnelId);
 
       // Encontrar o funil correto
       const selectedFunnelData = funnels.find(f => f.id === currentFunnelId);
 
       // Inicializar campos globais do funil
       if (selectedFunnelData?.global_custom_attributes?.length > 0) {
-        globalCustomAttributes.value = [
-          ...selectedFunnelData.global_custom_attributes,
-        ];
+        globalCustomAttributes.value = [...selectedFunnelData.global_custom_attributes];
 
         // Buscar valores existentes dos custom_attributes (que é um array)
-        const existingCustomAttrs =
-          props.initialData?.item_details?.custom_attributes || [];
-
+        const existingCustomAttrs = props.initialData?.item_details?.custom_attributes || [];
+        
         // Inicializar valores dos campos globais com dados existentes
         const existingGlobalValues = {};
         selectedFunnelData.global_custom_attributes.forEach(attr => {
@@ -1332,28 +1299,21 @@ onUnmounted(() => {
             >
               <fluent-icon icon="document" size="18" class="text-woot-500" />
             </div>
-            <h4
-              class="text-base font-medium text-slate-800 dark:text-slate-100"
-            >
+            <h4 class="text-base font-medium text-slate-800 dark:text-slate-100">
               {{ t('KANBAN.TABS.GENERAL') }}
             </h4>
           </div>
 
           <!-- Item ID Badge and Copy Button -->
-          <div
-            v-if="isEditing && initialData?.id"
-            class="flex items-center gap-2"
-          >
-            <span
-              class="px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full"
-            >
+          <div v-if="isEditing && initialData?.id" class="flex items-center gap-2">
+            <span class="px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
               ID: {{ initialData.id }}
             </span>
             <button
               type="button"
               class="p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
-              :title="t('KANBAN.COPY_ITEM_ID')"
               @click="copyItemId"
+              :title="t('KANBAN.COPY_ITEM_ID')"
             >
               <fluent-icon icon="copy" size="14" />
             </button>
@@ -1418,10 +1378,7 @@ onUnmounted(() => {
                 class="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-96 overflow-y-auto"
               >
                 <!-- Loading State -->
-                <div
-                  v-if="loadingOffers"
-                  class="flex justify-center items-center py-8"
-                >
+                <div v-if="loadingOffers" class="flex justify-center items-center py-8">
                   <span class="loading-spinner" />
                 </div>
 
@@ -1430,12 +1387,10 @@ onUnmounted(() => {
                   v-else-if="!availableOffers.length"
                   class="flex flex-col items-center justify-center py-8 text-slate-600"
                 >
-                  <fluent-icon
-                    icon="tag"
-                    size="32"
-                    class="mb-2 text-slate-400"
-                  />
-                  <p class="text-sm text-center">Nenhuma oferta encontrada</p>
+                  <fluent-icon icon="tag" size="32" class="mb-2 text-slate-400" />
+                  <p class="text-sm text-center">
+                    Nenhuma oferta encontrada
+                  </p>
                   <p class="text-xs text-center mt-1 text-slate-500">
                     Crie ofertas na seção de ofertas
                   </p>
@@ -1448,10 +1403,8 @@ onUnmounted(() => {
                     :key="offer.id"
                     class="offer-card bg-white dark:bg-slate-800 rounded-lg shadow-sm border overflow-hidden cursor-pointer transition-all hover:shadow-md"
                     :class="{
-                      'border-woot-300 dark:border-woot-600 ring-2 ring-woot-200 dark:ring-woot-800':
-                        isOfferSelected(offer.id),
-                      'border-slate-200 dark:border-slate-700':
-                        !isOfferSelected(offer.id),
+                      'border-woot-300 dark:border-woot-600 ring-2 ring-woot-200 dark:ring-woot-800': isOfferSelected(offer.id),
+                      'border-slate-200 dark:border-slate-700': !isOfferSelected(offer.id)
                     }"
                     @click="toggleOfferSelection(offer)"
                   >
@@ -1468,78 +1421,46 @@ onUnmounted(() => {
                       </div>
 
                       <!-- Imagem da Oferta ou Placeholder -->
-                      <div
-                        class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center"
-                      >
+                      <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
                         <img
                           v-if="offer.image_url"
                           :src="offer.image_url"
                           :alt="offer.name"
                           class="w-full h-full object-cover"
                         />
-                        <fluent-icon
-                          v-else
-                          icon="image"
-                          size="32"
-                          class="text-slate-300 dark:text-slate-700"
-                        />
+                        <fluent-icon v-else icon="image" size="32" class="text-slate-300 dark:text-slate-700" />
                       </div>
 
                       <!-- Informações da Oferta -->
                       <div class="flex-1 min-w-0 py-3 pr-3">
                         <div class="flex items-center gap-2 mb-1.5">
-                          <span
-                            class="inline-block px-1.5 py-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded"
-                          >
+                          <span class="inline-block px-1.5 py-0.5 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded">
                             #{{ offer.id }}
                           </span>
                           <span
                             v-if="offer.type"
-                            class="inline-block px-1.5 py-0.5 text-xs font-medium rounded"
                             :class="[
-                              offer.type === 'service'
-                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                : 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300',
+                              'inline-block px-1.5 py-0.5 text-xs font-medium rounded',
+                              offer.type === 'service' 
+                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                                : 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
                             ]"
                           >
-                            {{
-                              offer.type === 'service'
-                                ? t('KANBAN.FORM.OFFERS.TYPE_SERVICE')
-                                : t('KANBAN.FORM.OFFERS.TYPE_PRODUCT')
-                            }}
+                            {{ offer.type === 'service' ? t('KANBAN.FORM.OFFERS.TYPE_SERVICE') : t('KANBAN.FORM.OFFERS.TYPE_PRODUCT') }}
                           </span>
                         </div>
-                        <h4
-                          class="text-sm font-semibold text-slate-900 dark:text-white mb-2 truncate"
-                        >
+                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white mb-2 truncate">
                           {{ offer.name }}
                         </h4>
 
                         <!-- Valor e moeda -->
-                        <div
-                          class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="text-green-600 dark:text-green-400"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <path
-                              d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"
-                            />
-                            <path d="M12 18V6" />
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600 dark:text-green-400">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
+                            <path d="M12 18V6"/>
                           </svg>
-                          <span
-                            class="text-xs font-bold text-green-700 dark:text-green-300"
-                          >
+                          <span class="text-xs font-bold text-green-700 dark:text-green-300">
                             {{ offer.discount_percentage }} {{ offer.currency }}
                           </span>
                         </div>
@@ -1553,8 +1474,8 @@ onUnmounted(() => {
                   <button
                     v-if="!showManualOfferForm"
                     type="button"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:border-woot-500 hover:text-woot-500 dark:hover:border-woot-500 dark:hover:text-woot-400 transition-colors"
                     @click="showManualOfferForm = true"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:border-woot-500 hover:text-woot-500 dark:hover:border-woot-500 dark:hover:text-woot-400 transition-colors"
                   >
                     <fluent-icon icon="add" size="16" />
                     {{ t('KANBAN.FORM.OFFERS.ADD_MANUAL_OFFER') }}
@@ -1566,24 +1487,20 @@ onUnmounted(() => {
                     class="bg-white dark:bg-slate-800 rounded-lg border-2 border-woot-300 dark:border-woot-600 p-4 space-y-3"
                   >
                     <div class="flex items-center justify-between mb-2">
-                      <h5
-                        class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
+                      <h5 class="text-sm font-medium text-slate-700 dark:text-slate-300">
                         {{ t('KANBAN.FORM.OFFERS.NEW_MANUAL_OFFER') }}
                       </h5>
                       <button
                         type="button"
-                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                         @click="cancelManualOffer"
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                       >
                         <fluent-icon icon="dismiss" size="16" />
                       </button>
                     </div>
 
                     <div class="space-y-2">
-                      <label
-                        class="block text-xs text-slate-600 dark:text-slate-400"
-                      >
+                      <label class="block text-xs text-slate-600 dark:text-slate-400">
                         Descrição
                       </label>
                       <input
@@ -1596,14 +1513,10 @@ onUnmounted(() => {
 
                     <div class="space-y-2">
                       <div class="grid grid-cols-2 gap-2">
-                        <label
-                          class="block text-xs text-slate-600 dark:text-slate-400"
-                        >
+                        <label class="block text-xs text-slate-600 dark:text-slate-400">
                           Valor
                         </label>
-                        <label
-                          class="block text-xs text-slate-600 dark:text-slate-400"
-                        >
+                        <label class="block text-xs text-slate-600 dark:text-slate-400">
                           Moeda
                         </label>
                       </div>
@@ -1617,24 +1530,14 @@ onUnmounted(() => {
                         />
                         <select
                           v-model="manualOffer.currency.code"
-                          class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
                           @change="
                             manualOffer.currency = {
-                              symbol:
-                                manualOffer.currency.code === 'BRL'
-                                  ? 'R$'
-                                  : manualOffer.currency.code === 'USD'
-                                    ? '$'
-                                    : '€',
+                              symbol: manualOffer.currency.code === 'BRL' ? 'R$' : manualOffer.currency.code === 'USD' ? '$' : '€',
                               code: manualOffer.currency.code,
-                              locale:
-                                manualOffer.currency.code === 'BRL'
-                                  ? 'pt-BR'
-                                  : manualOffer.currency.code === 'USD'
-                                    ? 'en-US'
-                                    : 'de-DE',
+                              locale: manualOffer.currency.code === 'BRL' ? 'pt-BR' : manualOffer.currency.code === 'USD' ? 'en-US' : 'de-DE'
                             }
                           "
+                          class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
                         >
                           <option value="BRL">BRL (R$)</option>
                           <option value="USD">USD ($)</option>
@@ -1646,15 +1549,15 @@ onUnmounted(() => {
                     <div class="flex gap-2 pt-2">
                       <button
                         type="button"
-                        class="flex-1 px-3 py-2 bg-woot-500 hover:bg-woot-600 text-white text-sm rounded-lg transition-colors"
                         @click="addManualOffer"
+                        class="flex-1 px-3 py-2 bg-woot-500 hover:bg-woot-600 text-white text-sm rounded-lg transition-colors"
                       >
                         Adicionar
                       </button>
                       <button
                         type="button"
-                        class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded-lg transition-colors"
                         @click="cancelManualOffer"
+                        class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded-lg transition-colors"
                       >
                         Cancelar
                       </button>
@@ -1663,13 +1566,8 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Ofertas Selecionadas -->
-                <div
-                  v-if="form.item_details.offers.length > 0"
-                  class="p-4 bg-slate-50 dark:bg-slate-800/50"
-                >
-                  <h5
-                    class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2"
-                  >
+                <div v-if="form.item_details.offers.length > 0" class="p-4 bg-slate-50 dark:bg-slate-800/50">
+                  <h5 class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
                     Ofertas Selecionadas ({{ form.item_details.offers.length }})
                   </h5>
                   <div class="space-y-2">
@@ -1678,42 +1576,29 @@ onUnmounted(() => {
                       :key="index"
                       class="flex items-center gap-2 p-2 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600"
                     >
-                      <fluent-icon
-                        :icon="
-                          selectedOffer.manual ? 'edit' : 'checkmark-circle'
-                        "
-                        size="16"
-                        :class="
-                          selectedOffer.manual
-                            ? 'text-blue-500'
-                            : 'text-green-500'
-                        "
-                        class="flex-shrink-0"
+                      <fluent-icon 
+                        :icon="selectedOffer.manual ? 'edit' : 'checkmark-circle'" 
+                        size="16" 
+                        :class="selectedOffer.manual ? 'text-blue-500' : 'text-green-500'" 
+                        class="flex-shrink-0" 
                       />
-                      <span
-                        class="text-sm text-slate-700 dark:text-slate-300 truncate flex-1"
-                      >
+                      <span class="text-sm text-slate-700 dark:text-slate-300 truncate flex-1">
                         {{ selectedOffer.description }}
                       </span>
-                      <span
+                      <span 
                         v-if="selectedOffer.manual"
                         class="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded"
                       >
                         Manual
                       </span>
                       <span class="text-xs text-slate-500 dark:text-slate-400">
-                        {{
-                          formatCurrencyValue(
-                            selectedOffer.value,
-                            selectedOffer.currency
-                          )
-                        }}
+                        {{ formatCurrencyValue(selectedOffer.value, selectedOffer.currency) }}
                       </span>
                       <button
                         type="button"
+                        @click="removeOffer(index)"
                         class="text-ruby-500 hover:text-ruby-600 dark:text-ruby-400 dark:hover:text-ruby-300 transition-colors ml-1"
                         title="Remover oferta"
-                        @click="removeOffer(index)"
                       >
                         <fluent-icon icon="dismiss" size="14" />
                       </button>
@@ -2061,8 +1946,8 @@ onUnmounted(() => {
               <div ref="conversationSelectorRef" class="relative">
                 <div
                   class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
-                  tabindex="0"
                   @click="openConversationDropdown"
+                  tabindex="0"
                 >
                   <span v-if="selectedConversation">
                     #{{ selectedConversation.id }} -
@@ -2134,20 +2019,12 @@ onUnmounted(() => {
               class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700"
             >
               <div class="flex items-center gap-3 mb-3">
-                <span
-                  class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                   {{ attr.name }}
                 </span>
-                <span
-                  class="text-xs text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded"
-                >
+                <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
                   {{ getFieldTypeLabel(attr.type) }}
-                  {{
-                    attr.is_list
-                      ? t('KANBAN.FORM.CUSTOM_FIELDS.LIST_INDICATOR')
-                      : ''
-                  }}
+                  {{ attr.is_list ? t('KANBAN.FORM.CUSTOM_FIELDS.LIST_INDICATOR') : '' }}
                 </span>
               </div>
 
@@ -2155,13 +2032,8 @@ onUnmounted(() => {
               <div v-if="!attr.is_list">
                 <input
                   v-model="globalCustomAttributesValues[attr.name]"
-                  :type="
-                    attr.type === 'date'
-                      ? 'date'
-                      : attr.type === 'number'
-                        ? 'number'
-                        : 'text'
-                  "
+                  :type="attr.type === 'date' ? 'date' :
+                         attr.type === 'number' ? 'number' : 'text'"
                   class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
                   :placeholder="`${t('KANBAN.FORM.CUSTOM_FIELDS.ENTER_VALUE_FOR')} ${attr.name}`"
                 />
@@ -2170,40 +2042,30 @@ onUnmounted(() => {
               <!-- Campo de lista -->
               <div v-else class="space-y-2">
                 <div
-                  v-for="(value, valueIdx) in globalCustomAttributesValues[
-                    attr.name
-                  ] || []"
+                  v-for="(value, valueIdx) in globalCustomAttributesValues[attr.name] || []"
                   :key="`global-${idx}-value-${valueIdx}`"
                   class="flex items-center gap-2"
                 >
                   <input
                     v-model="globalCustomAttributesValues[attr.name][valueIdx]"
-                    :type="
-                      attr.type === 'date'
-                        ? 'date'
-                        : attr.type === 'number'
-                          ? 'number'
-                          : 'text'
-                    "
+                    :type="attr.type === 'date' ? 'date' :
+                           attr.type === 'number' ? 'number' : 'text'"
                     class="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
                     :placeholder="`${t('KANBAN.FORM.CUSTOM_FIELDS.ITEM_NUMBER_FOR')} ${valueIdx + 1} ${t('KANBAN.FORM.CUSTOM_FIELDS.FOR_FIELD')} ${attr.name}`"
                   />
                   <button
                     type="button"
-                    class="p-2 text-ruby-500 hover:text-ruby-600 dark:text-ruby-400 dark:hover:text-ruby-300 rounded transition-colors"
-                    :disabled="
-                      (globalCustomAttributesValues[attr.name] || []).length <=
-                      1
-                    "
                     @click="() => removeGlobalListItem(attr.name, valueIdx)"
+                    class="p-2 text-ruby-500 hover:text-ruby-600 dark:text-ruby-400 dark:hover:text-ruby-300 rounded transition-colors"
+                    :disabled="(globalCustomAttributesValues[attr.name] || []).length <= 1"
                   >
                     <fluent-icon icon="dismiss" size="14" />
                   </button>
                 </div>
                 <button
                   type="button"
-                  class="mt-2 px-3 py-1 bg-woot-500 hover:bg-woot-600 text-white text-sm rounded transition-colors flex items-center gap-1"
                   @click="() => addGlobalListItem(attr.name)"
+                  class="mt-2 px-3 py-1 bg-woot-500 hover:bg-woot-600 text-white text-sm rounded transition-colors flex items-center gap-1"
                 >
                   {{ t('KANBAN.FORM.CUSTOM_FIELDS.ADD_ITEM') }}
                   <fluent-icon icon="add" size="12" />
@@ -2247,31 +2109,23 @@ onUnmounted(() => {
                 v-model="attr.type"
                 class="w-1/2 px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
               >
-                <option value="string">
-                  {{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_TEXT') }}
-                </option>
-                <option value="number">
-                  {{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_NUMBER') }}
-                </option>
-                <option value="date">
-                  {{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_DATE') }}
-                </option>
-                <option value="boolean">
-                  {{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_BOOLEAN') }}
-                </option>
+                <option value="string">{{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_TEXT') }}</option>
+                <option value="number">{{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_NUMBER') }}</option>
+                <option value="date">{{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_DATE') }}</option>
+                <option value="boolean">{{ t('KANBAN.FORM.CUSTOM_FIELDS.TYPE_BOOLEAN') }}</option>
               </select>
               <button
                 type="button"
-                class="p-1 text-ruby-500 hover:text-ruby-600 dark:text-ruby-400 dark:hover:text-ruby-300 rounded transition-colors"
                 @click="removeCustomAttribute(idx)"
+                class="p-1 text-ruby-500 hover:text-ruby-600 dark:text-ruby-400 dark:hover:text-ruby-300 rounded transition-colors"
               >
                 ✕
               </button>
             </div>
             <button
               type="button"
-              class="mt-2 px-3 py-1 bg-woot-500 hover:bg-woot-600 text-white rounded transition-colors"
               @click="addCustomAttribute"
+              class="mt-2 px-3 py-1 bg-woot-500 hover:bg-woot-600 text-white rounded transition-colors"
             >
               {{ t('KANBAN.FORM.CUSTOM_FIELDS.ADD_FIELD') }}
             </button>
@@ -2296,7 +2150,7 @@ onUnmounted(() => {
         variant="solid"
         color="blue"
         size="sm"
-        :is-loading="loading"
+        :isLoading="loading"
       >
         {{ t('KANBAN.SAVE') }}
       </Button>

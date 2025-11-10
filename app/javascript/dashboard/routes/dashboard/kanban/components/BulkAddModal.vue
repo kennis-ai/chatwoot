@@ -262,7 +262,7 @@ onMounted(() => {
           variant="solid"
           color="blue"
           size="sm"
-          :is-loading="loading"
+          :isLoading="loading"
           :disabled="!itemsList.length || !selectedStage"
           @click="handleSubmit"
         >

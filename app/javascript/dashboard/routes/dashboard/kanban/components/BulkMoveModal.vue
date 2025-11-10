@@ -5,18 +5,19 @@ import { useStore } from 'vuex';
 import KanbanAPI from '../../../../api/kanban';
 import Button from '../../../../components-next/button/Button.vue';
 
+const store = useStore();
+const selectedFunnel = computed(
+  () => store.getters['funnel/getSelectedFunnel']
+);
+
 const props = defineProps({
   items: {
     type: Array,
     required: true,
   },
 });
-const emit = defineEmits(['close', 'confirm']);
-const store = useStore();
-const selectedFunnel = computed(
-  () => store.getters['funnel/getSelectedFunnel']
-);
 
+const emit = defineEmits(['close', 'confirm']);
 const { t } = useI18n();
 
 const selectedItems = ref([]);
@@ -43,10 +44,7 @@ const fetchKanbanItems = async () => {
     } else {
       // Usar diretamente os itens passados como props
       kanbanItems.value = props.items;
-      console.log(
-        '[BulkMoveModal] Usando itens dos props:',
-        kanbanItems.value.length
-      );
+      console.log('[BulkMoveModal] Usando itens dos props:', kanbanItems.value.length);
     }
   } catch (error) {
     console.error('[BulkMoveModal] Erro ao carregar itens:', error);
@@ -76,8 +74,7 @@ const toggleItem = itemId => {
 };
 
 const toggleSelectAll = () => {
-  const itemsToUse =
-    kanbanItems.value.length > 0 ? kanbanItems.value : props.items;
+  const itemsToUse = kanbanItems.value.length > 0 ? kanbanItems.value : props.items;
   if (selectedItems.value.length === itemsToUse.length) {
     selectedItems.value = [];
   } else {
@@ -86,8 +83,7 @@ const toggleSelectAll = () => {
 };
 
 const isAllSelected = computed(() => {
-  const itemsToUse =
-    kanbanItems.value.length > 0 ? kanbanItems.value : props.items;
+  const itemsToUse = kanbanItems.value.length > 0 ? kanbanItems.value : props.items;
   return selectedItems.value.length === itemsToUse.length;
 });
 

@@ -11,14 +11,6 @@ import { emitter } from 'shared/helpers/mitt';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 
-// Prop para detectar modo de criação
-const props = defineProps({
-  createMode: {
-    type: Boolean,
-    default: false,
-  },
-});
-const emit = defineEmits(['switch-view']);
 const { t } = useI18n();
 const router = useRouter();
 const { isStacklab } = useConfig();
@@ -37,15 +29,20 @@ const funnelBeingEdited = ref(null);
 // Estado para criação de novo funil
 const isCreatingMode = ref(false);
 
+// Prop para detectar modo de criação
+const props = defineProps({
+  createMode: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 // Watcher para detectar quando deve iniciar o modo de criação
-watch(
-  () => props.createMode,
-  newValue => {
-    if (newValue) {
-      startCreate();
-    }
+watch(() => props.createMode, (newValue) => {
+  if (newValue) {
+    startCreate();
   }
-);
+});
 
 const refreshFunnelData = async () => {
   loading.value = true;
@@ -180,9 +177,7 @@ const handleEdit = async updatedFunnel => {
     // O formulário já fez o update/create na API
     await refreshFunnelData();
 
-    const message = isCreatingMode.value
-      ? 'Funil criado com sucesso'
-      : 'Funil atualizado com sucesso';
+    const message = isCreatingMode.value ? 'Funil criado com sucesso' : 'Funil atualizado com sucesso';
     emitter.emit('newToastMessage', {
       message,
       action: { type: 'success' },
@@ -198,9 +193,7 @@ const handleEdit = async updatedFunnel => {
     delete currentQuery.funnel;
     router.replace({ query: currentQuery });
   } catch (error) {
-    const message = isCreatingMode.value
-      ? 'Erro ao criar funil'
-      : 'Erro ao atualizar a lista de funis';
+    const message = isCreatingMode.value ? 'Erro ao criar funil' : 'Erro ao atualizar a lista de funis';
     emitter.emit('newToastMessage', {
       message,
       action: { type: 'error' },
@@ -320,9 +313,12 @@ const handleBack = () => {
   router.replace({ query: currentQuery });
 };
 
+
 // Refs para controlar o FunnelForm
 const funnelFormRef = ref(null);
 const initialFormData = ref(null);
+
+const emit = defineEmits(['switch-view']);
 
 onMounted(async () => {
   await refreshFunnelData(); // Busca inicial a partir da API
@@ -357,8 +353,8 @@ onMounted(async () => {
     <div class="funnels-content flex-1 overflow-y-auto">
       <!-- Renderiza FunnelForm quando estiver editando ou criando -->
       <FunnelForm
-        v-if="isEditingMode || isCreatingMode"
         ref="funnelFormRef"
+        v-if="isEditingMode || isCreatingMode"
         :is-editing="isEditingMode"
         :funnel-id="isEditingMode ? funnelBeingEdited.id : null"
         :initial-data="!isEditingMode ? initialFormData : null"
@@ -387,8 +383,8 @@ onMounted(async () => {
                 Limite de Funis Atingido
               </p>
               <p class="text-amber-700 dark:text-amber-200 text-sm mt-1">
-                Você atingiu o limite de 2 funis. Atualize para a versão PRO
-                para criar mais funis.
+                Você atingiu o limite de 2 funis. Atualize para a versão PRO para
+                criar mais funis.
               </p>
             </div>
           </div>
@@ -412,10 +408,7 @@ onMounted(async () => {
         </div>
 
         <!-- Funnels List -->
-        <div
-          v-else
-          class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <div v-else class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           <div
             v-for="funnel in funnels"
             :key="funnel.id"
@@ -463,8 +456,8 @@ onMounted(async () => {
                 >
                 <h3 class="text-lg font-medium">{{ funnel.name }}</h3>
                 <span
-                  class="text-xs px-2 py-0.5 rounded-full"
                   :class="[
+                    'text-xs px-2 py-0.5 rounded-full',
                     funnel.active
                       ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700',
@@ -476,8 +469,7 @@ onMounted(async () => {
 
               <!-- Data de criação -->
               <p class="text-xs text-slate-500">
-                Criado em:
-                {{ new Date(funnel.created_at).toLocaleDateString() }}
+                Criado em: {{ new Date(funnel.created_at).toLocaleDateString() }}
               </p>
 
               <!-- Etapas -->
@@ -506,11 +498,7 @@ onMounted(async () => {
                     class="absolute hidden group-hover:block bg-white dark:bg-slate-800 shadow-lg rounded-lg p-3 z-10 min-w-[250px] top-full left-0 mt-1"
                   >
                     <div class="flex items-center gap-2 mb-2">
-                      <fluent-icon
-                        icon="chat"
-                        size="16"
-                        class="text-woot-500"
-                      />
+                      <fluent-icon icon="chat" size="16" class="text-woot-500" />
                       <p class="text-xs font-medium">Templates de Mensagem</p>
                     </div>
                     <div class="space-y-2">
@@ -520,9 +508,7 @@ onMounted(async () => {
                         class="p-2 bg-slate-50 dark:bg-slate-700 rounded"
                       >
                         <div class="flex items-center justify-between mb-1">
-                          <p class="text-xs font-medium">
-                            {{ template.title }}
-                          </p>
+                          <p class="text-xs font-medium">{{ template.title }}</p>
                           <span
                             v-if="template.webhook?.enabled"
                             class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
@@ -551,11 +537,7 @@ onMounted(async () => {
                   :key="agent.id"
                   class="flex items-center gap-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg"
                 >
-                  <Avatar
-                    :name="agent.name"
-                    :src="agent.thumbnail"
-                    :size="20"
-                  />
+                  <Avatar :name="agent.name" :src="agent.thumbnail" :size="20" />
                   <span class="text-xs text-slate-700 dark:text-slate-300">
                     {{ agent.name }}
                   </span>
@@ -566,6 +548,7 @@ onMounted(async () => {
         </div>
       </template>
     </div>
+
 
     <!-- Modal de Confirmação de Exclusão -->
     <Modal
@@ -596,7 +579,7 @@ onMounted(async () => {
             variant="solid"
             color="ruby"
             size="sm"
-            :is-loading="loading"
+            :isLoading="loading"
             @click="handleDelete"
           >
             {{ t('KANBAN.DELETE') }}

@@ -23,7 +23,10 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['upload-attachment', 'delete-attachment']);
+const emit = defineEmits([
+  'upload-attachment',
+  'delete-attachment'
+]);
 
 const { t } = useI18n();
 
@@ -36,10 +39,7 @@ const loadingAttachments = ref(false);
 // Computed properties
 const displayAttachments = computed(() => {
   // Usar attachments internos se disponíveis, senão usar da prop
-  let attachments =
-    internalAttachments.value.length > 0
-      ? internalAttachments.value
-      : props.item?.attachments || [];
+  let attachments = internalAttachments.value.length > 0 ? internalAttachments.value : (props.item?.attachments || []);
 
   // Ensure attachments is an array before calling map
   if (!Array.isArray(attachments)) {
@@ -108,24 +108,21 @@ const getImageAttachments = computed(() => {
 
 // Computed para filtrar PDFs
 const getPdfAttachments = computed(() => {
-  return (
-    getAllAttachments.value.filter(
-      attachment => attachment.fileType === 'application/pdf'
-    ) || []
-  );
+  return getAllAttachments.value.filter(attachment =>
+    attachment.fileType === 'application/pdf'
+  ) || [];
 });
 
 // Computed para filtrar outros documentos (excluindo PDFs)
 const getDocumentAttachments = computed(() => {
-  return (
-    getAllAttachments.value.filter(
-      attachment =>
-        !isImage(attachment) &&
-        attachment.fileType !== 'application/pdf' &&
-        (attachment.fileType?.startsWith('application/') ||
-          attachment.fileType?.startsWith('text/'))
-    ) || []
-  );
+  return getAllAttachments.value.filter(attachment =>
+    !isImage(attachment) &&
+    attachment.fileType !== 'application/pdf' &&
+    (
+      attachment.fileType?.startsWith('application/') ||
+      attachment.fileType?.startsWith('text/')
+    )
+  ) || [];
 });
 
 // Computed para contar anexos por tipo
@@ -146,26 +143,12 @@ const nonImageAttachmentsCount = computed(() => {
 });
 
 const getFileIcon = attachment => {
-  if (!attachment || !attachment.fileType)
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip-icon lucide-paperclip"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>';
-  if (attachment.fileType.includes('pdf'))
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>';
+  if (!attachment || !attachment.fileType) return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip-icon lucide-paperclip"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>';
+  if (attachment.fileType.includes('pdf')) return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>';
   if (attachment.fileType.includes('doc')) return '📝';
-  if (
-    attachment.fileType.includes('xls') ||
-    attachment.fileType.includes('spreadsheet')
-  )
-    return '📊';
-  if (
-    attachment.fileType.includes('ppt') ||
-    attachment.fileType.includes('presentation')
-  )
-    return '📽️';
-  if (
-    attachment.fileType.includes('zip') ||
-    attachment.fileType.includes('rar')
-  )
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-archive-icon lucide-file-archive"><path d="M10 12v-1"/><path d="M10 18v-2"/><path d="M10 7V6"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v16a2 2 0 0 0 .274 1.01"/><circle cx="10" cy="20" r="2"/></svg>';
+  if (attachment.fileType.includes('xls') || attachment.fileType.includes('spreadsheet')) return '📊';
+  if (attachment.fileType.includes('ppt') || attachment.fileType.includes('presentation')) return '📽️';
+  if (attachment.fileType.includes('zip') || attachment.fileType.includes('rar')) return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-archive-icon lucide-file-archive"><path d="M10 12v-1"/><path d="M10 18v-2"/><path d="M10 7V6"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v16a2 2 0 0 0 .274 1.01"/><circle cx="10" cy="20" r="2"/></svg>';
   return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip-icon lucide-paperclip"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>';
 };
 
@@ -175,7 +158,7 @@ const formatFileSize = bytes => {
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / k ** i).toFixed(1)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
 // Função para formatar data
@@ -187,7 +170,7 @@ const formatDate = dateString => {
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit',
+    minute: '2-digit'
   });
 };
 
@@ -204,10 +187,7 @@ const handleItemAttachment = async file => {
   try {
     if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
       // Usar o método da API do kanban
-      const response = await KanbanAPI.uploadAttachment(
-        props.item?.id,
-        file.file
-      );
+      const response = await KanbanAPI.uploadAttachment(props.item?.id, file.file);
 
       // Buscar attachments atualizados para manter reatividade
       await fetchAttachments();
@@ -244,6 +224,8 @@ const openImagePreview = url => {
   window.open(url, '_blank');
 };
 
+
+
 // Carregar attachments quando o componente for montado
 onMounted(() => {
   if (props.item?.id) {
@@ -279,30 +261,22 @@ onMounted(() => {
             @mouseenter="showFormatsPopover = true"
             @mouseleave="showFormatsPopover = false"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4" />
-              <path d="M12 8h.01" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
             </svg>
           </button>
 
           <!-- Popover com formatos aceitos -->
-          <div v-if="showFormatsPopover" class="formats-popover">
+          <div
+            v-if="showFormatsPopover"
+            class="formats-popover"
+          >
             <div class="popover-header">Formatos aceitos:</div>
             <div class="formats-list">
               <div class="format-category">
-                <strong>Imagens:</strong> PNG, JPG, JPEG, GIF, WEBP, SVG, BMP,
-                etc.
+                <strong>Imagens:</strong> PNG, JPG, JPEG, GIF, WEBP, SVG, BMP, etc.
               </div>
               <div class="format-category">
                 <strong>Áudio:</strong> MP3, WAV, OGG, AAC, etc.
@@ -314,8 +288,7 @@ onMounted(() => {
                 <strong>PDF:</strong> Arquivos PDF
               </div>
               <div class="format-category">
-                <strong>Documentos:</strong> DOC, DOCX, XLS, XLSX, PPT, PPTX,
-                ODT
+                <strong>Documentos:</strong> DOC, DOCX, XLS, XLSX, PPT, PPTX, ODT
               </div>
               <div class="format-category">
                 <strong>Texto:</strong> CSV, TXT, JSON, RTF, XML
@@ -323,21 +296,27 @@ onMounted(() => {
               <div class="format-category">
                 <strong>Compactados:</strong> ZIP, 7Z, RAR, TAR
               </div>
-              <div class="format-limit">Limite: 10MB por arquivo</div>
+              <div class="format-limit">
+                Limite: 10MB por arquivo
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Contadores de anexos -->
-      <div
-        class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400"
-      >
-        <span v-if="imageAttachmentsCount > 0" class="flex items-center gap-1">
+      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <span
+          v-if="imageAttachmentsCount > 0"
+          class="flex items-center gap-1"
+        >
           <fluent-icon icon="image" size="12" />
           {{ imageAttachmentsCount }}
         </span>
-        <span v-if="pdfAttachmentsCount > 0" class="flex items-center gap-1">
+        <span
+          v-if="pdfAttachmentsCount > 0"
+          class="flex items-center gap-1"
+        >
           <fluent-icon icon="document" size="12" />
           {{ pdfAttachmentsCount }}
         </span>
@@ -360,9 +339,15 @@ onMounted(() => {
     </div>
 
     <!-- Lista de anexos -->
-    <div v-else class="attachments-grid">
+    <div
+      v-else
+      class="attachments-grid"
+    >
       <!-- Seção de Imagens -->
-      <div v-if="hasImageAttachments" class="attachment-section">
+      <div
+        v-if="hasImageAttachments"
+        class="attachment-section"
+      >
         <h4 class="section-title">
           {{ t('KANBAN.ITEM_DETAILS.ATTACHMENTS.IMAGES') }}
         </h4>
@@ -380,10 +365,11 @@ onMounted(() => {
             />
             <div class="attachment-info">
               <div class="flex flex-col">
-                <span class="attachment-name">{{ attachment.filename }}</span>
+                <span class="attachment-name">{{
+                  attachment.filename
+                }}</span>
                 <span class="attachment-meta">
-                  {{ formatFileSize(attachment.byteSize) }} •
-                  {{ formatDate(attachment.createdAt) }}
+                  {{ formatFileSize(attachment.byteSize) }} • {{ formatDate(attachment.createdAt) }}
                 </span>
                 <span class="attachment-source">
                   {{
@@ -405,8 +391,13 @@ onMounted(() => {
       </div>
 
       <!-- Seção de PDFs -->
-      <div v-if="getPdfAttachments.length > 0" class="attachment-section">
-        <h4 class="section-title">PDFs</h4>
+      <div
+        v-if="getPdfAttachments.length > 0"
+        class="attachment-section"
+      >
+        <h4 class="section-title">
+          PDFs
+        </h4>
         <div class="files-grid">
           <div
             v-for="attachment in getPdfAttachments"
@@ -414,7 +405,8 @@ onMounted(() => {
             class="file-card"
           >
             <div class="file-info">
-              <span class="file-icon" v-html="getFileIcon(attachment)" />
+              <span class="file-icon" v-html="getFileIcon(attachment)">
+              </span>
               <div class="flex flex-col">
                 <a
                   :href="attachment.url"
@@ -426,8 +418,7 @@ onMounted(() => {
                   {{ attachment.filename }}
                 </a>
                 <span class="file-meta">
-                  {{ formatFileSize(attachment.byteSize) }} •
-                  {{ formatDate(attachment.createdAt) }}
+                  {{ formatFileSize(attachment.byteSize) }} • {{ formatDate(attachment.createdAt) }}
                 </span>
                 <span class="file-source">
                   {{
@@ -438,7 +429,10 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <button class="delete-button" @click="removeAttachment(attachment)">
+            <button
+              class="delete-button"
+              @click="removeAttachment(attachment)"
+            >
               <fluent-icon icon="delete" size="12" />
             </button>
           </div>
@@ -446,7 +440,10 @@ onMounted(() => {
       </div>
 
       <!-- Seção de Documentos -->
-      <div v-if="getDocumentAttachments.length > 0" class="attachment-section">
+      <div
+        v-if="getDocumentAttachments.length > 0"
+        class="attachment-section"
+      >
         <h4 class="section-title">
           {{ t('KANBAN.ITEM_DETAILS.ATTACHMENTS.FILES') }}
         </h4>
@@ -457,7 +454,8 @@ onMounted(() => {
             class="file-card"
           >
             <div class="file-info">
-              <span class="file-icon" v-html="getFileIcon(attachment)" />
+              <span class="file-icon" v-html="getFileIcon(attachment)">
+              </span>
               <div class="flex flex-col">
                 <a
                   :href="attachment.url"
@@ -468,8 +466,7 @@ onMounted(() => {
                   {{ attachment.filename }}
                 </a>
                 <span class="file-meta">
-                  {{ formatFileSize(attachment.byteSize) }} •
-                  {{ formatDate(attachment.createdAt) }}
+                  {{ formatFileSize(attachment.byteSize) }} • {{ formatDate(attachment.createdAt) }}
                 </span>
                 <span class="file-source">
                   {{
@@ -480,12 +477,16 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <button class="delete-button" @click="removeAttachment(attachment)">
+            <button
+              class="delete-button"
+              @click="removeAttachment(attachment)"
+            >
               <fluent-icon icon="delete" size="12" />
             </button>
           </div>
         </div>
       </div>
+
 
       <!-- Mensagem quando não há anexos -->
       <div
@@ -496,6 +497,7 @@ onMounted(() => {
         <p class="text-sm">{{ t('KANBAN.ITEM_DETAILS.ATTACHMENTS.EMPTY') }}</p>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -663,4 +665,5 @@ onMounted(() => {
     @apply p-0.5;
   }
 }
+
 </style>

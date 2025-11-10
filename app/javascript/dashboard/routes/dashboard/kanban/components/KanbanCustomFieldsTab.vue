@@ -18,7 +18,10 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['update:item', 'item-updated']);
+const emit = defineEmits([
+  'update:item',
+  'item-updated',
+]);
 
 const { t } = useI18n();
 const store = useStore();
@@ -48,7 +51,7 @@ const allCustomAttributes = computed(() => {
       type: globalAttr.type,
       is_list: globalAttr.is_list,
       list_values: globalAttr.list_values || [],
-      value: itemAttr ? itemAttr.value : globalAttr.is_list ? [] : '',
+      value: itemAttr ? itemAttr.value : (globalAttr.is_list ? [] : ''),
       _isGlobal: true,
     };
   });
@@ -84,7 +87,7 @@ function updateAllCustomAttributeValue(idx, newValue) {
 const openDropdownIndex = ref(null);
 
 // Toggle dropdown de lista
-const toggleListDropdown = idx => {
+const toggleListDropdown = (idx) => {
   openDropdownIndex.value = openDropdownIndex.value === idx ? null : idx;
 };
 
@@ -93,10 +96,10 @@ const toggleListValue = (idx, value) => {
   if (!Array.isArray(allCustomAttributesEditable.value[idx].value)) {
     allCustomAttributesEditable.value[idx].value = [];
   }
-
+  
   const currentValues = allCustomAttributesEditable.value[idx].value;
   const valueIndex = currentValues.indexOf(value);
-
+  
   if (valueIndex > -1) {
     // Remove se já existir
     currentValues.splice(valueIndex, 1);
@@ -104,7 +107,7 @@ const toggleListValue = (idx, value) => {
     // Adiciona se não existir
     currentValues.push(value);
   }
-
+  
   updateAllCustomAttributeValue(idx, currentValues);
 };
 
@@ -115,10 +118,10 @@ const isValueSelected = (idx, value) => {
 };
 
 // Fechar dropdown ao clicar fora
-const closeDropdown = event => {
+const closeDropdown = (event) => {
   const target = event.target;
   const isDropdownClick = target.closest('.custom-select-dropdown');
-
+  
   if (!isDropdownClick) {
     openDropdownIndex.value = null;
   }
@@ -158,6 +161,7 @@ async function saveAllCustomAttributes() {
       message: 'Campos personalizados salvos com sucesso',
       action: { type: 'success' },
     });
+
   } catch (error) {
     console.error('Erro ao salvar campos personalizados:', error);
     emitter.emit('newToastMessage', {
@@ -180,9 +184,7 @@ async function saveAllCustomAttributes() {
       :key="attr.name + '-' + attr.type"
       class="flex flex-col gap-2"
     >
-      <label
-        class="font-medium flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300"
-      >
+      <label class="font-medium flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
         <fluent-icon
           v-if="attr._isGlobal"
           icon="globe"
@@ -200,16 +202,11 @@ async function saveAllCustomAttributes() {
           class="w-full input flex items-center justify-between"
           @click="toggleListDropdown(idx)"
         >
-          <span
-            v-if="!Array.isArray(attr.value) || attr.value.length === 0"
-            class="text-slate-400 text-sm"
-          >
+          <span v-if="!Array.isArray(attr.value) || attr.value.length === 0" class="text-slate-400 text-sm">
             Selecione...
           </span>
           <span v-else class="text-sm">
-            {{ attr.value.length }} selecionado{{
-              attr.value.length !== 1 ? 's' : ''
-            }}
+            {{ attr.value.length }} selecionado{{ attr.value.length !== 1 ? 's' : '' }}
           </span>
           <fluent-icon
             icon="chevron-down"
@@ -232,11 +229,9 @@ async function saveAllCustomAttributes() {
           >
             <div
               class="w-4 h-4 rounded border mr-2 flex items-center justify-center"
-              :class="
-                isValueSelected(idx, option)
-                  ? 'bg-woot-500 border-woot-500'
-                  : 'border-slate-300 dark:border-slate-600'
-              "
+              :class="isValueSelected(idx, option) 
+                ? 'bg-woot-500 border-woot-500' 
+                : 'border-slate-300 dark:border-slate-600'"
             >
               <fluent-icon
                 v-if="isValueSelected(idx, option)"
@@ -250,10 +245,7 @@ async function saveAllCustomAttributes() {
         </div>
 
         <!-- Badges dos valores selecionados -->
-        <div
-          v-if="Array.isArray(attr.value) && attr.value.length > 0"
-          class="flex flex-wrap gap-1 mt-2"
-        >
+        <div v-if="Array.isArray(attr.value) && attr.value.length > 0" class="flex flex-wrap gap-1 mt-2">
           <span
             v-for="val in attr.value"
             :key="val"
@@ -293,7 +285,10 @@ async function saveAllCustomAttributes() {
         @change="updateAllCustomAttributeValue(idx, attr.value)"
       />
     </div>
-    <button class="primary-button mt-4" @click="saveAllCustomAttributes">
+    <button
+      class="primary-button mt-4"
+      @click="saveAllCustomAttributes"
+    >
       Salvar
     </button>
   </div>

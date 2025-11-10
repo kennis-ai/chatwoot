@@ -120,6 +120,7 @@ const newCondition = ref({
   operator: 'equal_to',
 });
 
+
 // Gera o ID baseado no nome
 const generateId = name => {
   return name
@@ -317,9 +318,7 @@ onMounted(async () => {
     !Array.isArray(formData.value.global_custom_attributes) ||
     formData.value.global_custom_attributes.length === 0
   ) {
-    formData.value.global_custom_attributes = [
-      { name: '', type: '', field_type: 'single', list_values: [] },
-    ];
+    formData.value.global_custom_attributes = [{ name: '', type: '', field_type: 'single', list_values: [] }];
   }
 
   // Adiciona listener para evento personalizado de salvar
@@ -386,14 +385,11 @@ const fetchFunnelData = async () => {
     // Definir cada propriedade individualmente para garantir reatividade
     formData.value.name = funnelData.name || '';
     formData.value.description = funnelData.description || '';
-    formData.value.active =
-      funnelData.active !== undefined ? funnelData.active : true;
+    formData.value.active = funnelData.active !== undefined ? funnelData.active : true;
     formData.value.stages = funnelData.stages || {};
     formData.value.settings = funnelData.settings || {};
     formData.value.agents = funnelData.settings?.agents || [];
-    formData.value.global_custom_attributes = Array.isArray(
-      funnelData.global_custom_attributes
-    )
+    formData.value.global_custom_attributes = Array.isArray(funnelData.global_custom_attributes)
       ? funnelData.global_custom_attributes.map(attr => ({
           name: attr.name || '',
           type: attr.type || '',
@@ -401,6 +397,7 @@ const fetchFunnelData = async () => {
           list_values: attr.list_values || [],
         }))
       : [];
+
 
     // Armazenar metadados para exibição
     funnelMetadata.value = {
@@ -453,18 +450,8 @@ const fetchFunnelData = async () => {
 
 // Funções para gerenciar condições
 const addCondition = () => {
-  const conditionlessTypes = [
-    'message_not_read',
-    'conversation_unassigned',
-    'conversation_reopened',
-    'conversation_snoozed',
-  ];
-  if (
-    !conditionlessTypes.includes(newCondition.value.type) &&
-    (!newCondition.value.value ||
-      newCondition.value.value.toString().trim() === '')
-  )
-    return;
+  const conditionlessTypes = ['message_not_read', 'conversation_unassigned', 'conversation_reopened', 'conversation_snoozed'];
+  if (!conditionlessTypes.includes(newCondition.value.type) && (!newCondition.value.value || newCondition.value.value.toString().trim() === '')) return;
 
   const condition = { ...newCondition.value };
 
@@ -530,12 +517,7 @@ const globalCustomAttributes = computed({
 });
 
 function addGlobalCustomAttribute() {
-  globalCustomAttributes.value.push({
-    name: '',
-    type: '',
-    field_type: 'single',
-    list_values: [],
-  });
+  globalCustomAttributes.value.push({ name: '', type: '', field_type: 'single', list_values: [] });
 }
 
 function removeGlobalCustomAttribute(index) {
@@ -577,9 +559,7 @@ const handleSubmit = async () => {
       stages: formattedStages,
       settings: {
         agents: formData.value.agents,
-        goals: goals.value.filter(
-          goal => goal.value && goal.value.toString().trim() !== ''
-        ),
+        goals: goals.value.filter(goal => goal.value && goal.value.toString().trim() !== ''),
         loss_reasons: lossReasons.value.filter(r => r.title.trim() !== ''),
         win_reasons: winReasons.value.filter(r => r.title.trim() !== ''),
       },
@@ -592,9 +572,7 @@ const handleSubmit = async () => {
             is_list: attr.field_type === 'list',
           };
           if (attr.field_type === 'list') {
-            base.list_values = (attr.list_values || []).filter(
-              v => v.trim() !== ''
-            );
+            base.list_values = (attr.list_values || []).filter(v => v.trim() !== '');
           }
           return base;
         }),
@@ -684,19 +662,11 @@ const toggleAgent = agent => {
 
 // Computed para validar se pode adicionar condição
 const canAddCondition = computed(() => {
-  const conditionlessTypes = [
-    'message_not_read',
-    'conversation_unassigned',
-    'conversation_reopened',
-    'conversation_snoozed',
-  ];
+  const conditionlessTypes = ['message_not_read', 'conversation_unassigned', 'conversation_reopened', 'conversation_snoozed'];
   if (conditionlessTypes.includes(newCondition.value.type)) {
     return true;
   }
-  return (
-    newCondition.value.value &&
-    newCondition.value.value.toString().trim() !== ''
-  );
+  return newCondition.value.value && newCondition.value.value.toString().trim() !== '';
 });
 
 // Watch para atualizar unidade automaticamente baseada no tipo de meta
@@ -731,17 +701,15 @@ watch(
   { deep: true }
 );
 
-watch(
-  () => formData.value.global_custom_attributes,
-  val => {
-    if (!Array.isArray(val) || val.length === 0) {
-      formData.value.global_custom_attributes = [
-        { name: '', type: '', field_type: 'single', list_values: [] },
-      ];
-    }
-  },
-  { immediate: true }
-);
+  watch(
+    () => formData.value.global_custom_attributes,
+    val => {
+      if (!Array.isArray(val) || val.length === 0) {
+        formData.value.global_custom_attributes = [{ name: '', type: '', field_type: 'single', list_values: [] }];
+      }
+    },
+    { immediate: true }
+  );
 
 const agentSearch = ref('');
 const agentDropdownOpen = ref(false);
@@ -800,7 +768,7 @@ async function copyStageId(id) {
 // Controle de expansão/colapso das etapas na pré-visualização
 
 // Função para formatar valores monetários
-const formatCurrency = value => {
+const formatCurrency = (value) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -810,7 +778,7 @@ const formatCurrency = value => {
 // Função para calcular total de templates de mensagem
 const getTotalMessageTemplates = () => {
   return stages.value.reduce((total, stage) => {
-    return total + (stage.message_templates || []).length;
+    return total + ((stage.message_templates || []).length);
   }, 0);
 };
 
@@ -890,11 +858,11 @@ const addGoal = () => {
   };
 };
 
-const removeGoal = index => {
+const removeGoal = (index) => {
   goals.value.splice(index, 1);
 };
 
-const startEditingGoal = goal => {
+const startEditingGoal = (goal) => {
   newGoal.value = {
     id: goal.id,
     type: goal.type,
@@ -915,7 +883,7 @@ const cancelEditingGoal = () => {
   };
 };
 
-const getGoalTypeLabel = type => {
+const getGoalTypeLabel = (type) => {
   const labels = {
     conversion_rate: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.CONVERSION_RATE'),
     average_value: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.AVERAGE_VALUE'),
@@ -926,7 +894,8 @@ const getGoalTypeLabel = type => {
   return labels[type] || type;
 };
 
-const getUnitLabel = unit => {
+
+const getUnitLabel = (unit) => {
   const labels = {
     percentage: '%',
     currency: 'R$',
@@ -952,13 +921,10 @@ const toggleGoals = () => {
 const addReason = () => {
   if (!newReason.value.title.trim()) return;
 
-  const targetArray =
-    newReason.value.type === 'loss' ? lossReasons : winReasons;
+  const targetArray = newReason.value.type === 'loss' ? lossReasons : winReasons;
 
   if (editingReason.value) {
-    const index = targetArray.value.findIndex(
-      r => r.id === editingReason.value.id
-    );
+    const index = targetArray.value.findIndex(r => r.id === editingReason.value.id);
     if (index !== -1) {
       targetArray.value[index] = {
         ...editingReason.value,
@@ -1020,12 +986,9 @@ const toggleChecklistPresets = () => {
 
 // Funções para gerenciar checklist presets
 const addChecklistPreset = () => {
-  if (!newChecklistItem.value.text.trim() || !selectedStageForChecklist.value)
-    return;
+  if (!newChecklistItem.value.text.trim() || !selectedStageForChecklist.value) return;
 
-  const stage = stages.value.find(
-    s => s.id === selectedStageForChecklist.value
-  );
+  const stage = stages.value.find(s => s.id === selectedStageForChecklist.value);
   if (!stage) return;
 
   if (!stage.checklist_templates) {
@@ -1033,9 +996,7 @@ const addChecklistPreset = () => {
   }
 
   if (editingChecklistItem.value) {
-    const index = stage.checklist_templates.findIndex(
-      c => c.id === editingChecklistItem.value.id
-    );
+    const index = stage.checklist_templates.findIndex(c => c.id === editingChecklistItem.value.id);
     if (index !== -1) {
       stage.checklist_templates[index] = {
         ...editingChecklistItem.value,
@@ -1063,7 +1024,7 @@ const removeChecklistPreset = (stageId, index) => {
   stage.checklist_templates.splice(index, 1);
 };
 
-const startEditingChecklistPreset = item => {
+const startEditingChecklistPreset = (item) => {
   newChecklistItem.value = {
     text: item.text,
     priority: item.priority,
@@ -1077,13 +1038,13 @@ const cancelEditingChecklistPreset = () => {
   newChecklistItem.value = { text: '', priority: 'none', required: false };
 };
 
-const getChecklistPresetPriority = priority => {
+const getChecklistPresetPriority = (priority) => {
   const priorityMap = {
     none: { label: 'Nenhuma', color: 'slate' },
     low: { label: 'Baixa', color: 'green' },
     medium: { label: 'Média', color: 'yellow' },
     high: { label: 'Alta', color: 'orange' },
-    urgent: { label: 'Urgente', color: 'red' },
+    urgent: { label: 'Urgente', color: 'red' }
   };
   return priorityMap[priority] || priorityMap.none;
 };
@@ -1106,41 +1067,27 @@ const getChecklistPresetPriority = priority => {
       </div>
     </div>
 
-    <div
-      class="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-6 md:gap-6 gap-y-6"
-    >
+
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-6 md:gap-6 gap-y-6">
       <!-- Coluna Esquerda - Formulário -->
       <div class="space-y-6">
         <!-- Toggle e Título -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2 text-base font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-file-text-icon lucide-file-text"
-            >
-              <path
-                d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
-              />
-              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-              <path d="M10 9H8" />
-              <path d="M16 13H8" />
-              <path d="M16 17H8" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+              <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
+              <path d="M10 9H8"/>
+              <path d="M16 13H8"/>
+              <path d="M16 17H8"/>
             </svg>
             {{ t('KANBAN.FUNNELS.FORM.SECTIONS.BASIC_DATA') }}
           </div>
-          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700" />
+          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700"></div>
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             @click="toggleLeftColumn"
+            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <fluent-icon
               :icon="leftColumnCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -1151,13 +1098,17 @@ const getChecklistPresetPriority = priority => {
 
         <!-- Conteúdo colapsável -->
         <div v-show="!leftColumnCollapsed">
+
           <!-- Status Ativo -->
           <div>
             <div class="flex items-center justify-between">
               <label class="block text-sm font-medium">
                 {{ t('KANBAN.FUNNELS.FORM.ACTIVE.LABEL') }}
               </label>
-              <Switch v-model="formData.active" size="small" />
+              <Switch
+                v-model="formData.active"
+                size="small"
+              />
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
               {{ t('KANBAN.FUNNELS.FORM.ACTIVE.HELP') }}
@@ -1191,445 +1142,271 @@ const getChecklistPresetPriority = priority => {
             />
           </div>
 
+
+
           <!-- Formulário Nova Etapa -->
           <div
             class="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-4"
             :class="{
-              'border-2': editingStage,
+              'border-2': editingStage
             }"
             :style="editingStage ? { borderColor: newStage.color } : {}"
           >
-            <h4 class="text-lg font-medium mb-4">
-              <div class="flex items-center justify-between">
-                <span>{{
-                  editingStage
-                    ? `${t('KANBAN.FUNNELS.FORM.STAGES.EDITING_TITLE')} ${newStage.name}`
-                    : t('KANBAN.FUNNELS.FORM.STAGES.NEW_TITLE')
-                }}</span>
-                <span
-                  v-if="editingStage"
-                  class="text-sm px-2 py-1 rounded"
-                  :style="{
-                    backgroundColor: `${newStage.color}20`,
-                    color: newStage.color,
-                  }"
-                >
-                  {{ t('KANBAN.FUNNELS.FORM.STAGES.EDITING_BADGE') }}
-                </span>
-              </div>
-            </h4>
-            <!-- Nome da Etapa -->
-            <div>
-              <label class="block text-sm font-medium mb-2">
-                {{ t('KANBAN.FUNNELS.FORM.STAGES.NAME_LABEL') }}
-              </label>
+          <h4 class="text-lg font-medium mb-4">
+            <div class="flex items-center justify-between">
+              <span>{{ editingStage ? `${t('KANBAN.FUNNELS.FORM.STAGES.EDITING_TITLE')} ${newStage.name}` : t('KANBAN.FUNNELS.FORM.STAGES.NEW_TITLE') }}</span>
+              <span
+                v-if="editingStage"
+                class="text-sm px-2 py-1 rounded"
+                :style="{
+                  backgroundColor: `${newStage.color}20`,
+                  color: newStage.color,
+                }"
+              >
+                {{ t('KANBAN.FUNNELS.FORM.STAGES.EDITING_BADGE') }}
+              </span>
+            </div>
+          </h4>
+          <!-- Nome da Etapa -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              {{ t('KANBAN.FUNNELS.FORM.STAGES.NAME_LABEL') }}
+            </label>
+            <input
+              v-model="newStage.name"
+              type="text"
+              class="w-full px-3 py-2 border rounded-lg"
+              :placeholder="t('KANBAN.FUNNELS.FORM.STAGES.NAME_PLACEHOLDER')"
+            />
+          </div>
+          <!-- Cor e Descrição em flex -->
+          <div class="flex items-start gap-2">
+            <div class="w-[180px] shrink-0">
+              <label class="block text-sm font-medium mb-2"> {{ t('KANBAN.FUNNELS.FORM.STAGES.COLOR_LABEL') }} </label>
+              <StageColorPicker v-model="newStage.color" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <label class="block text-sm font-medium mb-2"> {{ t('KANBAN.FUNNELS.FORM.STAGES.DESCRIPTION_LABEL') }} </label>
               <input
-                v-model="newStage.name"
+                v-model="newStage.description"
                 type="text"
                 class="w-full px-3 py-2 border rounded-lg"
-                :placeholder="t('KANBAN.FUNNELS.FORM.STAGES.NAME_PLACEHOLDER')"
-              />
-            </div>
-            <!-- Cor e Descrição em flex -->
-            <div class="flex items-start gap-2">
-              <div class="w-[180px] shrink-0">
-                <label class="block text-sm font-medium mb-2">
-                  {{ t('KANBAN.FUNNELS.FORM.STAGES.COLOR_LABEL') }}
-                </label>
-                <StageColorPicker v-model="newStage.color" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <label class="block text-sm font-medium mb-2">
-                  {{ t('KANBAN.FUNNELS.FORM.STAGES.DESCRIPTION_LABEL') }}
-                </label>
-                <input
-                  v-model="newStage.description"
-                  type="text"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  :placeholder="
-                    t(
-                      'KANBAN.FUNNELS.FORM.STAGES.STAGE_DESCRIPTION_PLACEHOLDER'
-                    )
-                  "
-                />
-              </div>
-            </div>
-            <!-- Condições de Auto Criação -->
-            <div class="mt-4">
-              <label
-                class="flex items-center justify-between text-sm font-medium mb-2"
-              >
-                <span>{{
-                  t('KANBAN.FUNNELS.FORM.STAGES.AUTO_CREATE_CONDITIONS')
-                }}</span>
-                <div class="relative">
-                  <span
-                    class="text-xs text-slate-400 ml-1 cursor-help"
-                    @mouseenter="showHelpPopover = true"
-                    @mouseleave="showHelpPopover = false"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="lucide lucide-info-icon lucide-info"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 16v-4" />
-                      <path d="M12 8h.01" />
-                    </svg>
-                  </span>
-                  <div
-                    v-show="showHelpPopover"
-                    class="absolute right-0 top-full mt-2 w-80 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg text-xs text-slate-600 dark:text-slate-300 z-50"
-                    @mouseenter="showHelpPopover = true"
-                    @mouseleave="showHelpPopover = false"
-                  >
-                    <div
-                      class="font-medium text-slate-700 dark:text-slate-200 mb-1"
-                    >
-                      {{ t('KANBAN.FUNNELS.FORM.AUTO_CREATION.HELP_TITLE') }}
-                    </div>
-                    <p class="leading-relaxed">
-                      {{
-                        t('KANBAN.FUNNELS.FORM.AUTO_CREATION.HELP_DESCRIPTION')
-                      }}
-                    </p>
-                  </div>
-                </div>
-              </label>
-
-              <!-- Lista de condições existentes -->
-              <div
-                v-if="newStage.auto_create_conditions.length > 0"
-                class="mb-3 space-y-2"
-              >
-                <div
-                  v-for="(condition, index) in newStage.auto_create_conditions"
-                  :key="index"
-                  class="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border"
-                >
-                  <span
-                    class="text-xs px-2 py-1 bg-woot-100 dark:bg-woot-900 text-woot-700 dark:text-woot-300 rounded"
-                  >
-                    {{ getConditionTypeLabel(condition.type) }}
-                  </span>
-                  <span
-                    v-if="condition.attribute"
-                    class="text-xs text-slate-600 dark:text-slate-400"
-                  >
-                    {{ condition.attribute }}
-                  </span>
-                  <span
-                    v-if="
-                      condition.operator &&
-                      condition.type === 'contact_has_custom_attribute'
-                    "
-                    class="text-xs text-slate-600 dark:text-slate-400"
-                  >
-                    {{ getOperatorLabel(condition.operator) }}
-                  </span>
-                  <span class="text-xs font-medium">{{ condition.value }}</span>
-                  <button
-                    type="button"
-                    class="ml-auto text-ruby-500 hover:text-ruby-600"
-                    @click="removeCondition(index)"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              <!-- Formulário para adicionar nova condição -->
-              <div class="flex items-center gap-2">
-                <select
-                  v-model="newCondition.type"
-                  class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
-                >
-                  <option value="contact_has_tag">
-                    {{
-                      t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONTACT_HAS_TAG')
-                    }}
-                  </option>
-                  <option value="contact_has_custom_attribute">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONTACT_HAS_CUSTOM_ATTRIBUTE'
-                      )
-                    }}
-                  </option>
-                  <option value="message_contains">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_CONTAINS'
-                      )
-                    }}
-                  </option>
-                  <option value="conversation_has_priority">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_HAS_PRIORITY'
-                      )
-                    }}
-                  </option>
-                  <option value="inbox_matches">
-                    {{
-                      t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.INBOX_MATCHES')
-                    }}
-                  </option>
-                  <option value="message_is_private">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_IS_PRIVATE'
-                      )
-                    }}
-                  </option>
-                  <option value="message_has_automation">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_HAS_AUTOMATION'
-                      )
-                    }}
-                  </option>
-                  <option value="conversation_message_count">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_MESSAGE_COUNT'
-                      )
-                    }}
-                  </option>
-                  <option value="last_message_age">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.LAST_MESSAGE_AGE'
-                      )
-                    }}
-                  </option>
-                  <option value="message_not_read">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_NOT_READ'
-                      )
-                    }}
-                  </option>
-                  <option value="conversation_unassigned">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_UNASSIGNED'
-                      )
-                    }}
-                  </option>
-                  <option value="conversation_reopened">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_REOPENED'
-                      )
-                    }}
-                  </option>
-                  <option value="conversation_snoozed">
-                    {{
-                      t(
-                        'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_SNOOZED'
-                      )
-                    }}
-                  </option>
-                </select>
-                <input
-                  v-if="newCondition.type === 'contact_has_custom_attribute'"
-                  v-model="newCondition.attribute"
-                  type="text"
-                  :placeholder="
-                    t(
-                      'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.ATTRIBUTE_PLACEHOLDER'
-                    )
-                  "
-                  class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
-                />
-                <select
-                  v-if="
-                    newCondition.type === 'conversation_message_count' ||
-                    newCondition.type === 'last_message_age'
-                  "
-                  v-model="newCondition.operator"
-                  class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
-                >
-                  <option value="equal_to">
-                    {{ getOperatorLabel('equal_to') }}
-                  </option>
-                  <option value="greater_than">
-                    {{ getOperatorLabel('greater_than') }}
-                  </option>
-                  <option value="less_than">
-                    {{ getOperatorLabel('less_than') }}
-                  </option>
-                  <option value="greater_than_or_equal">
-                    {{ getOperatorLabel('greater_than_or_equal') }}
-                  </option>
-                  <option value="less_than_or_equal">
-                    {{ getOperatorLabel('less_than_or_equal') }}
-                  </option>
-                </select>
-                <select
-                  v-if="newCondition.type === 'contact_has_custom_attribute'"
-                  v-model="newCondition.operator"
-                  class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
-                >
-                  <option value="equal_to">
-                    {{ getOperatorLabel('equal_to') }}
-                  </option>
-                  <option value="contains">
-                    {{ getOperatorLabel('contains') }}
-                  </option>
-                  <option value="not_equal_to">
-                    {{ getOperatorLabel('not_equal_to') }}
-                  </option>
-                </select>
-                <input
-                  v-if="
-                    newCondition.type !== 'inbox_matches' &&
-                    newCondition.type !== 'message_not_read' &&
-                    newCondition.type !== 'conversation_unassigned' &&
-                    newCondition.type !== 'conversation_reopened' &&
-                    newCondition.type !== 'conversation_snoozed'
-                  "
-                  v-model="newCondition.value"
-                  :type="
-                    newCondition.type === 'conversation_message_count' ||
-                    newCondition.type === 'last_message_age'
-                      ? 'number'
-                      : 'text'
-                  "
-                  :placeholder="
-                    newCondition.type === 'contact_has_tag'
-                      ? t(
-                          'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.TAG_PLACEHOLDER'
-                        )
-                      : newCondition.type === 'message_contains'
-                        ? t(
-                            'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.TEXT_PLACEHOLDER'
-                          )
-                        : newCondition.type === 'message_is_private'
-                          ? t(
-                              'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.PRIVATE_MESSAGE_PLACEHOLDER'
-                            )
-                          : newCondition.type === 'message_has_automation'
-                            ? t(
-                                'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.AUTOMATION_MESSAGE_PLACEHOLDER'
-                              )
-                            : newCondition.type === 'conversation_has_priority'
-                              ? t(
-                                  'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.PRIORITY_PLACEHOLDER'
-                                )
-                              : newCondition.type ===
-                                  'conversation_message_count'
-                                ? t(
-                                    'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.QUANTITY_PLACEHOLDER'
-                                  )
-                                : newCondition.type === 'last_message_age'
-                                  ? t(
-                                      'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MINUTES_PLACEHOLDER'
-                                    )
-                                  : t(
-                                      'KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.VALUE_PLACEHOLDER'
-                                    )
-                  "
-                  class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
-                />
-                <select
-                  v-else
-                  v-model="newCondition.value"
-                  class="w-full px-3 py-2 border rounded-lg text-sm"
-                >
-                  <option value="">
-                    {{
-                      t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.SELECT_INBOX')
-                    }}
-                  </option>
-                  <option
-                    v-for="inbox in inboxes"
-                    :key="inbox.id"
-                    :value="inbox.id"
-                  >
-                    {{ inbox.name }} ({{
-                      inbox.channel_type.replace('Channel::', '')
-                    }})
-                  </option>
-                </select>
-                <Button
-                  color="blue"
-                  size="sm"
-                  :disabled="!canAddCondition"
-                  class="ml-2 flex items-center justify-center p-0 align-middle !h-10 !w-10 !min-w-[40px]"
-                  style="
-                    height: 38px;
-                    width: 40px;
-                    min-width: 40px;
-                    margin-top: -9px;
-                  "
-                  @click="addCondition"
-                >
-                  <template #icon>
-                    <fluent-icon icon="add" size="18" />
-                  </template>
-                </Button>
-              </div>
-            </div>
-
-            <div class="flex justify-end">
-              <Button
-                variant="solid"
-                color="blue"
-                size="sm"
-                :disabled="!newStage.name"
-                :label="
-                  editingStage
-                    ? t('KANBAN.FUNNELS.FORM.STAGES.SAVE_BUTTON')
-                    : t('KANBAN.FUNNELS.FORM.STAGES.ADD_BUTTON')
-                "
-                @click.stop="handleAddStage"
+                :placeholder="t('KANBAN.FUNNELS.FORM.STAGES.STAGE_DESCRIPTION_PLACEHOLDER')"
               />
             </div>
           </div>
-        </div>
-        <!-- Fim do conteúdo colapsável -->
+          <!-- Condições de Auto Criação -->
+          <div class="mt-4">
+            <label class="flex items-center justify-between text-sm font-medium mb-2">
+              <span>{{ t('KANBAN.FUNNELS.FORM.STAGES.AUTO_CREATE_CONDITIONS') }}</span>
+              <div class="relative">
+                <span
+                  class="text-xs text-slate-400 ml-1 cursor-help"
+                  @mouseenter="showHelpPopover = true"
+                  @mouseleave="showHelpPopover = false"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <div
+                  v-show="showHelpPopover"
+                  class="absolute right-0 top-full mt-2 w-80 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg text-xs text-slate-600 dark:text-slate-300 z-50"
+                  @mouseenter="showHelpPopover = true"
+                  @mouseleave="showHelpPopover = false"
+                >
+                  <div class="font-medium text-slate-700 dark:text-slate-200 mb-1">{{ t('KANBAN.FUNNELS.FORM.AUTO_CREATION.HELP_TITLE') }}</div>
+                  <p class="leading-relaxed">
+                    {{ t('KANBAN.FUNNELS.FORM.AUTO_CREATION.HELP_DESCRIPTION') }}
+                  </p>
+                </div>
+              </div>
+            </label>
+
+            <!-- Lista de condições existentes -->
+            <div
+              v-if="newStage.auto_create_conditions.length > 0"
+              class="mb-3 space-y-2"
+            >
+              <div
+                v-for="(condition, index) in newStage.auto_create_conditions"
+                :key="index"
+                class="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border"
+              >
+                <span
+                  class="text-xs px-2 py-1 bg-woot-100 dark:bg-woot-900 text-woot-700 dark:text-woot-300 rounded"
+                >
+                  {{ getConditionTypeLabel(condition.type) }}
+                </span>
+                <span
+                  v-if="condition.attribute"
+                  class="text-xs text-slate-600 dark:text-slate-400"
+                >
+                  {{ condition.attribute }}
+                </span>
+                <span
+                  v-if="
+                    condition.operator &&
+                    condition.type === 'contact_has_custom_attribute'
+                  "
+                  class="text-xs text-slate-600 dark:text-slate-400"
+                >
+                  {{ getOperatorLabel(condition.operator) }}
+                </span>
+                <span class="text-xs font-medium">{{ condition.value }}</span>
+                <button
+                  type="button"
+                  @click="removeCondition(index)"
+                  class="ml-auto text-ruby-500 hover:text-ruby-600"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Formulário para adicionar nova condição -->
+            <div class="flex items-center gap-2">
+              <select
+                v-model="newCondition.type"
+                class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
+              >
+                <option value="contact_has_tag">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONTACT_HAS_TAG') }}</option>
+                <option value="contact_has_custom_attribute">
+                  {{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONTACT_HAS_CUSTOM_ATTRIBUTE') }}
+                </option>
+                <option value="message_contains">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_CONTAINS') }}</option>
+                <option value="conversation_has_priority">
+                  {{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_HAS_PRIORITY') }}
+                </option>
+                <option value="inbox_matches">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.INBOX_MATCHES') }}</option>
+                <option value="message_is_private">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_IS_PRIVATE') }}</option>
+                <option value="message_has_automation">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_HAS_AUTOMATION') }}</option>
+                <option value="conversation_message_count">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_MESSAGE_COUNT') }}</option>
+                <option value="last_message_age">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.LAST_MESSAGE_AGE') }}</option>
+                <option value="message_not_read">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MESSAGE_NOT_READ') }}</option>
+                <option value="conversation_unassigned">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_UNASSIGNED') }}</option>
+                <option value="conversation_reopened">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_REOPENED') }}</option>
+                <option value="conversation_snoozed">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.CONVERSATION_SNOOZED') }}</option>
+              </select>
+              <input
+                v-if="newCondition.type === 'contact_has_custom_attribute'"
+                v-model="newCondition.attribute"
+                type="text"
+                :placeholder="t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.ATTRIBUTE_PLACEHOLDER')"
+                class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
+              />
+              <select
+                v-if="newCondition.type === 'conversation_message_count' || newCondition.type === 'last_message_age'"
+                v-model="newCondition.operator"
+                class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
+              >
+                <option value="equal_to">{{ getOperatorLabel('equal_to') }}</option>
+                <option value="greater_than">{{ getOperatorLabel('greater_than') }}</option>
+                <option value="less_than">{{ getOperatorLabel('less_than') }}</option>
+                <option value="greater_than_or_equal">{{ getOperatorLabel('greater_than_or_equal') }}</option>
+                <option value="less_than_or_equal">{{ getOperatorLabel('less_than_or_equal') }}</option>
+              </select>
+              <select
+                v-if="newCondition.type === 'contact_has_custom_attribute'"
+                v-model="newCondition.operator"
+                class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
+              >
+                <option value="equal_to">{{ getOperatorLabel('equal_to') }}</option>
+                <option value="contains">{{ getOperatorLabel('contains') }}</option>
+                <option value="not_equal_to">{{ getOperatorLabel('not_equal_to') }}</option>
+              </select>
+              <input
+                v-if="newCondition.type !== 'inbox_matches' && newCondition.type !== 'message_not_read' && newCondition.type !== 'conversation_unassigned' && newCondition.type !== 'conversation_reopened' && newCondition.type !== 'conversation_snoozed'"
+                v-model="newCondition.value"
+                :type="newCondition.type === 'conversation_message_count' || newCondition.type === 'last_message_age' ? 'number' : 'text'"
+                :placeholder="
+                  newCondition.type === 'contact_has_tag'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.TAG_PLACEHOLDER')
+                    : newCondition.type === 'message_contains'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.TEXT_PLACEHOLDER')
+                    : newCondition.type === 'message_is_private'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.PRIVATE_MESSAGE_PLACEHOLDER')
+                    : newCondition.type === 'message_has_automation'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.AUTOMATION_MESSAGE_PLACEHOLDER')
+                    : newCondition.type === 'conversation_has_priority'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.PRIORITY_PLACEHOLDER')
+                    : newCondition.type === 'conversation_message_count'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.QUANTITY_PLACEHOLDER')
+                    : newCondition.type === 'last_message_age'
+                    ? t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.MINUTES_PLACEHOLDER')
+                    : t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.VALUE_PLACEHOLDER')
+                "
+                class="px-2 py-1 border rounded text-sm w-40 h-10 align-middle"
+              />
+              <select
+                v-else
+                v-model="newCondition.value"
+                class="w-full px-3 py-2 border rounded-lg text-sm"
+              >
+                <option value="">{{ t('KANBAN.FUNNELS.FORM.STAGES.CONDITIONS.SELECT_INBOX') }}</option>
+                <option
+                  v-for="inbox in inboxes"
+                  :key="inbox.id"
+                  :value="inbox.id"
+                >
+                  {{ inbox.name }} ({{ inbox.channel_type.replace('Channel::', '') }})
+                </option>
+              </select>
+              <Button
+                color="blue"
+                size="sm"
+                :disabled="!canAddCondition"
+                @click="addCondition"
+                class="ml-2 flex items-center justify-center p-0 align-middle !h-10 !w-10 !min-w-[40px]"
+                style="
+                  height: 38px;
+                  width: 40px;
+                  min-width: 40px;
+                  margin-top: -9px;
+                "
+              >
+                <template #icon>
+                  <fluent-icon icon="add" size="18" />
+                </template>
+              </Button>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <Button
+              variant="solid"
+              color="blue"
+              size="sm"
+              :disabled="!newStage.name"
+              @click.stop="handleAddStage"
+              :label="editingStage ? t('KANBAN.FUNNELS.FORM.STAGES.SAVE_BUTTON') : t('KANBAN.FUNNELS.FORM.STAGES.ADD_BUTTON')"
+            />
+          </div>
+          </div>
+
+
+
+        </div> <!-- Fim do conteúdo colapsável -->
 
         <!-- Campos Personalizados Globais - Grupo Colapse -->
-        <div
-          class="flex items-center justify-between mb-4"
-          style="margin-top: 16px"
-        >
+        <div class="flex items-center justify-between mb-4" style="margin-top: 16px;">
           <div class="flex items-center gap-2 text-base font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-list-plus-icon lucide-list-plus"
-            >
-              <path d="M16 5H3" />
-              <path d="M11 12H3" />
-              <path d="M16 19H3" />
-              <path d="M18 9v6" />
-              <path d="M21 12h-6" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus-icon lucide-list-plus">
+              <path d="M16 5H3"/>
+              <path d="M11 12H3"/>
+              <path d="M16 19H3"/>
+              <path d="M18 9v6"/>
+              <path d="M21 12h-6"/>
             </svg>
             {{ t('KANBAN.FUNNELS.FORM.SECTIONS.GLOBAL_CUSTOM_FIELDS') }}
           </div>
-          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700" />
+          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700"></div>
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             @click="toggleGlobalFields"
+            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <fluent-icon
               :icon="globalFieldsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -1672,18 +1449,16 @@ const getChecklistPresetPriority = priority => {
                   </select>
                   <button
                     type="button"
-                    class="p-1 text-ruby-500"
                     @click="removeGlobalCustomAttribute(idx)"
+                    class="p-1 text-ruby-500"
                   >
                     ✕
                   </button>
                 </div>
-
+                
                 <!-- Input para valores da lista -->
                 <div v-if="attr.field_type === 'list'" class="pl-2 space-y-2">
-                  <label
-                    class="text-xs font-medium text-slate-600 dark:text-slate-400"
-                    >Valores da lista:</label>
+                  <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Valores da lista:</label>
                   <div
                     v-for="(value, valueIdx) in attr.list_values || []"
                     :key="valueIdx"
@@ -1697,16 +1472,16 @@ const getChecklistPresetPriority = priority => {
                     />
                     <button
                       type="button"
-                      class="text-ruby-500 text-sm"
                       @click="removeListValue(idx, valueIdx)"
+                      class="text-ruby-500 text-sm"
                     >
                       ✕
                     </button>
                   </div>
                   <button
                     type="button"
-                    class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
                     @click="addListValue(idx)"
+                    class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
                   >
                     + Adicionar valor
                   </button>
@@ -1714,8 +1489,8 @@ const getChecklistPresetPriority = priority => {
               </div>
               <button
                 type="button"
-                class="mt-2 px-3 py-1 bg-woot-500 text-white rounded"
                 @click="addGlobalCustomAttribute"
+                class="mt-2 px-3 py-1 bg-woot-500 text-white rounded"
               >
                 Adicionar campo
               </button>
@@ -1724,36 +1499,22 @@ const getChecklistPresetPriority = priority => {
         </div>
 
         <!-- Metas - Grupo Colapse -->
-        <div
-          class="flex items-center justify-between mb-4"
-          style="margin-top: 16px"
-        >
+        <div class="flex items-center justify-between mb-4" style="margin-top: 16px;">
           <div class="flex items-center gap-2 text-base font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-crosshair-icon lucide-crosshair"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="22" x2="18" y1="12" y2="12" />
-              <line x1="6" x2="2" y1="12" y2="12" />
-              <line x1="12" x2="12" y1="6" y2="2" />
-              <line x1="12" x2="12" y1="22" y2="18" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crosshair-icon lucide-crosshair">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="22" x2="18" y1="12" y2="12"/>
+              <line x1="6" x2="2" y1="12" y2="12"/>
+              <line x1="12" x2="12" y1="6" y2="2"/>
+              <line x1="12" x2="12" y1="22" y2="18"/>
             </svg>
             {{ t('KANBAN.FUNNELS.FORM.SECTIONS.GOALS') }}
           </div>
-          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700" />
+          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700"></div>
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             @click="toggleGoals"
+            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <fluent-icon
               :icon="goalsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -1768,21 +1529,17 @@ const getChecklistPresetPriority = priority => {
           <div
             class="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-4"
             :class="{
-              'border-2': editingGoal,
+              'border-2': editingGoal
             }"
             :style="editingGoal ? { borderColor: '#3B82F6' } : {}"
           >
             <h4 class="text-lg font-medium mb-4">
               <div class="flex items-center justify-between">
-                <span>{{
-                  editingGoal
-                    ? `${t('KANBAN.FUNNELS.FORM.GOALS.EDITING_TITLE')} ${getGoalTypeLabel(editingGoal.type)}`
-                    : t('KANBAN.FUNNELS.FORM.GOALS.NEW_TITLE')
-                }}</span>
+                <span>{{ editingGoal ? `${t('KANBAN.FUNNELS.FORM.GOALS.EDITING_TITLE')} ${getGoalTypeLabel(editingGoal.type)}` : t('KANBAN.FUNNELS.FORM.GOALS.NEW_TITLE') }}</span>
                 <span
                   v-if="editingGoal"
                   class="text-sm px-2 py-1 rounded"
-                  style="background-color: #3b82f620; color: #3b82f6"
+                  style="background-color: #3B82F620; color: #3B82F6;"
                 >
                   {{ t('KANBAN.FUNNELS.FORM.GOALS.EDITING_BADGE') }}
                 </span>
@@ -1791,54 +1548,31 @@ const getChecklistPresetPriority = priority => {
 
             <!-- Seleção do Tipo de Meta -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.GOALS.TYPE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.GOALS.TYPE_LABEL') }}</label>
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="(type, key) in {
-                    conversion_rate: {
-                      label: t(
-                        'KANBAN.FUNNELS.FORM.GOALS.TYPES.CONVERSION_RATE'
-                      ),
-                      color: '#3B82F6',
-                    },
-                    average_value: {
-                      label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.AVERAGE_VALUE'),
-                      color: '#10B981',
-                    },
-                    average_time: {
-                      label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.AVERAGE_TIME'),
-                      color: '#F59E0B',
-                    },
-                    total_conversions: {
-                      label: t(
-                        'KANBAN.FUNNELS.FORM.GOALS.TYPES.TOTAL_CONVERSIONS'
-                      ),
-                      color: '#8B5CF6',
-                    },
-                    total_revenue: {
-                      label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.TOTAL_REVENUE'),
-                      color: '#EF4444',
-                    },
+                    conversion_rate: { label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.CONVERSION_RATE'), color: '#3B82F6' },
+                    average_value: { label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.AVERAGE_VALUE'), color: '#10B981' },
+                    average_time: { label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.AVERAGE_TIME'), color: '#F59E0B' },
+                    total_conversions: { label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.TOTAL_CONVERSIONS'), color: '#8B5CF6' },
+                    total_revenue: { label: t('KANBAN.FUNNELS.FORM.GOALS.TYPES.TOTAL_REVENUE'), color: '#EF4444' }
                   }"
                   :key="key"
                   type="button"
-                  class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors"
-                  :style="
-                    newGoal.type === key
-                      ? {
-                          borderColor: type.color,
-                          backgroundColor: type.color + '80',
-                          color: type.color,
-                        }
-                      : {
-                          borderColor: type.color,
-                          backgroundColor: 'transparent',
-                          color: type.color,
-                        }
-                  "
                   @click="newGoal.type = key"
+                  class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors"
+                  :style="newGoal.type === key
+                    ? {
+                        borderColor: type.color,
+                        backgroundColor: type.color + '80',
+                        color: type.color
+                      }
+                    : {
+                        borderColor: type.color,
+                        backgroundColor: 'transparent',
+                        color: type.color
+                      }"
                 >
                   <span class="text-sm">{{ type.label }}</span>
                 </button>
@@ -1847,54 +1581,28 @@ const getChecklistPresetPriority = priority => {
 
             <!-- Valor da Meta -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.GOALS.VALUE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.GOALS.VALUE_LABEL') }}</label>
               <div class="flex items-center gap-2">
                 <input
                   v-model="newGoal.value"
-                  :type="
-                    ['percentage', 'currency', 'count'].includes(newGoal.unit)
-                      ? 'number'
-                      : 'text'
-                  "
+                  :type="['percentage', 'currency', 'count'].includes(newGoal.unit) ? 'number' : 'text'"
                   class="w-full px-3 py-2 border rounded-lg"
-                  :placeholder="
-                    newGoal.type === 'conversion_rate'
-                      ? t(
-                          'KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.CONVERSION_RATE'
-                        )
-                      : newGoal.type === 'average_value'
-                        ? t(
-                            'KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.AVERAGE_VALUE'
-                          )
-                        : newGoal.type === 'average_time'
-                          ? t(
-                              'KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.AVERAGE_TIME'
-                            )
-                          : t(
-                              'KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.DEFAULT'
-                            )
-                  "
+                  :placeholder="newGoal.type === 'conversion_rate' ? t('KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.CONVERSION_RATE') :
+                              newGoal.type === 'average_value' ? t('KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.AVERAGE_VALUE') :
+                              newGoal.type === 'average_time' ? t('KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.AVERAGE_TIME') : t('KANBAN.FUNNELS.FORM.GOALS.VALUE_PLACEHOLDER.DEFAULT')"
                 />
-                <span class="text-sm text-slate-500 px-2">{{
-                  getUnitLabel(newGoal.unit)
-                }}</span>
+                <span class="text-sm text-slate-500 px-2">{{ getUnitLabel(newGoal.unit) }}</span>
               </div>
             </div>
 
             <!-- Descrição -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.GOALS.DESCRIPTION_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.GOALS.DESCRIPTION_LABEL') }}</label>
               <input
                 v-model="newGoal.description"
                 type="text"
                 class="w-full px-3 py-2 border rounded-lg"
-                :placeholder="
-                  t('KANBAN.FUNNELS.FORM.GOALS.DESCRIPTION_PLACEHOLDER')
-                "
+                :placeholder="t('KANBAN.FUNNELS.FORM.GOALS.DESCRIPTION_PLACEHOLDER')"
               />
             </div>
 
@@ -1904,31 +1612,23 @@ const getChecklistPresetPriority = priority => {
                 variant="outline"
                 color="slate"
                 size="sm"
-                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
                 @click="cancelEditingGoal"
+                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
               />
               <Button
                 variant="solid"
                 color="blue"
                 size="sm"
                 :disabled="!newGoal.value"
-                :label="
-                  editingGoal
-                    ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE')
-                    : t('KANBAN.FUNNELS.FORM.GOALS.ADD_BUTTON')
-                "
                 @click="addGoal"
+                :label="editingGoal ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE') : t('KANBAN.FUNNELS.FORM.GOALS.ADD_BUTTON')"
               />
             </div>
           </div>
 
           <!-- Lista de Metas Configuradas -->
           <div v-if="goals.length > 0" class="mt-4 space-y-2">
-            <h4
-              class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3"
-            >
-              {{ t('KANBAN.FUNNELS.FORM.GOALS.CONFIGURED_TITLE') }}
-            </h4>
+            <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{{ t('KANBAN.FUNNELS.FORM.GOALS.CONFIGURED_TITLE') }}</h4>
             <div
               v-for="(goal, index) in goals"
               :key="goal.id"
@@ -1936,22 +1636,13 @@ const getChecklistPresetPriority = priority => {
             >
               <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
-                  <span class="text-sm font-medium">{{
-                    getGoalTypeLabel(goal.type)
-                  }}</span>
+                  <span class="text-sm font-medium">{{ getGoalTypeLabel(goal.type) }}</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <span
-                    class="text-sm font-medium text-blue-600 dark:text-blue-400"
-                    >{{ goal.value }}</span>
-                  <span class="text-xs text-slate-500">{{
-                    getUnitLabel(goal.unit)
-                  }}</span>
+                  <span class="text-sm font-medium text-blue-600 dark:text-blue-400">{{ goal.value }}</span>
+                  <span class="text-xs text-slate-500">{{ getUnitLabel(goal.unit) }}</span>
                 </div>
-                <div
-                  v-if="goal.description"
-                  class="text-xs text-slate-500 italic"
-                >
+                <div v-if="goal.description" class="text-xs text-slate-500 italic">
                   {{ goal.description }}
                 </div>
               </div>
@@ -1976,47 +1667,29 @@ const getChecklistPresetPriority = priority => {
 
           <!-- Estado vazio -->
           <div v-else class="mt-4 text-center py-8 text-slate-400">
-            <p class="text-sm">
-              {{ t('KANBAN.FUNNELS.FORM.GOALS.EMPTY_STATE') }}
-            </p>
-            <p class="text-xs">
-              {{ t('KANBAN.FUNNELS.FORM.GOALS.EMPTY_DESCRIPTION') }}
-            </p>
+            <p class="text-sm">{{ t('KANBAN.FUNNELS.FORM.GOALS.EMPTY_STATE') }}</p>
+            <p class="text-xs">{{ t('KANBAN.FUNNELS.FORM.GOALS.EMPTY_DESCRIPTION') }}</p>
           </div>
         </div>
 
         <!-- Motivos de Perda e Ganho - Grupo Colapse -->
-        <div
-          class="flex items-center justify-between mb-4"
-          style="margin-top: 16px"
-        >
+        <div class="flex items-center justify-between mb-4" style="margin-top: 16px;">
           <div class="flex items-center gap-2 text-base font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-list-checks-icon lucide-list-checks"
-            >
-              <path d="M3 17h2" />
-              <path d="M3 7h2" />
-              <path d="M3 12h2" />
-              <path d="M9 7l2 2 4-4" />
-              <path d="M9 17l2 2 4-4" />
-              <path d="M9 12h12" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-checks-icon lucide-list-checks">
+              <path d="M3 17h2"/>
+              <path d="M3 7h2"/>
+              <path d="M3 12h2"/>
+              <path d="M9 7l2 2 4-4"/>
+              <path d="M9 17l2 2 4-4"/>
+              <path d="M9 12h12"/>
             </svg>
             {{ t('KANBAN.FUNNELS.FORM.SECTIONS.LOSS_WIN_REASONS') }}
           </div>
-          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700" />
+          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700"></div>
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             @click="toggleLossWinReasons"
+            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <fluent-icon
               :icon="lossWinReasonsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -2031,31 +1704,19 @@ const getChecklistPresetPriority = priority => {
           <div
             class="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-4"
             :class="{
-              'border-2': editingReason,
+              'border-2': editingReason
             }"
-            :style="
-              editingReason
-                ? {
-                    borderColor:
-                      newReason.type === 'loss' ? '#E11D48' : '#14B8A6',
-                  }
-                : {}
-            "
+            :style="editingReason ? { borderColor: newReason.type === 'loss' ? '#E11D48' : '#14B8A6' } : {}"
           >
             <h4 class="text-lg font-medium mb-4">
               <div class="flex items-center justify-between">
-                <span>{{
-                  editingReason
-                    ? t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EDITING_TITLE')
-                    : t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.NEW_TITLE')
-                }}</span>
+                <span>{{ editingReason ? t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EDITING_TITLE') : t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.NEW_TITLE') }}</span>
                 <span
                   v-if="editingReason"
                   class="text-sm px-2 py-1 rounded"
                   :style="{
-                    backgroundColor:
-                      newReason.type === 'loss' ? '#E11D4820' : '#14B8A620',
-                    color: newReason.type === 'loss' ? '#E11D48' : '#14B8A6',
+                    backgroundColor: newReason.type === 'loss' ? '#E11D4820' : '#14B8A620',
+                    color: newReason.type === 'loss' ? '#E11D48' : '#14B8A6'
                   }"
                 >
                   {{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EDITING_BADGE') }}
@@ -2065,86 +1726,66 @@ const getChecklistPresetPriority = priority => {
 
             <!-- Seleção do Tipo -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_LABEL') }}</label>
               <div class="flex gap-2">
                 <button
                   type="button"
-                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors"
-                  :style="
-                    newReason.type === 'loss'
-                      ? {
-                          borderColor: '#E11D48',
-                          backgroundColor: '#FFF1F2',
-                          color: '#E11D48',
-                        }
-                      : {
-                          borderColor: '#E2E8F0',
-                          backgroundColor: 'transparent',
-                          color: '#64748B',
-                        }
-                  "
                   @click="newReason.type = 'loss'"
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors"
+                  :style="newReason.type === 'loss'
+                    ? {
+                        borderColor: '#E11D48',
+                        backgroundColor: '#FFF1F2',
+                        color: '#E11D48'
+                      }
+                    : {
+                        borderColor: '#E2E8F0',
+                        backgroundColor: 'transparent',
+                        color: '#64748B'
+                      }"
                 >
-                  <span class="text-sm font-medium">{{
-                    t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_LOSS')
-                  }}</span>
+                  <span class="text-sm font-medium">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_LOSS') }}</span>
                 </button>
                 <button
                   type="button"
-                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors"
-                  :style="
-                    newReason.type === 'win'
-                      ? {
-                          borderColor: '#14B8A6',
-                          backgroundColor: '#F0FDFA',
-                          color: '#14B8A6',
-                        }
-                      : {
-                          borderColor: '#E2E8F0',
-                          backgroundColor: 'transparent',
-                          color: '#64748B',
-                        }
-                  "
                   @click="newReason.type = 'win'"
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors"
+                  :style="newReason.type === 'win'
+                    ? {
+                        borderColor: '#14B8A6',
+                        backgroundColor: '#F0FDFA',
+                        color: '#14B8A6'
+                      }
+                    : {
+                        borderColor: '#E2E8F0',
+                        backgroundColor: 'transparent',
+                        color: '#64748B'
+                      }"
                 >
-                  <span class="text-sm font-medium">{{
-                    t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_WIN')
-                  }}</span>
+                  <span class="text-sm font-medium">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TYPE_WIN') }}</span>
                 </button>
               </div>
             </div>
 
             <!-- Título do Motivo -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TITLE_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TITLE_LABEL') }}</label>
               <input
                 v-model="newReason.title"
                 type="text"
                 class="w-full px-3 py-2 border rounded-lg"
-                :placeholder="
-                  t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TITLE_PLACEHOLDER')
-                "
+                :placeholder="t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.TITLE_PLACEHOLDER')"
               />
             </div>
 
             <!-- Descrição -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.DESCRIPTION_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.DESCRIPTION_LABEL') }}</label>
               <textarea
                 v-model="newReason.description"
                 rows="2"
                 class="w-full px-3 py-2 border rounded-lg"
-                :placeholder="
-                  t(
-                    'KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.DESCRIPTION_PLACEHOLDER'
-                  )
-                "
+                :placeholder="t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.DESCRIPTION_PLACEHOLDER')"
               />
             </div>
 
@@ -2154,20 +1795,16 @@ const getChecklistPresetPriority = priority => {
                 variant="outline"
                 color="slate"
                 size="sm"
-                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
                 @click="cancelEditingReason"
+                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
               />
               <Button
                 variant="solid"
                 :color="newReason.type === 'loss' ? 'ruby' : 'teal'"
                 size="sm"
                 :disabled="!newReason.title.trim()"
-                :label="
-                  editingReason
-                    ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE')
-                    : t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.ADD_BUTTON')
-                "
                 @click="addReason"
+                :label="editingReason ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE') : t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.ADD_BUTTON')"
               />
             </div>
           </div>
@@ -2176,15 +1813,9 @@ const getChecklistPresetPriority = priority => {
           <div class="mt-4 grid grid-cols-2 gap-4">
             <!-- Motivos de Perda -->
             <div>
-              <h4
-                class="text-sm font-medium text-ruby-700 dark:text-ruby-300 mb-3 flex items-center gap-2"
-              >
-                <span>{{
-                  t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.LOSS_REASONS_TITLE')
-                }}</span>
-                <span
-                  class="px-2 py-0.5 text-xs bg-ruby-100 dark:bg-ruby-900/20 rounded-full"
-                  >{{ lossReasons.length }}</span>
+              <h4 class="text-sm font-medium text-ruby-700 dark:text-ruby-300 mb-3 flex items-center gap-2">
+                <span>{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.LOSS_REASONS_TITLE') }}</span>
+                <span class="px-2 py-0.5 text-xs bg-ruby-100 dark:bg-ruby-900/20 rounded-full">{{ lossReasons.length }}</span>
               </h4>
               <div v-if="lossReasons.length > 0" class="space-y-2">
                 <div
@@ -2193,9 +1824,7 @@ const getChecklistPresetPriority = priority => {
                   class="p-3 bg-ruby-50 dark:bg-ruby-900/10 rounded-lg border border-ruby-100 dark:border-ruby-800"
                 >
                   <div class="flex items-start justify-between mb-1">
-                    <span
-                      class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >{{ reason.title }}</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ reason.title }}</span>
                     <div class="flex items-center gap-1">
                       <button
                         type="button"
@@ -2213,32 +1842,21 @@ const getChecklistPresetPriority = priority => {
                       </button>
                     </div>
                   </div>
-                  <p
-                    v-if="reason.description"
-                    class="text-xs text-slate-500 dark:text-slate-400"
-                  >
+                  <p v-if="reason.description" class="text-xs text-slate-500 dark:text-slate-400">
                     {{ reason.description }}
                   </p>
                 </div>
               </div>
               <div v-else class="text-center py-4 text-slate-400">
-                <p class="text-xs">
-                  {{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EMPTY_LOSS') }}
-                </p>
+                <p class="text-xs">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EMPTY_LOSS') }}</p>
               </div>
             </div>
 
             <!-- Motivos de Ganho -->
             <div>
-              <h4
-                class="text-sm font-medium text-teal-700 dark:text-teal-300 mb-3 flex items-center gap-2"
-              >
-                <span>{{
-                  t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.WIN_REASONS_TITLE')
-                }}</span>
-                <span
-                  class="px-2 py-0.5 text-xs bg-teal-100 dark:bg-teal-900/20 rounded-full"
-                  >{{ winReasons.length }}</span>
+              <h4 class="text-sm font-medium text-teal-700 dark:text-teal-300 mb-3 flex items-center gap-2">
+                <span>{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.WIN_REASONS_TITLE') }}</span>
+                <span class="px-2 py-0.5 text-xs bg-teal-100 dark:bg-teal-900/20 rounded-full">{{ winReasons.length }}</span>
               </h4>
               <div v-if="winReasons.length > 0" class="space-y-2">
                 <div
@@ -2247,9 +1865,7 @@ const getChecklistPresetPriority = priority => {
                   class="p-3 bg-teal-50 dark:bg-teal-900/10 rounded-lg border border-teal-100 dark:border-teal-800"
                 >
                   <div class="flex items-start justify-between mb-1">
-                    <span
-                      class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >{{ reason.title }}</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ reason.title }}</span>
                     <div class="flex items-center gap-1">
                       <button
                         type="button"
@@ -2267,53 +1883,34 @@ const getChecklistPresetPriority = priority => {
                       </button>
                     </div>
                   </div>
-                  <p
-                    v-if="reason.description"
-                    class="text-xs text-slate-500 dark:text-slate-400"
-                  >
+                  <p v-if="reason.description" class="text-xs text-slate-500 dark:text-slate-400">
                     {{ reason.description }}
                   </p>
                 </div>
               </div>
               <div v-else class="text-center py-4 text-slate-400">
-                <p class="text-xs">
-                  {{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EMPTY_WIN') }}
-                </p>
+                <p class="text-xs">{{ t('KANBAN.FUNNELS.FORM.LOSS_WIN_REASONS.EMPTY_WIN') }}</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Checklist Presets - Grupo Colapse -->
-        <div
-          class="flex items-center justify-between mb-4"
-          style="margin-top: 16px"
-        >
+        <div class="flex items-center justify-between mb-4" style="margin-top: 16px;">
           <div class="flex items-center gap-2 text-base font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-list-check-icon lucide-list-check"
-            >
-              <path d="M16 5H3" />
-              <path d="M16 12H3" />
-              <path d="M11 19H3" />
-              <path d="m15 18 2 2 4-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-check-icon lucide-list-check">
+              <path d="M16 5H3"/>
+              <path d="M16 12H3"/>
+              <path d="M11 19H3"/>
+              <path d="m15 18 2 2 4-4"/>
             </svg>
             {{ t('KANBAN.FUNNELS.FORM.SECTIONS.CHECKLIST_PRESETS') }}
           </div>
-          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700" />
+          <div class="flex-1 mx-4 h-px bg-slate-200 dark:bg-slate-700"></div>
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             @click="toggleChecklistPresets"
+            class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <fluent-icon
               :icon="checklistPresetsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -2333,14 +1930,12 @@ const getChecklistPresetPriority = priority => {
               v-model="selectedStageForChecklist"
               class="w-full px-3 py-2 border rounded-lg"
             >
-              <option :value="null">
-                {{
-                  t(
-                    'KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.SELECT_STAGE_PLACEHOLDER'
-                  )
-                }}
-              </option>
-              <option v-for="stage in stages" :key="stage.id" :value="stage.id">
+              <option :value="null">{{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.SELECT_STAGE_PLACEHOLDER') }}</option>
+              <option
+                v-for="stage in stages"
+                :key="stage.id"
+                :value="stage.id"
+              >
                 {{ stage.name }}
               </option>
             </select>
@@ -2351,21 +1946,17 @@ const getChecklistPresetPriority = priority => {
             v-if="selectedStageForChecklist"
             class="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-4"
             :class="{
-              'border-2': editingChecklistItem,
+              'border-2': editingChecklistItem
             }"
             :style="editingChecklistItem ? { borderColor: '#3B82F6' } : {}"
           >
             <h4 class="text-lg font-medium mb-4">
               <div class="flex items-center justify-between">
-                <span>{{
-                  editingChecklistItem
-                    ? t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.EDITING_TITLE')
-                    : t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.NEW_TITLE')
-                }}</span>
+                <span>{{ editingChecklistItem ? t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.EDITING_TITLE') : t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.NEW_TITLE') }}</span>
                 <span
                   v-if="editingChecklistItem"
                   class="text-sm px-2 py-1 rounded"
-                  style="background-color: #3b82f620; color: #3b82f6"
+                  style="background-color: #3B82F620; color: #3B82F6;"
                 >
                   {{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.EDITING_BADGE') }}
                 </span>
@@ -2374,24 +1965,18 @@ const getChecklistPresetPriority = priority => {
 
             <!-- Texto do item -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.TEXT_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.TEXT_LABEL') }}</label>
               <textarea
                 v-model="newChecklistItem.text"
                 rows="3"
                 class="w-full px-3 py-2 border rounded-lg"
-                :placeholder="
-                  t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.TEXT_PLACEHOLDER')
-                "
+                :placeholder="t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.TEXT_PLACEHOLDER')"
               />
             </div>
 
             <!-- Prioridade -->
             <div>
-              <label class="block text-sm font-medium mb-2">{{
-                t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.PRIORITY_LABEL')
-              }}</label>
+              <label class="block text-sm font-medium mb-2">{{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.PRIORITY_LABEL') }}</label>
               <select
                 v-model="newChecklistItem.priority"
                 class="w-full px-3 py-2 border rounded-lg text-sm"
@@ -2407,8 +1992,13 @@ const getChecklistPresetPriority = priority => {
             <!-- Obrigatório -->
             <div>
               <div class="flex items-center justify-between">
-                <label class="block text-sm font-medium"> Obrigatório </label>
-                <Switch v-model="newChecklistItem.required" size="small" />
+                <label class="block text-sm font-medium">
+                  Obrigatório
+                </label>
+                <Switch
+                  v-model="newChecklistItem.required"
+                  size="small"
+                />
               </div>
               <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Marque se este item deve ser obrigatoriamente concluído
@@ -2421,20 +2011,16 @@ const getChecklistPresetPriority = priority => {
                 variant="outline"
                 color="slate"
                 size="sm"
-                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
                 @click="cancelEditingChecklistPreset"
+                :label="t('KANBAN.FUNNELS.FORM.ACTIONS.CANCEL')"
               />
               <Button
                 variant="solid"
                 color="blue"
                 size="sm"
                 :disabled="!newChecklistItem.text.trim()"
-                :label="
-                  editingChecklistItem
-                    ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE')
-                    : t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.ADD_BUTTON')
-                "
                 @click="addChecklistPreset"
+                :label="editingChecklistItem ? t('KANBAN.FUNNELS.FORM.ACTIONS.SAVE') : t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.ADD_BUTTON')"
               />
             </div>
           </div>
@@ -2442,38 +2028,24 @@ const getChecklistPresetPriority = priority => {
           <!-- Lista de checklist presets por etapa -->
           <div v-if="selectedStageForChecklist" class="mt-4">
             <div
-              v-for="stage in stages.filter(
-                s => s.id === selectedStageForChecklist
-              )"
+              v-for="stage in stages.filter(s => s.id === selectedStageForChecklist)"
               :key="stage.id"
             >
-              <h4
-                class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2"
-              >
-                <div
-                  class="w-2.5 h-2.5 rounded-full"
-                  :style="{ backgroundColor: stage.color }"
-                />
+              <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: stage.color }"></div>
                 <span>{{ stage.name }}</span>
-                <span
-                  class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-800 rounded-full"
-                >
+                <span class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-800 rounded-full">
                   {{ (stage.checklist_templates || []).length }}
                 </span>
               </h4>
-              <div
-                v-if="(stage.checklist_templates || []).length > 0"
-                class="space-y-2"
-              >
+              <div v-if="(stage.checklist_templates || []).length > 0" class="space-y-2">
                 <div
                   v-for="(item, index) in stage.checklist_templates"
                   :key="item.id"
                   class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700"
                 >
                   <div class="flex items-start justify-between mb-1">
-                    <span
-                      class="text-sm text-slate-700 dark:text-slate-300 flex-1"
-                      >{{ item.text }}</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300 flex-1">{{ item.text }}</span>
                     <div class="flex items-center gap-1">
                       <button
                         type="button"
@@ -2491,26 +2063,15 @@ const getChecklistPresetPriority = priority => {
                       </button>
                     </div>
                   </div>
-                  <div
-                    v-if="item.priority !== 'none' || item.required"
-                    class="mt-2 flex items-center gap-2"
-                  >
+                  <div v-if="item.priority !== 'none' || item.required" class="mt-2 flex items-center gap-2">
                     <span
                       v-if="item.priority !== 'none'"
                       class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full"
                       :class="{
-                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300':
-                          getChecklistPresetPriority(item.priority).color ===
-                          'red',
-                        'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300':
-                          getChecklistPresetPriority(item.priority).color ===
-                          'orange',
-                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300':
-                          getChecklistPresetPriority(item.priority).color ===
-                          'yellow',
-                        'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300':
-                          getChecklistPresetPriority(item.priority).color ===
-                          'green',
+                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300': getChecklistPresetPriority(item.priority).color === 'red',
+                        'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300': getChecklistPresetPriority(item.priority).color === 'orange',
+                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300': getChecklistPresetPriority(item.priority).color === 'yellow',
+                        'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300': getChecklistPresetPriority(item.priority).color === 'green',
                       }"
                     >
                       {{ getChecklistPresetPriority(item.priority).label }}
@@ -2525,48 +2086,36 @@ const getChecklistPresetPriority = priority => {
                 </div>
               </div>
               <div v-else class="text-center py-4 text-slate-400">
-                <p class="text-xs">
-                  {{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.EMPTY_STATE') }}
-                </p>
+                <p class="text-xs">{{ t('KANBAN.FUNNELS.FORM.CHECKLIST_PRESETS.EMPTY_STATE') }}</p>
               </div>
             </div>
           </div>
         </div>
+
       </div>
 
       <!-- Coluna Direita - Lista de Etapas -->
-      <div class="space-y-6">
+      <div
+        class="space-y-6"
+      >
         <div>
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2 text-sm font-medium">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-columns3-icon lucide-columns-3"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" />
-                <path d="M9 3v18" />
-                <path d="M15 3v18" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-columns3-icon lucide-columns-3">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+                <path d="M15 3v18"/>
               </svg>
               <span>{{ t('KANBAN.FUNNELS.FORM.SECTIONS.FUNNEL_STAGES') }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <span
-                class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full"
-              >
+              <span class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full">
                 {{ stages.length }}
               </span>
               <button
                 type="button"
-                class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 @click="toggleStages"
+                class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 <fluent-icon
                   :icon="stagesCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -2588,6 +2137,8 @@ const getChecklistPresetPriority = priority => {
               <template #item="{ element: stage, index }">
                 <div
                   class="stage-preview-card flex flex-col border border-slate-100 dark:border-slate-800 rounded-lg cursor-move group transition-colors duration-200 bg-slate-100 dark:bg-slate-800"
+                  @mouseenter="stage._hover = true"
+                  @mouseleave="stage._hover = false"
                   :style="
                     stage._hover
                       ? {
@@ -2595,8 +2146,6 @@ const getChecklistPresetPriority = priority => {
                         }
                       : {}
                   "
-                  @mouseenter="stage._hover = true"
-                  @mouseleave="stage._hover = false"
                 >
                   <div class="flex items-center gap-2 p-2 select-none">
                     <div
@@ -2655,24 +2204,12 @@ const getChecklistPresetPriority = priority => {
                     <div v-if="stageStats[stage.id]" class="mb-2 px-1">
                       <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="flex justify-between items-center">
-                          <span
-                            class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-xs font-medium"
-                            >itens</span>
-                          <span
-                            class="text-slate-700 dark:text-slate-200 font-medium"
-                            >{{ stageStats[stage.id].count || 0 }}</span>
+                          <span class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-xs font-medium">itens</span>
+                          <span class="text-slate-700 dark:text-slate-200 font-medium">{{ stageStats[stage.id].count || 0 }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                          <span
-                            class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-xs font-medium"
-                            >valor</span>
-                          <span
-                            class="text-slate-700 dark:text-slate-200 font-medium"
-                            >{{
-                              formatCurrency(
-                                stageStats[stage.id].total_value || 0
-                              )
-                            }}</span>
+                          <span class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-xs font-medium">valor</span>
+                          <span class="text-slate-700 dark:text-slate-200 font-medium">{{ formatCurrency(stageStats[stage.id].total_value || 0) }}</span>
                         </div>
                       </div>
                     </div>
@@ -2700,38 +2237,17 @@ const getChecklistPresetPriority = priority => {
 
                     <!-- Indicador de Checklist Templates -->
                     <div
-                      v-if="
-                        stage.checklist_templates &&
-                        stage.checklist_templates.length > 0
-                      "
+                      v-if="stage.checklist_templates && stage.checklist_templates.length > 0"
                       class="mt-2"
                     >
-                      <div
-                        class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="text-blue-500"
-                        >
-                          <path d="M16 5H3" />
-                          <path d="M16 12H3" />
-                          <path d="M11 19H3" />
-                          <path d="m15 18 2 2 4-4" />
+                      <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                          <path d="M16 5H3"/>
+                          <path d="M16 12H3"/>
+                          <path d="M11 19H3"/>
+                          <path d="m15 18 2 2 4-4"/>
                         </svg>
-                        <span class="font-medium">{{ stage.checklist_templates.length }} checklist{{
-                            stage.checklist_templates.length !== 1 ? 's' : ''
-                          }}
-                          pré-configurado{{
-                            stage.checklist_templates.length !== 1 ? 's' : ''
-                          }}</span>
+                        <span class="font-medium">{{ stage.checklist_templates.length }} checklist{{ stage.checklist_templates.length !== 1 ? 's' : '' }} pré-configurado{{ stage.checklist_templates.length !== 1 ? 's' : '' }}</span>
                       </div>
                     </div>
                   </div>
@@ -2753,32 +2269,23 @@ const getChecklistPresetPriority = priority => {
         </div>
 
         <!-- Agentes do Funil -->
-        <div class="rounded-lg space-y-4 mt-6">
+        <div
+          class="rounded-lg space-y-4 mt-6"
+        >
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2 text-sm font-medium">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-users-icon lucide-users"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <path d="M16 3.128a4 4 0 0 1 0 7.744" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <circle cx="9" cy="7" r="4" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <path d="M16 3.128a4 4 0 0 1 0 7.744"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <circle cx="9" cy="7" r="4"/>
               </svg>
               <span>{{ t('KANBAN.FUNNELS.FORM.SECTIONS.FUNNEL_AGENTS') }}</span>
             </div>
             <button
               type="button"
-              class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
               @click="toggleAgents"
+              class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               <fluent-icon
                 :icon="agentsCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -2787,11 +2294,7 @@ const getChecklistPresetPriority = priority => {
             </button>
           </div>
           <!-- Select com busca -->
-          <div
-            v-show="!agentsCollapsed"
-            ref="agentSelectorRef"
-            class="relative mb-2"
-          >
+          <div v-show="!agentsCollapsed" ref="agentSelectorRef" class="relative mb-2">
             <input
               v-model="agentSearch"
               type="text"
@@ -2818,9 +2321,7 @@ const getChecklistPresetPriority = priority => {
                 />
                 <div class="flex items-center gap-2 flex-1">
                   <span class="text-sm">{{ agent.name }}</span>
-                  <span
-                    class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full capitalize"
-                    >{{ agent.role }}</span>
+                  <span class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full capitalize">{{ agent.role }}</span>
                 </div>
               </div>
               <div
@@ -2832,11 +2333,7 @@ const getChecklistPresetPriority = priority => {
             </div>
           </div>
           <!-- Listagem compacta dos agentes selecionados -->
-          <div
-            v-if="formData.agents.length"
-            v-show="!agentsCollapsed"
-            class="space-y-1"
-          >
+          <div v-if="formData.agents.length" v-show="!agentsCollapsed" class="space-y-1">
             <div
               class="flex items-center justify-between px-2 py-1 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2"
             >
@@ -2867,9 +2364,7 @@ const getChecklistPresetPriority = priority => {
               />
               <div class="flex items-center gap-2 flex-1">
                 <span class="text-sm">{{ agent.name }}</span>
-                <span
-                  class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full capitalize"
-                  >{{ agent.role }}</span>
+                <span class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full capitalize">{{ agent.role }}</span>
               </div>
               <button
                 type="button"
@@ -2883,42 +2378,25 @@ const getChecklistPresetPriority = priority => {
         </div>
 
         <!-- Modelos de Mensagem -->
-        <div class="mt-4 rounded-lg space-y-4">
+        <div
+          class="mt-4 rounded-lg space-y-4"
+        >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 text-sm font-medium">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-messages-square-icon lucide-messages-square"
-              >
-                <path
-                  d="M16 10a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 14.286V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
-                />
-                <path
-                  d="M20 9a2 2 0 0 1 2 2v10.286a.71.71 0 0 1-1.212.502l-2.202-2.202A2 2 0 0 0 17.172 19H10a2 2 0 0 1-2-2v-1"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-messages-square-icon lucide-messages-square">
+                <path d="M16 10a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 14.286V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                <path d="M20 9a2 2 0 0 1 2 2v10.286a.71.71 0 0 1-1.212.502l-2.202-2.202A2 2 0 0 0 17.172 19H10a2 2 0 0 1-2-2v-1"/>
               </svg>
-              <span>{{
-                t('KANBAN.FUNNELS.FORM.SECTIONS.MESSAGE_TEMPLATES')
-              }}</span>
+              <span>{{ t('KANBAN.FUNNELS.FORM.SECTIONS.MESSAGE_TEMPLATES') }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <span
-                class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full"
-              >
+              <span class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full">
                 {{ getTotalMessageTemplates() }}
               </span>
               <button
                 type="button"
-                class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 @click="toggleTemplates"
+                class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 <fluent-icon
                   :icon="templatesCollapsed ? 'chevron-down' : 'chevron-up'"
@@ -2945,24 +2423,14 @@ const getChecklistPresetPriority = priority => {
                 </span>
               </div>
 
-              <div
-                v-if="(stage.message_templates || []).length > 0"
-                class="space-y-1"
-              >
+              <div v-if="(stage.message_templates || []).length > 0" class="space-y-1">
                 <div
-                  v-for="template in (stage.message_templates || []).slice(
-                    0,
-                    2
-                  )"
+                  v-for="template in (stage.message_templates || []).slice(0, 2)"
                   :key="template.id"
                   class="text-xs p-1 bg-slate-50 dark:bg-slate-800 rounded flex justify-between items-center"
                 >
                   <span class="truncate flex-1">{{ template.title }}</span>
-                  <span class="text-slate-400 ml-2">{{
-                    template.created_at
-                      ? new Date(template.created_at).toLocaleDateString()
-                      : ''
-                  }}</span>
+                  <span class="text-slate-400 ml-2">{{ template.created_at ? new Date(template.created_at).toLocaleDateString() : '' }}</span>
                 </div>
                 <div
                   v-if="(stage.message_templates || []).length > 2"
@@ -2977,30 +2445,23 @@ const getChecklistPresetPriority = priority => {
               </div>
             </div>
           </div>
+
         </div>
 
         <!-- Status e Configurações -->
         <div class="mt-6 space-y-4">
           <!-- Histórico de Otimizações -->
-          <div
-            v-if="funnelMetadata.optimization_history?.length > 0"
-            class="space-y-2"
-          >
-            <label
-              class="text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+          <div v-if="funnelMetadata.optimization_history?.length > 0" class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
               Histórico de Otimizações
             </label>
             <div class="space-y-1">
               <div
-                v-for="(
-                  optimization, index
-                ) in funnelMetadata.optimization_history.slice(-3)"
+                v-for="(optimization, index) in funnelMetadata.optimization_history.slice(-3)"
                 :key="index"
                 class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded"
               >
-                {{ new Date(optimization.date).toLocaleDateString() }} -
-                {{ optimization.type }}
+                {{ new Date(optimization.date).toLocaleDateString() }} - {{ optimization.type }}
               </div>
             </div>
           </div>

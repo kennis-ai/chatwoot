@@ -57,9 +57,9 @@ const selectFunnel = async funnel => {
 
     // Busca os stats das etapas do funil selecionado
     if (funnel && funnel.id) {
-      await store.dispatch('funnel/fetchStageStats', {
+      await store.dispatch('funnel/fetchStageStats', { 
         funnelId: funnel.id,
-        filterParams: {},
+        filterParams: {}
       });
     }
 
@@ -88,7 +88,7 @@ const closeDropdown = event => {
   }
 };
 
-const getFunnelTotalCount = funnel => {
+const getFunnelTotalCount = (funnel) => {
   if (!funnel || !funnel.id) return 0;
 
   const stats = stageStats.value(funnel.id);
@@ -109,9 +109,9 @@ onMounted(async () => {
       await selectFunnel(funnels.value[0]);
     } else if (selectedFunnel.value) {
       // Se já há um funil selecionado, busca os stats dele
-      await store.dispatch('funnel/fetchStageStats', {
+      await store.dispatch('funnel/fetchStageStats', { 
         funnelId: selectedFunnel.value.id,
-        filterParams: {},
+        filterParams: {}
       });
     }
 
@@ -141,23 +141,22 @@ watch(
 );
 
 // Watch para buscar stats quando o funil selecionado muda
-watch(selectedFunnel, async (newFunnel, oldFunnel) => {
-  // Só busca stats se o funil mudou e não é o mesmo
-  if (
-    newFunnel &&
-    newFunnel.id &&
-    (!oldFunnel || oldFunnel.id !== newFunnel.id)
-  ) {
-    try {
-      await store.dispatch('funnel/fetchStageStats', {
-        funnelId: newFunnel.id,
-        filterParams: {},
-      });
-    } catch (error) {
-      console.error('Erro ao buscar stats do funil:', error);
+watch(
+  selectedFunnel,
+  async (newFunnel, oldFunnel) => {
+    // Só busca stats se o funil mudou e não é o mesmo
+    if (newFunnel && newFunnel.id && (!oldFunnel || oldFunnel.id !== newFunnel.id)) {
+      try {
+        await store.dispatch('funnel/fetchStageStats', { 
+          funnelId: newFunnel.id,
+          filterParams: {}
+        });
+      } catch (error) {
+        console.error('Erro ao buscar stats do funil:', error);
+      }
     }
   }
-});
+);
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
@@ -172,7 +171,7 @@ onUnmounted(() => {
       variant="outline"
       color="slate"
       size="sm"
-      :is-loading="uiFlags.isFetching"
+      :isLoading="uiFlags.isFetching"
       @click="toggleDropdown"
     >
       <!-- Ícone removido conforme solicitado -->
@@ -185,13 +184,15 @@ onUnmounted(() => {
       <template v-else>
         <span class="md:inline hidden flex items-center justify-between w-full">
           <span class="text-[12px]">{{
-            selectedFunnel ? selectedFunnel.name : $t('KANBAN.SELECT_FUNNEL')
+            selectedFunnel
+              ? selectedFunnel.name
+              : $t('KANBAN.SELECT_FUNNEL')
           }}</span>
           <span
             v-if="selectedFunnel && getFunnelTotalCount(selectedFunnel) > 0"
-            :key="`funnel-count-${selectedFunnel.id}-${getFunnelTotalCount(selectedFunnel)}`"
             class="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-xs font-medium rounded ml-2"
             :style="funnelCountStyle"
+            :key="`funnel-count-${selectedFunnel.id}-${getFunnelTotalCount(selectedFunnel)}`"
           >
             {{ getFunnelTotalCount(selectedFunnel) }}
           </span>
@@ -217,12 +218,12 @@ onUnmounted(() => {
           <span class="text-[12px]">{{ funnel.name }}</span>
           <span
             v-if="getFunnelTotalCount(funnel) > 0"
-            :key="`dropdown-count-${funnel.id}-${getFunnelTotalCount(funnel)}`"
             class="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-xs font-medium rounded ml-2"
             :style="{
               backgroundColor: '#60A5FA',
-              color: '#FFFFFF',
+              color: '#FFFFFF'
             }"
+            :key="`dropdown-count-${funnel.id}-${getFunnelTotalCount(funnel)}`"
           >
             {{ getFunnelTotalCount(funnel) }}
           </span>
@@ -252,12 +253,12 @@ onUnmounted(() => {
               <span class="text-[12px]">{{ funnel.name }}</span>
               <span
                 v-if="getFunnelTotalCount(funnel) > 0"
-                :key="`modal-count-${funnel.id}-${getFunnelTotalCount(funnel)}`"
                 class="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-xs font-medium rounded ml-2"
                 :style="{
                   backgroundColor: '#60A5FA',
-                  color: '#FFFFFF',
+                  color: '#FFFFFF'
                 }"
+                :key="`modal-count-${funnel.id}-${getFunnelTotalCount(funnel)}`"
               >
                 {{ getFunnelTotalCount(funnel) }}
               </span>

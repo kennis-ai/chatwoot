@@ -14,7 +14,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import MarkdownIt from 'markdown-it';
-import CustomContextMenu from 'dashboard/components/ui/CustomContextMenu.vue';
 import Modal from 'dashboard/components/Modal.vue';
 import SendMessageTemplate from './SendMessageTemplate.vue';
 import KanbanAPI from '../../../../api/kanban';
@@ -50,6 +49,9 @@ const props = defineProps({
   },
 });
 
+// Injetar o map de labels fornecido pelo componente pai
+const labelsMap = inject('labelsMap', {});
+
 const emit = defineEmits([
   'click',
   'edit',
@@ -58,9 +60,6 @@ const emit = defineEmits([
   'conversationUpdated',
   'itemDragend',
 ]);
-
-// Injetar o map de labels fornecido pelo componente pai
-const labelsMap = inject('labelsMap', {});
 
 const router = useRouter();
 const { t } = useI18n();
@@ -72,13 +71,13 @@ const store = useStore();
 
 // Instância do MarkdownIt com configurações padrão
 const md = new MarkdownIt({
-  html: false, // Desabilitar HTML inline para segurança
-  breaks: true, // Converter quebras de linha em <br>
-  linkify: true, // Converter URLs em links automaticamente
+  html: false,      // Desabilitar HTML inline para segurança
+  breaks: true,     // Converter quebras de linha em <br>
+  linkify: true     // Converter URLs em links automaticamente
 });
 
 // Função para renderizar markdown
-const renderMarkdown = text => {
+const renderMarkdown = (text) => {
   if (!text) return '';
   return md.render(text);
 };
@@ -92,10 +91,7 @@ watch(
   (newItem, oldItem) => {
     if (newItem && oldItem && newItem.id === oldItem.id) {
       // Item foi atualizado, forçar reatividade se necessário
-      if (
-        JSON.stringify(newItem.item_details) !==
-        JSON.stringify(oldItem.item_details)
-      ) {
+      if (JSON.stringify(newItem.item_details) !== JSON.stringify(oldItem.item_details)) {
         // O Vue deve detectar as mudanças automaticamente devido aos computed properties
       }
     }
@@ -278,9 +274,7 @@ const truncatedLastMessage = computed(() => {
   // Remove quebras de linha e espaços extras
   const cleanMessage = message.replace(/\s+/g, ' ').trim();
 
-  return cleanMessage.length > 30
-    ? `${cleanMessage.substring(0, 30)}...`
-    : cleanMessage;
+  return cleanMessage.length > 30 ? `${cleanMessage.substring(0, 30)}...` : cleanMessage;
 });
 
 const handleClick = () => {
@@ -555,9 +549,9 @@ const funnels = computed(() =>
 const currentFunnel = computed(() => {
   // Tentar diferentes formas de buscar o funnel_id
   const funnelId = props.item.funnel_id || props.item.funnel?.id;
-
+  
   if (!funnelId) return null;
-
+  
   // Usar == para comparar número com string
   return funnels.value.find(f => f.id == funnelId);
 });
@@ -582,9 +576,8 @@ const handleStatusClick = async () => {
 
   // Inicializa o form com o status atual
   // Se não há status no item_details, usar o status da conversa como fallback
-  const currentStatus =
-    props.item.item_details?.status || conversationData.value?.status || 'open';
-
+  const currentStatus = props.item.item_details?.status || conversationData.value?.status || 'open';
+  
   statusForm.value = {
     status: currentStatus,
     reason: props.item.item_details?.reason || '',
@@ -596,79 +589,68 @@ const handleStatusClick = async () => {
   showStatusModal.value = true;
 };
 
-const handleStatusSave = async () => {
-  try {
-    // Preparar o campo reason baseado no status
-    let reasonText = null;
-
-    if (statusForm.value.status === 'won') {
-      // Se selecionou "Outro", usar o texto do textarea
-      if (statusForm.value.selectedWinReason === 'other') {
-        reasonText = statusForm.value.reason || null;
-      } else {
-        // Usar o título do win_reason selecionado
-        const selectedReason = winReasons.value.find(
-          r => r.id === statusForm.value.selectedWinReason
-        );
-        reasonText = selectedReason?.title || null;
+  const handleStatusSave = async () => {
+    try {
+      // Preparar o campo reason baseado no status
+      let reasonText = null;
+      
+      if (statusForm.value.status === 'won') {
+        // Se selecionou "Outro", usar o texto do textarea
+        if (statusForm.value.selectedWinReason === 'other') {
+          reasonText = statusForm.value.reason || null;
+        } else {
+          // Usar o título do win_reason selecionado
+          const selectedReason = winReasons.value.find(
+            r => r.id === statusForm.value.selectedWinReason
+          );
+          reasonText = selectedReason?.title || null;
+        }
+      } else if (statusForm.value.status === 'lost') {
+        // Se selecionou "Outro", usar o texto do textarea
+        if (statusForm.value.selectedLossReason === 'other') {
+          reasonText = statusForm.value.reason || null;
+        } else {
+          // Usar o título do loss_reason selecionado
+          const selectedReason = lossReasons.value.find(
+            r => r.id === statusForm.value.selectedLossReason
+          );
+          reasonText = selectedReason?.title || null;
+        }
       }
-    } else if (statusForm.value.status === 'lost') {
-      // Se selecionou "Outro", usar o texto do textarea
-      if (statusForm.value.selectedLossReason === 'other') {
-        reasonText = statusForm.value.reason || null;
-      } else {
-        // Usar o título do loss_reason selecionado
-        const selectedReason = lossReasons.value.find(
-          r => r.id === statusForm.value.selectedLossReason
-        );
-        reasonText = selectedReason?.title || null;
+      
+      // Sempre fazer update completo do item_details para garantir que o status seja atualizado
+      const updatedItem = {
+        ...props.item,
+        item_details: {
+          ...props.item.item_details,
+          status: statusForm.value.status,
+          reason: reasonText,
+          closed_offer: statusForm.value.status === 'won' ? statusForm.value.selectedOffer : null,
+          win_reason: statusForm.value.status === 'won' && statusForm.value.selectedWinReason !== 'other' ? statusForm.value.selectedWinReason : null,
+          loss_reason: statusForm.value.status === 'lost' && statusForm.value.selectedLossReason !== 'other' ? statusForm.value.selectedLossReason : null,
+        },
+      };
+
+      const { data } = await KanbanAPI.update(props.item.id, updatedItem);
+      if (data) {
+        Object.assign(props.item, data);
       }
+
+      showStatusModal.value = false;
+      emit('conversationUpdated');
+
+      // Mostrar toast de sucesso
+      emitter.emit('newToastMessage', {
+        message: 'Status atualizado com sucesso',
+        type: 'success',
+      });
+    } catch (error) {
+      emitter.emit('newToastMessage', {
+        message: 'Erro ao atualizar status',
+        type: 'error',
+      });
     }
-
-    // Sempre fazer update completo do item_details para garantir que o status seja atualizado
-    const updatedItem = {
-      ...props.item,
-      item_details: {
-        ...props.item.item_details,
-        status: statusForm.value.status,
-        reason: reasonText,
-        closed_offer:
-          statusForm.value.status === 'won'
-            ? statusForm.value.selectedOffer
-            : null,
-        win_reason:
-          statusForm.value.status === 'won' &&
-          statusForm.value.selectedWinReason !== 'other'
-            ? statusForm.value.selectedWinReason
-            : null,
-        loss_reason:
-          statusForm.value.status === 'lost' &&
-          statusForm.value.selectedLossReason !== 'other'
-            ? statusForm.value.selectedLossReason
-            : null,
-      },
-    };
-
-    const { data } = await KanbanAPI.update(props.item.id, updatedItem);
-    if (data) {
-      Object.assign(props.item, data);
-    }
-
-    showStatusModal.value = false;
-    emit('conversationUpdated');
-
-    // Mostrar toast de sucesso
-    emitter.emit('newToastMessage', {
-      message: 'Status atualizado com sucesso',
-      type: 'success',
-    });
-  } catch (error) {
-    emitter.emit('newToastMessage', {
-      message: 'Erro ao atualizar status',
-      type: 'error',
-    });
-  }
-};
+  };
 
 // Adicione este computed
 const getStatusLabel = computed(() => {
@@ -697,7 +679,7 @@ const getStatusLabel = computed(() => {
 const displayedStatus = computed(() => {
   // Sempre pega do item_details.status, se não tiver marca como 'open'
   const itemStatus = props.item.item_details?.status || 'open';
-
+  
   if (itemStatus === 'open') {
     return t('KANBAN.BULK_ACTIONS.ITEM_STATUS.OPEN');
   }
@@ -719,25 +701,27 @@ const displayedStatus = computed(() => {
   return itemStatus;
 });
 
-// Atualizado para usar o novo formato do backend (total_count)
-const attachmentsCount = computed(() => {
-  // Verifica se attachments é um array (formato show) ou objeto com total_count (formato index)
-  if (Array.isArray(props.item.attachments)) {
-    // Formato antigo/completo: soma todos os anexos
-    const itemAttachments = props.item.attachments?.length || 0;
-    const itemDetailsAttachments =
-      props.item.item_details?.attachments?.length || 0;
-    const noteAttachments = Array.isArray(props.item.item_details?.notes)
-      ? props.item.item_details.notes.reduce((count, note) => {
-          return count + (note.attachments?.length || 0);
-        }, 0)
-      : 0;
+  // Atualizado para usar o novo formato do backend (total_count)
+  const attachmentsCount = computed(() => {
+    // Verifica se attachments é um array (formato show) ou objeto com total_count (formato index)
+    if (Array.isArray(props.item.attachments)) {
+      // Formato antigo/completo: soma todos os anexos
+      const itemAttachments = props.item.attachments?.length || 0;
+      const itemDetailsAttachments =
+        props.item.item_details?.attachments?.length || 0;
+      const noteAttachments =
+        Array.isArray(props.item.item_details?.notes)
+          ? props.item.item_details.notes.reduce((count, note) => {
+              return count + (note.attachments?.length || 0);
+            }, 0)
+          : 0;
 
-    return itemAttachments + itemDetailsAttachments + noteAttachments;
-  }
-  // Novo formato do index: usa total_count diretamente
-  return props.item.attachments?.total_count || 0;
-});
+      return itemAttachments + itemDetailsAttachments + noteAttachments;
+    } else {
+      // Novo formato do index: usa total_count diretamente
+      return props.item.attachments?.total_count || 0;
+    }
+  });
 
 // Atualizado para usar o novo formato do backend (total_count)
 const notesCount = computed(() => {
@@ -747,37 +731,40 @@ const notesCount = computed(() => {
   if (Array.isArray(notes)) {
     // Formato antigo/completo: conta os itens do array
     return notes?.length || 0;
+  } else {
+    // Novo formato do index: usa total_count diretamente
+    return notes?.total_count || 0;
   }
-  // Novo formato do index: usa total_count diretamente
-  return notes?.total_count || 0;
 });
 
 // Adiciona computed properties para o progresso do checklist
-// Atualizado para usar o novo formato do backend (total_count e completed_count)
-const totalItems = computed(() => {
-  // Verifica se checklist é um array (formato show) ou objeto com contagens (formato index)
-  if (Array.isArray(props.item.checklist)) {
-    // Formato antigo/completo: conta os itens do array
-    return props.item.checklist?.length || 0;
-  }
-  // Novo formato do index: usa total_count diretamente
-  return props.item.checklist?.total_count || 0;
-});
+  // Atualizado para usar o novo formato do backend (total_count e completed_count)
+  const totalItems = computed(() => {
+    // Verifica se checklist é um array (formato show) ou objeto com contagens (formato index)
+    if (Array.isArray(props.item.checklist)) {
+      // Formato antigo/completo: conta os itens do array
+      return props.item.checklist?.length || 0;
+    } else {
+      // Novo formato do index: usa total_count diretamente
+      return props.item.checklist?.total_count || 0;
+    }
+  });
 
-const completedItems = computed(() => {
-  // Verifica se checklist é um array (formato show) ou objeto com contagens (formato index)
-  if (Array.isArray(props.item.checklist)) {
-    // Formato antigo/completo: conta os itens completados
-    return props.item.checklist?.filter(item => item.completed)?.length || 0;
-  }
-  // Novo formato do index: usa completed_count diretamente
-  return props.item.checklist?.completed_count || 0;
-});
+  const completedItems = computed(() => {
+    // Verifica se checklist é um array (formato show) ou objeto com contagens (formato index)
+    if (Array.isArray(props.item.checklist)) {
+      // Formato antigo/completo: conta os itens completados
+      return props.item.checklist?.filter(item => item.completed)?.length || 0;
+    } else {
+      // Novo formato do index: usa completed_count diretamente
+      return props.item.checklist?.completed_count || 0;
+    }
+  });
 
-const checklistProgress = computed(() => {
-  if (totalItems.value === 0) return 0;
-  return (completedItems.value / totalItems.value) * 100;
-});
+  const checklistProgress = computed(() => {
+    if (totalItems.value === 0) return 0;
+    return (completedItems.value / totalItems.value) * 100;
+  });
 
 // Adicione uma computed property para o tempo na etapa
 const timeInStage = computed(() => {
@@ -847,49 +834,49 @@ const availableOffers = computed(() => {
 const getStatusBadgeStyle = () => {
   // Sempre pega do item_details.status, se não tiver marca como 'open'
   const effectiveStatus = props.item.item_details?.status || 'open';
-
+  
   switch (effectiveStatus) {
     case 'won':
       return {
         backgroundColor: '#dcfce7',
         color: '#166534',
-        border: '1px solid #bbf7d0',
+        border: '1px solid #bbf7d0'
       };
     case 'lost':
       return {
         backgroundColor: '#fee2e2',
         color: '#991b1b',
-        border: '1px solid #fecaca',
+        border: '1px solid #fecaca'
       };
     case 'open':
       return {
         backgroundColor: '#f1f5f9',
         color: '#334155',
-        border: '1px solid #e2e8f0',
+        border: '1px solid #e2e8f0'
       };
     case 'pending':
       return {
         backgroundColor: '#fef9c3',
         color: '#b45309',
-        border: '1px solid #fde68a',
+        border: '1px solid #fde68a'
       };
     case 'resolved':
       return {
         backgroundColor: '#dbeafe',
         color: '#1e40af',
-        border: '1px solid #bfdbfe',
+        border: '1px solid #bfdbfe'
       };
     case 'snoozed':
       return {
         backgroundColor: '#f3f4f6',
         color: '#374151',
-        border: '1px solid #d1d5db',
+        border: '1px solid #d1d5db'
       };
     default:
       return {
         backgroundColor: '#f1f5f9',
         color: '#334155',
-        border: '1px solid #e2e8f0',
+        border: '1px solid #e2e8f0'
       };
   }
 };
@@ -1066,7 +1053,7 @@ const openAgentAssignModal = () => {
     primaryAgent: primaryAgent.value,
     primaryAgentId: primaryAgent.value?.id,
     item: props.item,
-    assigned_agents: props.item?.assigned_agents,
+    assigned_agents: props.item?.assigned_agents
   });
 
   selectedAgentId.value = primaryAgent.value?.id || null;
@@ -1206,9 +1193,7 @@ const assignPriority = async () => {
         />
 
         <div class="flex items-center gap-2">
-          <h3
-            class="text-[13px] font-medium text-slate-900 dark:text-slate-100"
-          >
+          <h3 class="text-[13px] font-medium text-slate-900 dark:text-slate-100">
             {{ truncatedTitle }}
           </h3>
         </div>
@@ -1229,8 +1214,8 @@ const assignPriority = async () => {
               stroke-linejoin="round"
               class="text-slate-500 dark:text-slate-400 flex-shrink-0"
             >
-              <path d="M12 6v6l4 2" />
-              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2"/>
+              <circle cx="12" cy="12" r="10"/>
             </svg>
             <span class="text-[11px] font-medium text-slate-500">
               {{ timeInStage }}
@@ -1347,15 +1332,9 @@ const assignPriority = async () => {
       v-if="showDescriptionField && props.item.item_details?.description"
       class="text-[11px] text-slate-600 dark:text-slate-400 mb-3"
     >
-      <div
-        class="prose prose-sm max-w-none dark:prose-invert"
-        v-html="truncatedDescription"
-      />
+      <div v-html="truncatedDescription" class="prose prose-sm max-w-none dark:prose-invert"></div>
       <span
-        v-if="
-          !showFullDescription &&
-          renderMarkdown(props.item.item_details.description).length > 150
-        "
+        v-if="!showFullDescription && renderMarkdown(props.item.item_details.description).length > 150"
         class="text-[10px] font-medium text-woot-500 dark:text-woot-400 hover:underline cursor-pointer inline-block mt-1"
         @click="toggleDescription"
       >
@@ -1364,6 +1343,8 @@ const assignPriority = async () => {
         }}
       </span>
     </div>
+
+
 
     <!-- Informação da Conversa -->
     <AgentTooltip text="Clique com o botão direito para ver mais opções.">
@@ -1389,9 +1370,9 @@ const assignPriority = async () => {
         @click="navigateToConversation($event, item.conversation?.display_id)"
         @contextmenu="handleContextMenu"
       >
-        <span
-          class="text-xs text-slate-500 dark:text-slate-300 select-all bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded"
-          >{{ conversationData.display_id }}</span>
+        <span class="text-xs text-slate-500 dark:text-slate-300 select-all bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded"
+          >{{ conversationData.display_id }}</span
+        >
         <div class="flex items-center justify-between flex-1 min-w-0">
           <div class="flex items-center gap-1 min-w-0 flex-1">
             <span
@@ -1472,14 +1453,14 @@ const assignPriority = async () => {
         stroke-linejoin="round"
         class="lucide lucide-loader-icon lucide-loader text-slate-500 flex-shrink-0"
       >
-        <path d="M12 2v4" />
-        <path d="m16.2 7.8 2.9-2.9" />
-        <path d="M18 12h4" />
-        <path d="m16.2 16.2 2.9 2.9" />
-        <path d="M12 18v4" />
-        <path d="m4.9 19.1 2.9-2.9" />
-        <path d="M2 12h4" />
-        <path d="m4.9 4.9 2.9 2.9" />
+        <path d="M12 2v4"/>
+        <path d="m16.2 7.8 2.9-2.9"/>
+        <path d="M18 12h4"/>
+        <path d="m16.2 16.2 2.9 2.9"/>
+        <path d="M12 18v4"/>
+        <path d="m4.9 19.1 2.9-2.9"/>
+        <path d="M2 12h4"/>
+        <path d="m4.9 4.9 2.9 2.9"/>
       </svg>
       <div class="flex-1">
         <div
@@ -1559,6 +1540,7 @@ const assignPriority = async () => {
               class="text-slate-500 dark:text-slate-400"
             />
           </div>
+
         </div>
       </div>
 
@@ -1581,20 +1563,14 @@ const assignPriority = async () => {
         </div>
 
         <!-- Valor do offer -->
-        <div
-          v-if="showValueField && formattedValue"
-          class="flex items-center gap-1 ml-2"
-        >
+        <div v-if="showValueField && formattedValue" class="flex items-center gap-1 ml-2">
           <span class="text-[11px] font-medium text-slate-500">
             {{ formattedValue }}
           </span>
         </div>
 
         <!-- Data de agendamento -->
-        <div
-          v-if="showDeadlineField && formattedDeadline && !isItemCollapsed"
-          class="flex items-center gap-1 ml-2"
-        >
+        <div v-if="showDeadlineField && formattedDeadline && !isItemCollapsed" class="flex items-center gap-1 ml-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="12"
@@ -1607,11 +1583,11 @@ const assignPriority = async () => {
             stroke-linejoin="round"
             class="text-slate-500 dark:text-slate-400 flex-shrink-0"
           >
-            <path d="M8 2v4" />
-            <path d="M16 2v4" />
-            <rect width="18" height="18" x="3" y="4" rx="2" />
-            <path d="M3 10h18" />
-            <path d="m9 16 2 2 4-4" />
+            <path d="M8 2v4"/>
+            <path d="M16 2v4"/>
+            <rect width="18" height="18" x="3" y="4" rx="2"/>
+            <path d="M3 10h18"/>
+            <path d="m9 16 2 2 4-4"/>
           </svg>
           <span class="text-[11px] font-medium text-slate-500">
             {{ formattedDeadline }}
@@ -1805,26 +1781,13 @@ const assignPriority = async () => {
               <option value="other">Outro</option>
             </select>
           </div>
-          <div
-            v-if="
-              statusForm.selectedLossReason === 'other' || !lossReasons.length
-            "
-            class="space-y-2"
-          >
-            <label class="text-sm font-medium">{{
-              lossReasons.length > 0
-                ? 'Descreva o motivo'
-                : 'Observações adicionais'
-            }}</label>
+          <div v-if="statusForm.selectedLossReason === 'other' || !lossReasons.length" class="space-y-2">
+            <label class="text-sm font-medium">{{ lossReasons.length > 0 ? 'Descreva o motivo' : 'Observações adicionais' }}</label>
             <textarea
               v-model="statusForm.reason"
               class="w-full p-2 border border-slate-100 dark:border-slate-800 rounded-md text-xs bg-white dark:bg-slate-800 focus:ring-2 focus:ring-woot-500/20 focus:border-woot-500"
               rows="3"
-              :placeholder="
-                lossReasons.length > 0
-                  ? 'Descreva o motivo da perda'
-                  : 'Descreva detalhes adicionais (opcional)'
-              "
+              :placeholder="lossReasons.length > 0 ? 'Descreva o motivo da perda' : 'Descreva detalhes adicionais (opcional)'"
             />
           </div>
         </div>
@@ -1846,10 +1809,7 @@ const assignPriority = async () => {
               <option value="other">Outro</option>
             </select>
           </div>
-          <div
-            v-if="statusForm.selectedWinReason === 'other'"
-            class="space-y-2"
-          >
+          <div v-if="statusForm.selectedWinReason === 'other'" class="space-y-2">
             <label class="text-sm font-medium">Descreva o motivo</label>
             <textarea
               v-model="statusForm.reason"
@@ -1859,10 +1819,7 @@ const assignPriority = async () => {
             />
           </div>
         </div>
-        <div
-          v-if="statusForm.status === 'won' && availableOffers.length > 0"
-          class="space-y-2"
-        >
+        <div v-if="statusForm.status === 'won' && availableOffers.length > 0" class="space-y-2">
           <label class="text-sm font-medium">Selecione a oferta de fechamento</label>
           <div class="space-y-2 max-h-40 overflow-y-auto">
             <button
@@ -1879,18 +1836,9 @@ const assignPriority = async () => {
             >
               <div class="flex flex-col items-start flex-1 min-w-0">
                 <div class="flex items-center gap-2 w-full">
-                  <span class="font-medium truncate">{{
-                    offer.description || 'Oferta sem descrição'
-                  }}</span>
-                  <span
-                    class="text-green-600 dark:text-green-400 font-semibold text-xs"
-                  >
-                    {{
-                      new Intl.NumberFormat(offer.currency?.locale || 'pt-BR', {
-                        style: 'currency',
-                        currency: offer.currency?.code || 'BRL',
-                      }).format(offer.value || 0)
-                    }}
+                  <span class="font-medium truncate">{{ offer.description || 'Oferta sem descrição' }}</span>
+                  <span class="text-green-600 dark:text-green-400 font-semibold text-xs">
+                    {{ new Intl.NumberFormat(offer.currency?.locale || 'pt-BR', { style: 'currency', currency: offer.currency?.code || 'BRL' }).format(offer.value || 0) }}
                   </span>
                 </div>
               </div>
@@ -1914,22 +1862,18 @@ const assignPriority = async () => {
             color="slate"
             size="sm"
             @click="showStatusModal = false"
+            >Cancelar</Button
           >
-            Cancelar
-          </Button>
           <Button
             variant="solid"
             color="blue"
             size="sm"
             :disabled="
-              statusForm.status === 'won' &&
-              availableOffers.length > 0 &&
-              !statusForm.selectedOffer
+              (statusForm.status === 'won' && availableOffers.length > 0 && !statusForm.selectedOffer)
             "
             @click="handleStatusSave"
+            >Salvar</Button
           >
-            Salvar
-          </Button>
         </div>
       </div>
     </div>
@@ -1961,8 +1905,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showDescriptionField"
                 type="checkbox"
+                v-model="showDescriptionField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -1987,8 +1931,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showLabelsField"
                 type="checkbox"
+                v-model="showLabelsField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2003,8 +1947,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showPriorityField"
                 type="checkbox"
+                v-model="showPriorityField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2023,8 +1967,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showValueField"
                 type="checkbox"
+                v-model="showValueField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2044,8 +1988,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showDeadlineField"
                 type="checkbox"
+                v-model="showDeadlineField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2060,8 +2004,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showConversationField"
                 type="checkbox"
+                v-model="showConversationField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2078,8 +2022,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showChecklistField"
                 type="checkbox"
+                v-model="showChecklistField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2094,8 +2038,8 @@ const assignPriority = async () => {
               class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <input
-                v-model="showAgentField"
                 type="checkbox"
+                v-model="showAgentField"
                 class="form-checkbox h-4 w-4 text-woot-500"
               />
               <span class="ml-2 text-sm">
@@ -2113,8 +2057,8 @@ const assignPriority = async () => {
             class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
           >
             <input
-              v-model="showMetadataField"
               type="checkbox"
+              v-model="showMetadataField"
               class="form-checkbox h-4 w-4 text-woot-500"
             />
             <span class="ml-2 text-sm">
@@ -2172,11 +2116,11 @@ const assignPriority = async () => {
     >
       <h3 class="text-lg font-medium mb-4">Gerenciar Agentes Atribuídos</h3>
 
-      <!-- Seção de agentes já atribuídos -->
-      <div v-if="agentInfo.length > 0" class="mb-4">
-        <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Agentes Atribuídos ({{ agentInfo.length }})
-        </h4>
+        <!-- Seção de agentes já atribuídos -->
+        <div v-if="agentInfo.length > 0" class="mb-4">
+          <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Agentes Atribuídos ({{ agentInfo.length }})
+          </h4>
         <div class="space-y-2">
           <div
             v-for="agent in agentInfo"
@@ -2272,23 +2216,21 @@ const assignPriority = async () => {
           color="slate"
           size="sm"
           @click="showAgentAssignModal = false"
+          >Fechar</Button
         >
-          Fechar
-        </Button>
         <Button
           variant="solid"
           color="blue"
           size="sm"
-          :is-loading="agentAssignLoading"
+          :isLoading="agentAssignLoading"
           :disabled="
             !selectedAgentId ||
             agentAssignLoading ||
             agentInfo.some(a => a.id === selectedAgentId)
           "
           @click="assignAgent"
+          >Adicionar Agente</Button
         >
-          Adicionar Agente
-        </Button>
       </div>
     </div>
   </Modal>
@@ -2337,19 +2279,17 @@ const assignPriority = async () => {
           color="slate"
           size="sm"
           @click="showPriorityModal = false"
+          >Cancelar</Button
         >
-          Cancelar
-        </Button>
         <Button
           variant="solid"
           color="blue"
           size="sm"
-          :is-loading="priorityAssignLoading"
+          :isLoading="priorityAssignLoading"
           :disabled="priorityAssignLoading"
           @click="assignPriority"
+          >Confirmar</Button
         >
-          Confirmar
-        </Button>
       </div>
     </div>
   </Modal>

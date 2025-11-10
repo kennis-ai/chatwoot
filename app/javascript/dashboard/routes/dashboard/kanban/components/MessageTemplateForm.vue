@@ -27,9 +27,9 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['saved', 'close']);
 const { t } = useI18n();
 const store = useStore();
+const emit = defineEmits(['saved', 'close']);
 const isLoading = ref(false);
 const error = ref(null);
 const errors = ref({});
@@ -627,7 +627,7 @@ onMounted(async () => {
                 size="xs"
                 @click="removeConditionRule(index)"
               >
-                <FluentIcon icon="delete" size="16" :icons="dashboardIcons" />
+                <fluent-icon icon="delete" size="16" :icons="dashboardIcons" />
               </Button>
             </div>
 
@@ -638,7 +638,7 @@ onMounted(async () => {
               class="w-full"
               @click="addConditionRule"
             >
-              <FluentIcon
+              <fluent-icon
                 icon="add"
                 size="16"
                 class="mr-2"
