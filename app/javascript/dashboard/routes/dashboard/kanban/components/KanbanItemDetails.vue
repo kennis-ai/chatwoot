@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import PriorityIcon from 'dashboard/routes/dashboard/inbox/components/PriorityIcon.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import conversationAPI from '../../../../api/inbox/conversation';
 import KanbanAPI from '../../../../api/kanban';
